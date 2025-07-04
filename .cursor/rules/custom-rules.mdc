@@ -1,0 +1,210 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# Next.js 어드민 웹사이트 개발 규칙
+
+## 기본 설정
+
+- Next.js 15 + TypeScript + Tailwind CSS 사용
+- 어드민 웹사이트는 **1920px 기준 고정 설계** - 복잡한 반응형 대신 안정적인 레이아웃
+- 한국어 주석 사용 가능, **변수명은 영어만 사용**
+- shared 폴더를 확인하고 재사용 가능 컴포넌트 우선 사용
+
+## TypeScript 규칙
+
+- 모든 컴포넌트에 **명시적 타입 정의** 필수
+- `interface` 우선 사용, `type`은 union 타입이나 computed 타입에만 사용
+- Props는 항상 interface로 정의하고 `Props` 접미사 사용
+- **`tsconfig.json`에서 절대 경로 설정 필수**
+
+## 컴포넌트 작성 규칙
+
+- **함수형 컴포넌트**만 사용 (클래스 컴포넌트 금지)
+- **default export** 사용
+- 컴포넌트명은 **PascalCase**, 파일명은 **kebab-case**
+- 한 파일에 하나의 컴포넌트만 export
+
+## Props 사용 규칙
+
+- **모든 컴포넌트에 Props 인터페이스 정의 필수** (props가 없어도 정의)
+- Props는 **구조 분해 할당**으로 받기
+- 선택적 props는 **기본값 설정** 또는 **조건부 렌더링**
+- **children props**는 ReactNode 타입 사용
+- Props 전달 시 **spread operator 지양**, 명시적 전달 우선
+
+## 서버/클라이언트 컴포넌트
+
+- 기본적으로 **서버 컴포넌트** 사용
+- 인터랙션이 필요한 경우만 `'use client'` 지시어 사용
+- 클라이언트 컴포넌트는 파일 최상단에 명시
+
+## Next.js 기본 기능 활용 규칙
+
+### 필수 파일 규칙
+
+- **page.tsx**: 라우트의 메인 페이지 컴포넌트
+- **layout.tsx**: 공통 레이아웃 (헤더, 사이드바 등)
+- **loading.tsx**: 로딩 상태 UI (Suspense 경계)
+- **error.tsx**: 에러 상태 UI (Error Boundary)
+- **not-found.tsx**: 404 페이지 (notFound() 함수 활용)
+
+### 파일별 사용 규칙
+
+- **layout.tsx**: 중첩 레이아웃 구조 활용, children props 필수
+- **loading.tsx**: 서버 컴포넌트 데이터 로딩 중 표시
+- **error.tsx**: 'use client' 필수, reset 함수 활용
+- **not-found.tsx**: 전역/지역 404 페이지 구분하여 사용
+- **template.tsx**: 페이지 전환 시 상태 초기화 필요한 경우에만 사용
+
+### 라우트 그룹 활용
+
+- **(admin)**: 관리자 전용 레이아웃 그룹
+- **(auth)**: 인증 관련 레이아웃 그룹
+- 각 그룹별로 독립적인 layout.tsx 구성
+
+## 폴더 구조 (모듈별 설계)
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (admin)/           # 관리자 라우트 그룹
+│   │   ├── layout.tsx     # 관리자 레이아웃
+│   │   ├── dashboard/     # 대시보드
+│   │   ├── golf-courses/  # 골프장 관리
+│   │   ├── caddies/       # 캐디 관리
+│   │   ├── fields/        # 필드 관리
+│   │   ├── works/         # 근무 관리
+│   │   ├── carts/         # 카트 관리
+│   │   ├── announcements/ # 공지사항 관리
+│   │   └── users/         # 사용자 관리
+│   ├── (auth)/            # 인증 라우트 그룹
+│   │   ├── layout.tsx     # 인증 레이아웃
+│   │   ├── login/         # 로그인 페이지
+│   │   └── register/      # 회원가입 페이지
+│   ├── layout.tsx         # 루트 레이아웃
+│   ├── loading.tsx        # 글로벌 로딩
+│   ├── error.tsx          # 글로벌 에러
+│   ├── not-found.tsx      # 글로벌 404
+│   └── page.tsx           # 홈 페이지
+├── modules/               # 비즈니스 모듈
+│   ├── dashboard/         # 대시보드 모듈
+│   ├── user/              # 사용자 관리 모듈
+│   ├── golf-course/       # 골프장 관리 모듈
+│   ├── caddie/            # 캐디 관리 모듈
+│   ├── field/             # 필드 관리 모듈
+│   ├── work/              # 근무 관리 모듈
+│   ├── cart/              # 카트 관리 모듈
+│   └── announcement/      # 공지사항 관리 모듈
+├── shared/                # 공통 요소
+│   ├── components/        # 재사용 가능한 컴포넌트
+│   │   ├── ui/           # 기본 UI 컴포넌트
+│   │   ├── forms/        # 폼 컴포넌트
+│   │   └── layout/       # 레이아웃 컴포넌트
+│   ├── hooks/            # 커스텀 훅
+│   ├── lib/              # 유틸리티 함수
+│   ├── types/            # 공통 타입 정의
+│   └── constants/        # 상수
+```
+
+**참고**: 각 페이지 폴더는 page.tsx, loading.tsx, error.tsx, not-found.tsx를 필요에 따라 포함
+
+## 스타일링 규칙
+
+- **Tailwind CSS** 사용
+- 커스텀 CSS는 최소화하고 필요시 CSS modules 사용
+- **1920px 기준 고정 설계** - 복잡한 반응형 대신 안정적인 레이아웃
+- 최대/최소 크기 제한으로 레이아웃 보호
+
+## 컬러 가이드
+
+- **Primary Color**: `#FEB912` (황금색)
+
+## 어드민 UI 컴포넌트
+
+- 사이드바 네비게이션
+- 헤더
+- 메인 콘텐트
+- 데이터 테이블 (정렬, 필터, 페이지네이션)
+- 폼 (유효성 검사, 에러 메시지)
+- 모달 (확인/취소, 데이터 입력)
+- 카드 레이아웃 (통계, 정보 표시)
+
+## 상태 관리 & 데이터 처리
+
+- 간단한 로컬 상태: `useState`
+- 복잡한 전역 상태: Zustand 사용
+- 서버 상태: React Query 사용
+- API 호출은 async/await 사용
+- 에러 핸들링 필수 (try-catch)
+- 로딩 상태 표시
+- 빈 데이터 상태 처리
+
+## 성능 최적화 & 보안
+
+- React.memo로 불필요한 리렌더링 방지
+- useMemo, useCallback 적절히 사용
+- 이미지 최적화 (Next.js Image 컴포넌트)
+- 코드 스플리팅 (동적 import)
+- 사용자 인증 상태 확인
+- 권한 기반 접근 제어
+- XSS 방지 (입력값 검증)
+
+## 커밋 규칙 (Conventional Commits)
+
+- **한글로 작성**, 명확하고 간결한 표현 사용
+- **타입(스코프): 메시지** 형식 사용
+- 제목은 50자 이내, 본문은 72자 단위로 줄바꿈
+
+### 커밋 타입
+
+- `feat`: 새로운 기능 추가
+- `fix`: 버그 수정
+- `refactor`: 코드 리팩토링 (기능 변경 없음)
+- `style`: 코드 스타일 변경 (포맷팅, 세미콜론 등)
+- `docs`: 문서 수정
+- `test`: 테스트 코드 추가/수정
+- `chore`: 빌드 프로세스, 패키지 관리 등
+
+### 스코프 (모듈별)
+
+- `auth`: 인증 관련
+- `dashboard`: 대시보드 관련
+- `golf-courses`: 골프장 관리
+- `caddies`: 캐디 관리
+- `fields`: 필드 관리
+- `works`: 근무 관리
+- `carts`: 카트 관리
+- `announcements`: 공지사항 관리
+- `users`: 사용자 관리
+- `shared`: 공통 컴포넌트/유틸리티
+
+### 커밋 메시지 예시
+
+```
+feat(caddies): 캐디 프로필 관리 페이지 추가
+fix(dashboard): 대시보드 차트 렌더링 오류 수정
+refactor(shared): 테이블 컴포넌트 재사용성 개선
+style(auth): 로그인 폼 레이아웃 스타일 정리
+docs(readme): 설치 가이드 문서 업데이트
+chore(deps): 패키지 의존성 업데이트
+feat(golf-courses): 골프장 정보 등록 기능 추가
+fix(works): 근무 스케줄 저장 버그 수정
+```
+
+## 금지사항
+
+- 인라인 스타일 사용 금지
+- any 타입 사용 최소화
+- console.log 프로덕션 코드에 남기지 않기
+- 하드코딩된 값 사용 금지 (상수화)
+- 상대 경로 import 사용 금지
+
+## 추천 패키지
+
+- lucide-react : 아이콘
+- react-hook-form + zod : 폼 관리 및 검증
+- date-fns : 날짜 처리
+- zustand + @tanstack/react-query : 상태 관리
