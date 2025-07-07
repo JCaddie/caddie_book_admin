@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { TextField } from "@/shared/components/ui";
+import { User } from "@/shared/types";
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
@@ -11,14 +13,15 @@ const TEST_ACCOUNTS = [
     name: "개발사 관리자",
     email: "dev@example.com",
     password: "dev123",
-    role: "DEVELOPER",
+    role: "DEVELOPER" as const,
   },
   {
     id: "2",
     name: "골프장 관리자",
     email: "golf@example.com",
     password: "golf123",
-    role: "BRANCH",
+    role: "BRANCH" as const,
+    golfCourseId: "golf-course-1",
   },
 ];
 
@@ -28,7 +31,31 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  // 이미 인증된 사용자는 대시보드로 리디렉션
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      console.log("로그인 페이지: 인증된 사용자 감지, 대시보드로 리디렉션");
+      // 약간의 지연을 주어 상태 업데이트가 확실히 완료되도록 함
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 100);
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // 로딩 중이면 로딩 화면 표시
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FEB912] mx-auto"></div>
+          <p className="mt-4 text-gray-600">인증 확인 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 미들웨어에서 인증 상태에 따른 리다이렉트를 처리하므로
   // 클라이언트에서 별도의 인증 체크는 불필요
@@ -58,15 +85,21 @@ export default function LoginPage() {
         const token = `mock-token-${account.id}-${Date.now()}`;
         console.log("토큰 생성:", token);
 
-        login(token);
-        console.log("로그인 함수 호출 완료");
+        // 사용자 정보 생성
+        const user: User = {
+          id: account.id,
+          name: account.name,
+          email: account.email,
+          role: account.role,
+          golfCourseId: account.golfCourseId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
 
-        // 쿠키 설정 후 잠시 기다린 다음 새로고침
-        setTimeout(() => {
-          console.log("현재 쿠키:", document.cookie);
-          console.log("페이지 새로고침으로 미들웨어 트리거");
-          window.location.href = "/dashboard";
-        }, 100);
+        // 로그인 함수 호출 (토큰과 사용자 정보 함께 전달)
+        console.log("로그인 함수 호출 전 - 사용자 정보:", user);
+        login(token, user);
+        console.log("로그인 함수 호출 완료");
       } else {
         setError("이메일 또는 비밀번호가 잘못되었습니다.");
       }
@@ -100,15 +133,21 @@ export default function LoginPage() {
         const token = `mock-token-${account.id}-${Date.now()}`;
         console.log("테스트 계정 토큰 생성:", token);
 
-        login(token);
-        console.log("테스트 계정 로그인 함수 호출 완료");
+        // 사용자 정보 생성
+        const user: User = {
+          id: account.id,
+          name: account.name,
+          email: account.email,
+          role: account.role,
+          golfCourseId: account.golfCourseId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
 
-        // 쿠키 설정 후 잠시 기다린 다음 새로고침
-        setTimeout(() => {
-          console.log("테스트 계정 현재 쿠키:", document.cookie);
-          console.log("테스트 계정 페이지 새로고침으로 미들웨어 트리거");
-          window.location.href = "/dashboard";
-        }, 100);
+        // 로그인 함수 호출 (토큰과 사용자 정보 함께 전달)
+        console.log("테스트 계정 로그인 함수 호출 전 - 사용자 정보:", user);
+        login(token, user);
+        console.log("테스트 계정 로그인 함수 호출 완료");
       } else {
         setError("계정 정보를 찾을 수 없습니다.");
       }
@@ -188,7 +227,8 @@ export default function LoginPage() {
                   onClick={() =>
                     handleTestAccountLogin(account.email, account.password)
                   }
-                  className="bg-[#FEB912] hover:bg-[#E5A50F] text-white font-medium py-1 px-3 rounded text-sm transition-colors"
+                  disabled={isSubmitting}
+                  className="bg-[#FEB912] hover:bg-[#E5A50F] disabled:bg-gray-300 text-white font-medium py-1 px-3 rounded text-sm transition-colors"
                 >
                   사용
                 </button>

@@ -203,7 +203,7 @@ const CaddieListPage: React.FC = () => {
       {/* 메인 콘텐츠 영역 */}
       <div className="bg-white rounded-xl flex-1 flex flex-col">
         {/* 헤더 영역 - 메인 콘텐츠 내부로 이동 */}
-        <div className="p-8 border-b">
+        <div className="p-8">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-black">캐디 리스트</h1>
             <button className="flex items-center gap-1 bg-[#FEB912] text-white font-medium text-base px-4 py-2 rounded-md hover:bg-[#E5A50F] transition-colors">
@@ -214,7 +214,7 @@ const CaddieListPage: React.FC = () => {
         </div>
 
         {/* 필터 영역 - Figma 디자인에 맞춤 */}
-        <div className="p-8 border-b">
+        <div className="p-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-base font-bold text-black">

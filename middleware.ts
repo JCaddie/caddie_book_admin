@@ -1,6 +1,30 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+// 토큰 유효성 검증 함수
+function validateToken(token: string): boolean {
+  try {
+    // 목 토큰 검증 (실제 구현에서는 JWT 검증)
+    const parts = token.split("-");
+    if (parts.length < 3) return false;
+
+    const tokenType = parts[0];
+    const prefix = parts[1];
+    const userId = parts[2];
+
+    // 기본 형식 검증
+    if (tokenType !== "mock" || prefix !== "token") return false;
+
+    // 사용자 ID 검증 (테스트 환경에서는 1, 2만 유효)
+    if (!["1", "2"].includes(userId)) return false;
+
+    return true;
+  } catch (error) {
+    console.error("토큰 검증 에러:", error);
+    return false;
+  }
+}
+
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token");
   const { pathname } = request.nextUrl;
@@ -33,27 +57,57 @@ export function middleware(request: NextRequest) {
   // 관리자 페이지 접근 시 인증 체크
   if (isProtectedRoute) {
     if (!token) {
-      console.log("인증되지 않은 사용자 -> 로그인 페이지로 리다이렉트");
-      // 인증되지 않은 경우 로그인 페이지로 리다이렉트
+      console.log("토큰 없음 -> 로그인 페이지로 리다이렉트");
       return NextResponse.redirect(new URL("/login", request.url));
     }
-    console.log("인증된 사용자 -> 관리자 페이지 접근 허용");
+
+    // 토큰 유효성 검증
+    if (!validateToken(token.value)) {
+      console.log("유효하지 않은 토큰 -> 로그인 페이지로 리다이렉트");
+      // 유효하지 않은 토큰 쿠키 삭제
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.delete("auth_token");
+      response.cookies.delete("user_data");
+      return response;
+    }
+
+    console.log("유효한 토큰 -> 관리자 페이지 접근 허용");
   }
 
   // 로그인 페이지에 인증된 상태로 접근 시 대시보드로 리다이렉트
   if (isPublicRoute && token) {
-    console.log("인증된 사용자가 로그인 페이지 접근 -> 대시보드로 리다이렉트");
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    // 토큰이 있어도 유효성 검증
+    if (validateToken(token.value)) {
+      console.log(
+        "유효한 토큰으로 로그인 페이지 접근 -> 대시보드로 리다이렉트"
+      );
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    } else {
+      console.log("유효하지 않은 토큰 -> 쿠키 삭제 후 로그인 페이지 유지");
+      // 유효하지 않은 토큰 쿠키 삭제
+      const response = NextResponse.next();
+      response.cookies.delete("auth_token");
+      response.cookies.delete("user_data");
+      return response;
+    }
   }
 
   // 홈페이지(/) 접근 시 인증 상태에 따라 리다이렉트
   if (pathname === "/") {
-    if (token) {
-      console.log("홈페이지 접근 (인증됨) -> 대시보드로 리다이렉트");
+    if (token && validateToken(token.value)) {
+      console.log("홈페이지 접근 (유효한 토큰) -> 대시보드로 리다이렉트");
       return NextResponse.redirect(new URL("/dashboard", request.url));
     } else {
-      console.log("홈페이지 접근 (미인증) -> 로그인 페이지로 리다이렉트");
-      return NextResponse.redirect(new URL("/login", request.url));
+      console.log(
+        "홈페이지 접근 (미인증 또는 유효하지 않은 토큰) -> 로그인 페이지로 리다이렉트"
+      );
+      // 유효하지 않은 토큰이 있다면 삭제
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      if (token && !validateToken(token.value)) {
+        response.cookies.delete("auth_token");
+        response.cookies.delete("user_data");
+      }
+      return response;
     }
   }
 
