@@ -121,20 +121,15 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
     startIndex + itemsPerPage
   );
 
-  // 테이블 컬럼 정의
+  // 테이블 컬럼 정의 - Figma 디자인 기반 유연한 레이아웃
   const workColumns = [
     { key: "no", title: "No.", width: 48, align: "center" as const },
     { key: "date", title: "일자", width: 160, align: "center" as const },
-    { key: "time", title: "시간", width: 100, align: "center" as const },
-    { key: "field", title: "필드", width: 150, align: "center" as const },
-    { key: "group", title: "그룹", width: 100, align: "center" as const },
-    {
-      key: "groupOrder",
-      title: "그룹 순서",
-      width: 120,
-      align: "center" as const,
-    },
-    { key: "cart", title: "카트", width: 100, align: "center" as const },
+    { key: "time", title: "시간", align: "center" as const }, // flex
+    { key: "field", title: "필드", align: "center" as const }, // flex
+    { key: "group", title: "조", align: "center" as const }, // flex
+    { key: "groupOrder", title: "조 순서", align: "center" as const }, // flex
+    { key: "cart", title: "카트", align: "center" as const }, // flex
   ];
 
   const handlePageChange = (page: number) => {
@@ -299,11 +294,13 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
             <h2 className="text-xl font-bold text-gray-600">배정 근무</h2>
             <div className="space-y-6">
               {/* 테이블 */}
-              <div className="border border-gray-200 rounded-md overflow-hidden">
+              <div className="flex justify-center">
                 <DataTable
                   columns={workColumns}
                   data={currentWorkHistory}
                   onRowClick={() => {}}
+                  layout="flexible"
+                  containerWidth="auto"
                 />
               </div>
 

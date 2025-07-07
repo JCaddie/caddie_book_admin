@@ -260,13 +260,15 @@ const CaddieListPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 테이블 영역 - 고정 너비 1504px */}
+        {/* 테이블 영역 */}
         <div className="flex-1 p-8 pt-0">
           <div className="mt-6 flex justify-center">
             <DataTable
               columns={columns}
               data={paddedCaddies}
               onRowClick={handleRowClick}
+              layout="fixed"
+              containerWidth={1504}
             />
           </div>
         </div>
