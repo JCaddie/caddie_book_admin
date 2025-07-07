@@ -1,30 +1,70 @@
 "use client";
 
+import React from "react";
 import RoleGuard from "@/shared/components/auth/role-guard";
-import { Button, Search, Badge, DataTable } from "@/shared/components/ui";
+import { Button, Search } from "@/shared/components/ui";
+import {
+  AdminPageHeader,
+  TableWithPagination,
+} from "@/shared/components/layout";
+import {
+  usePagination,
+  useTableData,
+  defaultCellRenderer,
+  TableItem,
+} from "@/shared/hooks";
 
 // 골프장 데이터 타입
-interface GolfCourse extends Record<string, unknown> {
-  id: string;
+interface GolfCourse extends TableItem {
   no: number;
   name: string;
   region: string;
-  holes: string;
-  registrationDate: string;
-  status: string;
+  contractStatus: string;
+  phone: string;
+  membershipType: string;
+  caddies: number;
+  fields: number;
 }
 
 const GolfCoursesPage: React.FC = () => {
   // 샘플 데이터 (실제로는 API에서 가져옴)
-  const golfCourses: GolfCourse[] = Array.from({ length: 20 }, (_, index) => ({
-    id: `golf-${index + 1}`,
-    no: index + 1,
-    name: `골프장 ${index + 1}`,
-    region: "경기도",
-    holes: "18홀",
-    registrationDate: `2024.01.${10 + (index % 20)}`,
-    status: "운영중",
-  }));
+  const allGolfCourses: GolfCourse[] = Array.from(
+    { length: 32 },
+    (_, index) => ({
+      id: `golf-${index + 1}`,
+      no: index + 1,
+      name: "제이캐디 아카데미",
+      region: "서울시 종로구",
+      contractStatus: "완료",
+      phone: "02-1111-2222",
+      membershipType: "회원제",
+      caddies: 6,
+      fields: 32,
+    })
+  );
+
+  // 페이지네이션 훅 사용
+  const { currentPage, totalPages, currentData, handlePageChange } =
+    usePagination({
+      data: allGolfCourses,
+      itemsPerPage: 20,
+    });
+
+  // 테이블 데이터 패딩 훅 사용
+  const { paddedData } = useTableData({
+    data: currentData,
+    itemsPerPage: 20,
+    emptyRowTemplate: {
+      no: 0,
+      name: "",
+      region: "",
+      contractStatus: "",
+      phone: "",
+      membershipType: "",
+      caddies: 0,
+      fields: 0,
+    },
+  });
 
   // 테이블 컬럼 정의
   const columns = [
@@ -33,100 +73,93 @@ const GolfCoursesPage: React.FC = () => {
       title: "No.",
       width: 80,
       align: "center" as const,
+      render: defaultCellRenderer<GolfCourse>,
     },
     {
       key: "name",
       title: "골프장명",
       width: 200,
-      align: "center" as const,
+      align: "left" as const,
+      render: defaultCellRenderer<GolfCourse>,
     },
     {
       key: "region",
-      title: "지역",
+      title: "시/구",
       align: "center" as const,
+      render: defaultCellRenderer<GolfCourse>,
     },
     {
-      key: "holes",
-      title: "홀 수",
+      key: "contractStatus",
+      title: "계약 현황",
       align: "center" as const,
+      render: defaultCellRenderer<GolfCourse>,
     },
     {
-      key: "registrationDate",
-      title: "등록일",
-      align: "center" as const,
-    },
-    {
-      key: "status",
-      title: "상태",
-      width: 100,
-      align: "center" as const,
-      render: (value: unknown) => (
-        <Badge variant="green">{String(value)}</Badge>
-      ),
-    },
-    {
-      key: "actions",
-      title: "관리",
+      key: "phone",
+      title: "대표 번호",
       width: 150,
       align: "center" as const,
-      render: () => (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-blue-600 hover:text-blue-900"
-          >
-            수정
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-red-600 hover:text-red-900"
-          >
-            삭제
-          </Button>
-        </div>
-      ),
+      render: defaultCellRenderer<GolfCourse>,
+    },
+    {
+      key: "membershipType",
+      title: "회원제/퍼블릭",
+      align: "center" as const,
+      render: defaultCellRenderer<GolfCourse>,
+    },
+    {
+      key: "caddies",
+      title: "캐디",
+      width: 80,
+      align: "center" as const,
+      render: defaultCellRenderer<GolfCourse>,
+    },
+    {
+      key: "fields",
+      title: "필드",
+      width: 80,
+      align: "center" as const,
+      render: defaultCellRenderer<GolfCourse>,
     },
   ];
 
   const handleRowClick = (record: GolfCourse) => {
+    // 빈 행인 경우 클릭 이벤트 무시
+    if (record.isEmpty) {
+      return;
+    }
     console.log("골프장 상세:", record);
     // 실제로는 상세 페이지로 이동
   };
+
+  // 헤더 액션 컴포넌트
+  const headerAction = (
+    <>
+      <Search placeholder="검색어 입력" containerClassName="w-80" />
+      <Button variant="primary" size="md">
+        생성
+      </Button>
+    </>
+  );
+
   return (
     <RoleGuard requiredRole="DEVELOPER">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">골프장 관리</h2>
-          <p className="text-gray-600 mt-2">
-            등록된 골프장을 관리할 수 있습니다. (개발사 권한 전용)
-          </p>
-        </div>
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader
+          title="골프장 리스트"
+          totalCount={allGolfCourses.length}
+          action={headerAction}
+        />
 
-        {/* 골프장 추가 버튼 */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Search placeholder="골프장 검색..." containerClassName="w-64" />
-            <Button variant="secondary" size="md">
-              검색
-            </Button>
-          </div>
-          <Button variant="primary" size="md">
-            새 골프장 추가
-          </Button>
-        </div>
-
-        {/* 골프장 목록 - DataTable 사용 */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">등록된 골프장</h3>
-          <DataTable
-            columns={columns}
-            data={golfCourses}
-            onRowClick={handleRowClick}
-            maxHeight={600}
-          />
-        </div>
+        <TableWithPagination
+          columns={columns}
+          data={paddedData}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onRowClick={handleRowClick}
+          layout="flexible"
+        />
       </div>
     </RoleGuard>
   );
