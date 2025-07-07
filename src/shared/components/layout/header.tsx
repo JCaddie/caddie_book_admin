@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import LogoutModal from "@/shared/components/ui/logout-modal";
 
 const Header: React.FC = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleMyInfo = () => {
@@ -21,7 +23,8 @@ const Header: React.FC = () => {
   const handleLogoutConfirm = () => {
     logout();
     setIsLogoutModalOpen(false);
-    // 미들웨어에서 자동으로 로그인 페이지로 리다이렉트 처리됨
+    // 로그아웃 후 로그인 페이지로 리디렉션
+    router.push("/login");
   };
 
   const handleLogoutCancel = () => {
@@ -34,9 +37,21 @@ const Header: React.FC = () => {
         className="w-full bg-white border-b flex items-center justify-between px-9"
         style={{ height: "72px", borderBottomColor: "#DDDDDD" }}
       >
-        {/* 좌측 - Admin 텍스트 */}
-        <div className="flex items-center">
-          <span className="text-black font-medium text-lg">Admin</span>
+        {/* 좌측 - 사용자 정보 */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">
+                {user?.name.charAt(0) || "U"}
+              </span>
+            </div>
+            <div>
+              <p className="text-gray-900 font-medium text-sm">{user?.name}</p>
+              <p className="text-gray-500 text-xs">
+                {user?.role === "DEVELOPER" ? "개발사 관리자" : "골프장 관리자"}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* 우측 - 내 정보, 로그아웃 */}
