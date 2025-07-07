@@ -21,6 +21,7 @@ const Header: React.FC = () => {
   const handleLogoutConfirm = () => {
     logout();
     setIsLogoutModalOpen(false);
+    // 미들웨어에서 자동으로 로그인 페이지로 리다이렉트 처리됨
   };
 
   const handleLogoutCancel = () => {

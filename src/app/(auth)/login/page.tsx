@@ -1,9 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useAuth } from "@/shared/hooks/use-auth";
-import { Button, TextField } from "@/shared/components/ui";
+import { TextField } from "@/shared/components/ui";
+
+// 테스트 계정 데이터
+const TEST_ACCOUNTS = [
+  {
+    id: "1",
+    name: "개발사 관리자",
+    email: "dev@example.com",
+    password: "dev123",
+    role: "DEVELOPER",
+  },
+  {
+    id: "2",
+    name: "골프장 관리자",
+    email: "golf@example.com",
+    password: "golf123",
+    role: "BRANCH",
+  },
+];
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,18 +28,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, isAuthenticated, testAccounts } = useAuth();
-  const router = useRouter();
+  const { login } = useAuth();
 
-  // 이미 로그인된 경우 대시보드로 리다이렉션
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    }
-  }, [isAuthenticated, router]);
+  // 미들웨어에서 인증 상태에 따른 리다이렉트를 처리하므로
+  // 클라이언트에서 별도의 인증 체크는 불필요
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("로그인 시도:", { email, password });
 
     if (!email || !password) {
       setError("이메일과 비밀번호를 모두 입력해주세요.");
@@ -33,14 +46,32 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await login(email, password);
+      // 테스트 계정 확인
+      const account = TEST_ACCOUNTS.find(
+        (acc) => acc.email === email && acc.password === password
+      );
 
-      if (result.success) {
-        router.push("/dashboard");
+      console.log("계정 찾기 결과:", account);
+
+      if (account) {
+        // 간단한 토큰 생성 (실제로는 서버에서 발급받음)
+        const token = `mock-token-${account.id}-${Date.now()}`;
+        console.log("토큰 생성:", token);
+
+        login(token);
+        console.log("로그인 함수 호출 완료");
+
+        // 쿠키 설정 후 잠시 기다린 다음 새로고침
+        setTimeout(() => {
+          console.log("현재 쿠키:", document.cookie);
+          console.log("페이지 새로고침으로 미들웨어 트리거");
+          window.location.href = "/dashboard";
+        }, 100);
       } else {
-        setError(result.message);
+        setError("이메일 또는 비밀번호가 잘못되었습니다.");
       }
-    } catch {
+    } catch (error) {
+      console.error("로그인 에러:", error);
       setError("로그인 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
@@ -51,20 +82,38 @@ export default function LoginPage() {
     testEmail: string,
     testPassword: string
   ) => {
+    console.log("테스트 계정 로그인:", { testEmail, testPassword });
+
     setEmail(testEmail);
     setPassword(testPassword);
     setError("");
     setIsSubmitting(true);
 
     try {
-      const result = await login(testEmail, testPassword);
+      const account = TEST_ACCOUNTS.find(
+        (acc) => acc.email === testEmail && acc.password === testPassword
+      );
 
-      if (result.success) {
-        router.push("/dashboard");
+      console.log("테스트 계정 찾기 결과:", account);
+
+      if (account) {
+        const token = `mock-token-${account.id}-${Date.now()}`;
+        console.log("테스트 계정 토큰 생성:", token);
+
+        login(token);
+        console.log("테스트 계정 로그인 함수 호출 완료");
+
+        // 쿠키 설정 후 잠시 기다린 다음 새로고침
+        setTimeout(() => {
+          console.log("테스트 계정 현재 쿠키:", document.cookie);
+          console.log("테스트 계정 페이지 새로고침으로 미들웨어 트리거");
+          window.location.href = "/dashboard";
+        }, 100);
       } else {
-        setError(result.message);
+        setError("계정 정보를 찾을 수 없습니다.");
       }
-    } catch {
+    } catch (error) {
+      console.error("테스트 계정 로그인 에러:", error);
       setError("로그인 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
@@ -108,16 +157,13 @@ export default function LoginPage() {
           showVisibilityToggle={true}
         />
 
-        <Button
+        <button
           type="submit"
           disabled={isSubmitting}
-          loading={isSubmitting}
-          variant="primary"
-          size="md"
-          className="w-full"
+          className="w-full bg-[#FEB912] hover:bg-[#E5A50F] disabled:bg-gray-300 text-white font-medium py-2 px-4 rounded-md transition-colors"
         >
-          로그인
-        </Button>
+          {isSubmitting ? "로그인 중..." : "로그인"}
+        </button>
       </form>
 
       {/* 테스트 계정 섹션 */}
@@ -126,7 +172,7 @@ export default function LoginPage() {
           테스트 계정
         </h3>
         <div className="space-y-3">
-          {testAccounts.map((account, index) => (
+          {TEST_ACCOUNTS.map((account, index) => (
             <div key={index} className="bg-gray-50 p-4 rounded-lg">
               <div className="flex justify-between items-center">
                 <div>
@@ -137,16 +183,15 @@ export default function LoginPage() {
                     {account.role === "DEVELOPER" ? "개발사" : "골프장"}
                   </p>
                 </div>
-                <Button
+                <button
                   type="button"
                   onClick={() =>
                     handleTestAccountLogin(account.email, account.password)
                   }
-                  variant="primary"
-                  size="sm"
+                  className="bg-[#FEB912] hover:bg-[#E5A50F] text-white font-medium py-1 px-3 rounded text-sm transition-colors"
                 >
                   사용
-                </Button>
+                </button>
               </div>
             </div>
           ))}
