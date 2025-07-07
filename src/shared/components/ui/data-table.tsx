@@ -6,7 +6,8 @@ import React from "react";
 interface Column<T> {
   key: keyof T | string;
   title: string;
-  width?: number; // px 고정값만 사용
+  width?: number; // px 고정값
+  flex?: boolean; // flex 1로 설정할지 여부
   align?: "left" | "center" | "right";
   render?: (value: unknown, record: T, index: number) => React.ReactNode;
 }
@@ -20,6 +21,8 @@ interface DataTableProps<T> {
   className?: string;
   maxHeight?: number | string;
   emptyText?: string;
+  layout?: "fixed" | "flexible"; // 레이아웃 모드
+  containerWidth?: number | "auto"; // 컨테이너 너비
 }
 
 // 빈 행 체크 함수
@@ -35,27 +38,41 @@ function DataTable<T extends Record<string, unknown>>({
   className,
   maxHeight = "auto",
   emptyText = "데이터가 없습니다",
+  layout = "flexible",
+  containerWidth = "auto",
 }: DataTableProps<T>) {
-  // 테이블 전체 너비: Figma 스펙에 맞춰 1504px 고정
-  const tableWidth = 1504;
+  // 테이블 너비 계산
+  const calculateContainerWidth = () => {
+    if (containerWidth === "auto") {
+      if (layout === "fixed") {
+        // 고정 레이아웃: 컬럼들의 지정된 너비 합계
+        const totalWidth = columns.reduce((sum, col) => {
+          return sum + (col.width || 120); // 기본 120px
+        }, 0);
+        return Math.max(totalWidth, 600); // 최소 600px
+      } else {
+        // 유연한 레이아웃: 컨테이너에 맞춤
+        return "100%";
+      }
+    }
+    return containerWidth;
+  };
+
+  const tableContainerWidth = calculateContainerWidth();
 
   // 컬럼 스타일 계산
   const getColumnStyle = (column: Column<T>) => {
-    if (column.width) {
-      return { width: `${column.width}px`, flexShrink: 0 };
+    if (layout === "fixed") {
+      // 고정 레이아웃: 지정된 너비 사용
+      const width = column.width || 120;
+      return { width: `${width}px`, flexShrink: 0 };
+    } else {
+      // 유연한 레이아웃: flex 기반
+      if (column.width) {
+        return { width: `${column.width}px`, flexShrink: 0 };
+      }
+      return { flex: 1, minWidth: "80px" };
     }
-    // width가 지정되지 않은 컬럼들은 남은 공간을 균등 분배
-    const fixedWidthColumns = columns.filter((col) => col.width);
-    const totalFixedWidth = fixedWidthColumns.reduce(
-      (sum, col) => sum + (col.width || 0),
-      0
-    );
-    const remainingWidth = tableWidth - totalFixedWidth;
-    const flexColumns = columns.filter((col) => !col.width);
-    const flexWidth =
-      flexColumns.length > 0 ? remainingWidth / flexColumns.length : 0;
-
-    return { width: `${flexWidth}px`, flexShrink: 0 };
   };
 
   // 셀 값 추출
@@ -100,8 +117,13 @@ function DataTable<T extends Record<string, unknown>>({
   if (loading) {
     return (
       <div
-        className="bg-white rounded-md border"
-        style={{ width: `${tableWidth}px` }}
+        className="bg-white rounded-md border border-gray-200"
+        style={{
+          width:
+            typeof tableContainerWidth === "number"
+              ? `${tableContainerWidth}px`
+              : tableContainerWidth,
+        }}
       >
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -113,32 +135,40 @@ function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div
-      className={["overflow-hidden rounded-md", className]
+      className={[
+        "overflow-hidden rounded-md border border-gray-200",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
       style={{
-        width: `${tableWidth}px`,
+        width:
+          typeof tableContainerWidth === "number"
+            ? `${tableContainerWidth}px`
+            : tableContainerWidth,
         maxHeight,
       }}
     >
       {/* 헤더 - Figma 스펙: #F7F7F7 */}
       <div style={{ backgroundColor: "#F7F7F7" }}>
         <div
-          className="flex items-stretch min-h-[40px]"
-          style={{ width: `${tableWidth}px` }}
+          className={[
+            "flex items-stretch min-h-[40px] px-4 py-2",
+            layout === "flexible" ? "justify-between gap-8" : "gap-4",
+          ].join(" ")}
         >
           {columns.map((column, index) => (
             <div
               key={`header-${index}`}
-              className="flex items-center justify-center px-2 py-2"
+              className="flex items-center justify-center"
               style={getColumnStyle(column)}
             >
               <span
-                className="text-center truncate"
+                className="text-center truncate font-bold"
                 style={{
-                  fontSize: "15px",
-                  fontWeight: 700,
+                  fontSize: "13px",
                   color: "rgba(0, 0, 0, 0.6)",
+                  lineHeight: "1.85",
                 }}
               >
                 {column.title}
@@ -162,7 +192,8 @@ function DataTable<T extends Record<string, unknown>>({
               <div
                 key={rowIndex}
                 className={[
-                  "flex items-stretch min-h-[40px] transition-colors",
+                  "flex items-stretch min-h-[40px] px-4 py-2 transition-colors",
+                  layout === "flexible" ? "justify-between gap-8" : "gap-4",
                   // 빈 행이 아니고 클릭 이벤트가 있는 경우에만 hover 효과
                   !isEmpty && onRowClick
                     ? "hover:bg-primary-50 cursor-pointer"
@@ -173,7 +204,6 @@ function DataTable<T extends Record<string, unknown>>({
                 style={{
                   // Figma 스펙: 홀수/짝수 행 색상 (zebra stripe)
                   backgroundColor: rowIndex % 2 === 0 ? "#FFFFFF" : "#FAFAFA",
-                  width: `${tableWidth}px`,
                 }}
                 onClick={() => {
                   // 빈 행이 아닌 경우에만 클릭 이벤트 실행
@@ -186,7 +216,7 @@ function DataTable<T extends Record<string, unknown>>({
                   <div
                     key={`cell-${rowIndex}-${colIndex}`}
                     className={[
-                      "flex items-center px-2 py-2",
+                      "flex items-center",
                       column.align === "left"
                         ? "justify-start"
                         : column.align === "right"
@@ -196,12 +226,19 @@ function DataTable<T extends Record<string, unknown>>({
                     style={getColumnStyle(column)}
                   >
                     <div
-                      className="w-full text-center"
+                      className={[
+                        "w-full",
+                        column.align === "left"
+                          ? "text-left"
+                          : column.align === "right"
+                          ? "text-right"
+                          : "text-center",
+                      ].join(" ")}
                       style={{
-                        fontSize: "15px",
+                        fontSize: "13px",
                         fontWeight: 500,
                         color: "rgba(0, 0, 0, 0.8)",
-                        lineHeight: "1.6",
+                        lineHeight: "1.85",
                       }}
                     >
                       {renderCell(record, column, rowIndex)}

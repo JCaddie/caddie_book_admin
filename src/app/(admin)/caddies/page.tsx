@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Dropdown,
@@ -28,6 +29,7 @@ interface CaddieWithEmpty extends Caddie {
 }
 
 const CaddieListPage: React.FC = () => {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWork, setSelectedWork] = useState("근무");
@@ -156,14 +158,14 @@ const CaddieListPage: React.FC = () => {
   ];
 
   // 행 클릭 핸들러
-  const handleRowClick = (caddie: CaddieWithEmpty, index: number) => {
+  const handleRowClick = (caddie: CaddieWithEmpty) => {
     // 빈 행인 경우 클릭 이벤트 무시
     if (caddie.isEmpty) {
       return;
     }
 
-    console.log("캐디 선택:", caddie, "인덱스:", index);
-    // 상세 페이지로 이동하거나 모달을 열 수 있음
+    // 상세 페이지로 이동
+    router.push(`/caddies/${caddie.id}`);
   };
 
   const handlePageChange = (page: number) => {
@@ -258,13 +260,15 @@ const CaddieListPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 테이블 영역 - 고정 너비 1504px */}
+        {/* 테이블 영역 */}
         <div className="flex-1 p-8 pt-0">
           <div className="mt-6 flex justify-center">
             <DataTable
               columns={columns}
               data={paddedCaddies}
               onRowClick={handleRowClick}
+              layout="fixed"
+              containerWidth={1504}
             />
           </div>
         </div>
