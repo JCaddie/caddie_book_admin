@@ -196,7 +196,14 @@ function DataTable<T extends Record<string, unknown>>({
                     style={getColumnStyle(column)}
                   >
                     <div
-                      className="w-full text-center"
+                      className={[
+                        "w-full",
+                        column.align === "left"
+                          ? "text-left"
+                          : column.align === "right"
+                          ? "text-right"
+                          : "text-center",
+                      ].join(" ")}
                       style={{
                         fontSize: "15px",
                         fontWeight: 500,
