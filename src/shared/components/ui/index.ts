@@ -6,3 +6,4 @@ export { default as TextField } from "./text-field";
 export { default as Dropdown } from "./dropdown";
 export { default as Badge } from "./badge";
 export { default as DataTable } from "./data-table";
+export { default as Pagination } from "./pagination";
