@@ -2,17 +2,16 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { Search, Dropdown } from "@/shared/components/ui";
 import {
-  Search,
-  Dropdown,
-  DataTable,
-  Pagination,
-} from "@/shared/components/ui";
+  AdminPageHeader,
+  TableWithPagination,
+} from "@/shared/components/layout";
+import { usePagination, TableItem } from "@/shared/hooks";
 import { UserPlus, Trash2 } from "lucide-react";
 
 // 캐디 데이터 타입 (Figma 디자인에 맞춤)
-interface Caddie extends Record<string, unknown> {
-  id: string;
+interface Caddie extends TableItem {
   no: number;
   name: string;
   gender: string;
@@ -25,7 +24,6 @@ interface Caddie extends Record<string, unknown> {
 
 const CaddieListPage: React.FC = () => {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWork, setSelectedWork] = useState("근무");
   const [selectedGroup, setSelectedGroup] = useState("조");
@@ -67,14 +65,12 @@ const CaddieListPage: React.FC = () => {
     });
   }, [allCaddies, searchTerm, selectedWork, selectedGroup]);
 
-  // 페이지네이션 계산
-  const itemsPerPage = 20;
-  const totalPages = Math.ceil(filteredCaddies.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentCaddies = filteredCaddies.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  // 페이지네이션 훅 사용
+  const { currentPage, totalPages, currentData, handlePageChange } =
+    usePagination({
+      data: filteredCaddies,
+      itemsPerPage: 20,
+    });
 
   // 테이블 컬럼 정의 (적절한 너비로 조정 - 총 1320px)
   const columns = [
@@ -134,10 +130,6 @@ const CaddieListPage: React.FC = () => {
     router.push(`/caddies/${caddie.id}`);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   const handleDeleteSelected = () => {
     console.log("삭제 기능 구현");
     // 실제 삭제 로직 구현
@@ -161,81 +153,77 @@ const CaddieListPage: React.FC = () => {
     { value: "4조", label: "4조" },
   ];
 
-  return (
-    <div className="bg-white rounded-xl p-8 space-y-6">
-      {/* 헤더 영역 */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-black">캐디 리스트</h1>
-        <button className="flex items-center gap-1 bg-[#FEB912] text-white font-medium text-base px-4 py-2 rounded-md hover:bg-[#E5A50F] transition-colors">
-          <UserPlus size={24} />
-          소속 요청
-        </button>
+  // 헤더 액션 컴포넌트 (우측)
+  const headerAction = (
+    <button className="flex items-center gap-1 bg-[#FEB912] text-white font-medium text-base px-4 py-2 rounded-md hover:bg-[#E5A50F] transition-colors">
+      <UserPlus size={24} />
+      소속 요청
+    </button>
+  );
+
+  // 필터 영역 컴포넌트
+  const filterArea = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <span className="text-base font-bold text-black">
+          총 {filteredCaddies.length}건
+        </span>
       </div>
 
-      {/* 필터 영역 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-base font-bold text-black">
-            총 {filteredCaddies.length}건
-          </span>
-        </div>
+      <div className="flex items-center gap-8">
+        {/* 삭제 버튼 */}
+        <button
+          onClick={handleDeleteSelected}
+          className="flex items-center gap-2 text-[13px] font-medium text-black opacity-60 cursor-not-allowed hover:text-gray-600 transition-colors"
+        >
+          <Trash2 size={16} />
+          삭제
+        </button>
 
+        {/* 필터 컨트롤들 */}
         <div className="flex items-center gap-8">
-          {/* 삭제 버튼 */}
-          <button
-            onClick={handleDeleteSelected}
-            className="flex items-center gap-2 text-[13px] font-medium text-black opacity-60 cursor-not-allowed hover:text-gray-600 transition-colors"
-          >
-            <Trash2 size={16} />
-            삭제
-          </button>
+          <Dropdown
+            options={workOptions}
+            value={selectedWork}
+            onChange={setSelectedWork}
+            placeholder="근무"
+          />
 
-          {/* 필터 컨트롤들 */}
-          <div className="flex items-center gap-8">
-            <Dropdown
-              options={workOptions}
-              value={selectedWork}
-              onChange={setSelectedWork}
-              placeholder="근무"
+          <Dropdown
+            options={groupOptions}
+            value={selectedGroup}
+            onChange={setSelectedGroup}
+            placeholder="조"
+          />
+
+          <div className="w-[360px]">
+            <Search
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder="검색어 입력"
             />
-
-            <Dropdown
-              options={groupOptions}
-              value={selectedGroup}
-              onChange={setSelectedGroup}
-              placeholder="조"
-            />
-
-            <div className="w-[360px]">
-              <Search
-                value={searchTerm}
-                onChange={handleSearchChange}
-                placeholder="검색어 입력"
-              />
-            </div>
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      {/* 테이블 영역 */}
-      <div className="space-y-4">
-        <DataTable
-          columns={columns}
-          data={currentCaddies}
-          onRowClick={handleRowClick}
-          layout="flexible"
-          maxHeight={700}
-        />
+  return (
+    <div className="bg-white rounded-xl p-8 space-y-6">
+      <AdminPageHeader title="캐디 리스트" action={headerAction} />
 
-        {/* 페이지네이션 */}
-        <div className="flex justify-center">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
-      </div>
+      {filterArea}
+
+      <TableWithPagination
+        columns={columns}
+        data={currentData}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        onRowClick={handleRowClick}
+        layout="flexible"
+        maxHeight={700}
+      />
     </div>
   );
 };
