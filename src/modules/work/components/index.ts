@@ -1,3 +1,3 @@
-// 향후 추가될 컴포넌트들을 위한 index 파일
-// export { default as WorkForm } from "./work-form";
-// export { default as WorkFilterBar } from "./work-filter-bar";
+export { default as WorksActionBar } from "./works-action-bar";
+export { default as WorksTable } from "./works-table";
+export { default as WorksPagination } from "./works-pagination";
