@@ -29,6 +29,8 @@ interface SelectableDataTableProps<T> {
   onSelectChange?: (selectedRowKeys: string[], selectedRows: T[]) => void;
   rowKey?: keyof T | ((record: T) => string); // 각 행의 고유 키
   getRowKey?: (record: T) => string; // 행 키 추출 함수
+  // 빈 상태 관련
+  realDataCount?: number; // 실제 데이터 개수 (빈 행 제외)
 }
 
 // 빈 행 체크 함수
@@ -51,6 +53,7 @@ function SelectableDataTable<T extends Record<string, unknown>>({
   onSelectChange,
   rowKey = "id",
   getRowKey,
+  realDataCount,
 }: SelectableDataTableProps<T>) {
   const [internalSelectedKeys, setInternalSelectedKeys] = useState<string[]>(
     []
@@ -287,6 +290,27 @@ function SelectableDataTable<T extends Record<string, unknown>>({
         {data.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <span className="text-gray-500">{emptyText}</span>
+          </div>
+        ) : (
+            realDataCount !== undefined
+              ? realDataCount === 0
+              : realData.length === 0
+          ) ? (
+          // 실제 데이터가 없는 경우 (모든 행이 빈 행인 경우)
+          <div
+            className="flex items-center justify-center bg-white rounded-md"
+            style={{ height: "40px" }}
+          >
+            <span
+              className="text-center font-medium"
+              style={{
+                fontSize: "13px",
+                color: "#AEAAAA",
+                lineHeight: "1.85",
+              }}
+            >
+              검색된 결과가 없습니다.
+            </span>
           </div>
         ) : (
           data.map((record, rowIndex) => {

@@ -16,6 +16,7 @@ const CaddieListPage: React.FC = () => {
   const {
     filteredCaddies,
     paddedData,
+    realDataCount,
     filters,
     updateSearchTerm,
     updateSelectedGroup,
@@ -51,6 +52,7 @@ const CaddieListPage: React.FC = () => {
         <SelectableDataTable
           columns={CADDIE_COLUMNS}
           data={paddedData}
+          realDataCount={realDataCount}
           selectable={true}
           selectedRowKeys={selection.selectedRowKeys}
           onSelectChange={updateSelection}

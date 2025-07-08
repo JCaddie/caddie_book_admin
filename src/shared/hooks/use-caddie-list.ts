@@ -97,6 +97,7 @@ export const useCaddieList = () => {
     // 데이터
     filteredCaddies,
     paddedData,
+    realDataCount: currentData.length, // 실제 데이터 개수 (빈 행 제외)
 
     // 필터 상태
     filters,

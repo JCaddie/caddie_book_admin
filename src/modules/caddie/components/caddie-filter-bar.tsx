@@ -75,7 +75,7 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
             <Search
               value={filters.searchTerm}
               onChange={handleSearchInputChange}
-              placeholder="제이캐디아카데미"
+              placeholder="검색어 입력"
             />
           </div>
         </div>
