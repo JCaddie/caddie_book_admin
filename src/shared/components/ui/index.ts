@@ -7,3 +7,4 @@ export { default as Dropdown } from "./dropdown";
 export { default as Badge } from "./badge";
 export { default as DataTable } from "./data-table";
 export { default as Pagination } from "./pagination";
+export { default as EmptyState } from "./empty-state";

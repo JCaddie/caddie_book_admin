@@ -6,3 +6,6 @@ export {
   defaultCellRenderer,
 } from "./use-table-data";
 export type { TableItem } from "./use-table-data";
+
+// URL 검색 파라미터 훅
+export { useUrlSearchParams } from "./use-url-search-params";

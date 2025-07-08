@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Dropdown } from "@/shared/components/ui";
 import {
   AdminPageHeader,
@@ -24,9 +24,18 @@ interface Caddie extends TableItem {
 
 const CaddieListPage: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWork, setSelectedWork] = useState("근무");
   const [selectedGroup, setSelectedGroup] = useState("조");
+
+  // URL 검색 파라미터로부터 자동 검색 설정
+  useEffect(() => {
+    const searchParam = searchParams.get("search");
+    if (searchParam) {
+      setSearchTerm(decodeURIComponent(searchParam));
+    }
+  }, [searchParams]);
 
   // 샘플 데이터 (총 78개)
   const allCaddies: Caddie[] = useMemo(

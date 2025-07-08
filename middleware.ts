@@ -92,23 +92,18 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 홈페이지(/) 접근 시 인증 상태에 따라 리다이렉트
+  // 홈페이지(/) 접근 시 클라이언트 사이드에서 리다이렉트 처리
   if (pathname === "/") {
-    if (token && validateToken(token.value)) {
-      console.log("홈페이지 접근 (유효한 토큰) -> 대시보드로 리다이렉트");
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    } else {
-      console.log(
-        "홈페이지 접근 (미인증 또는 유효하지 않은 토큰) -> 로그인 페이지로 리다이렉트"
-      );
-      // 유효하지 않은 토큰이 있다면 삭제
-      const response = NextResponse.redirect(new URL("/login", request.url));
-      if (token && !validateToken(token.value)) {
-        response.cookies.delete("auth_token");
-        response.cookies.delete("user_data");
-      }
+    // 유효하지 않은 토큰이 있다면 삭제
+    if (token && !validateToken(token.value)) {
+      console.log("홈페이지 접근 (유효하지 않은 토큰) -> 토큰 삭제");
+      const response = NextResponse.next();
+      response.cookies.delete("auth_token");
+      response.cookies.delete("user_data");
       return response;
     }
+    // 홈페이지는 클라이언트 사이드에서 리다이렉트 처리
+    return NextResponse.next();
   }
 
   console.log("미들웨어 통과 -> 다음 핸들러로");

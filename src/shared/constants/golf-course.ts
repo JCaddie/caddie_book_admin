@@ -1,0 +1,149 @@
+import { defaultCellRenderer } from "@/shared/hooks";
+import { GolfCourse } from "@/shared/types/golf-course";
+
+// 골프장 필터 옵션
+export const GOLF_COURSE_FILTER_OPTIONS = {
+  contract: [
+    { value: "completed", label: "완료" },
+    { value: "pending", label: "대기" },
+    { value: "rejected", label: "거절" },
+  ],
+  holes: [
+    { value: "18", label: "18홀" },
+    { value: "27", label: "27홀" },
+    { value: "36", label: "36홀" },
+  ],
+  membershipType: [
+    { value: "member", label: "회원제" },
+    { value: "public", label: "퍼블릭" },
+  ],
+  category: [
+    { value: "premium", label: "프리미엄" },
+    { value: "standard", label: "일반" },
+  ],
+  dailyTeams: [
+    { value: "high", label: "많음" },
+    { value: "medium", label: "보통" },
+    { value: "low", label: "적음" },
+  ],
+};
+
+// 계약 상태 옵션
+export const CONTRACT_STATUS_OPTIONS = [
+  { value: "계약", label: "계약" },
+  { value: "대기", label: "대기" },
+  { value: "만료", label: "만료" },
+  { value: "해지", label: "해지" },
+];
+
+// 골프장 테이블 컬럼 정의
+export const GOLF_COURSE_TABLE_COLUMNS = [
+  {
+    key: "no",
+    title: "No.",
+    width: 80,
+    align: "center" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+  {
+    key: "name",
+    title: "골프장명",
+    width: 200,
+    align: "left" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+  {
+    key: "region",
+    title: "시/구",
+    align: "center" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+  {
+    key: "contractStatus",
+    title: "계약 현황",
+    align: "center" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+  {
+    key: "phone",
+    title: "대표 번호",
+    width: 150,
+    align: "center" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+  {
+    key: "membershipType",
+    title: "회원제/퍼블릭",
+    align: "center" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+  {
+    key: "caddies",
+    title: "캐디",
+    width: 80,
+    align: "center" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+  {
+    key: "fields",
+    title: "필드",
+    width: 80,
+    align: "center" as const,
+    render: defaultCellRenderer<GolfCourse>,
+  },
+];
+
+// 골프장 빈 행 템플릿
+export const GOLF_COURSE_EMPTY_ROW_TEMPLATE = {
+  no: 0,
+  name: "",
+  region: "",
+  contractStatus: "",
+  phone: "",
+  membershipType: "",
+  caddies: 0,
+  fields: 0,
+};
+
+// 운영현황 카드 생성 함수
+export const createOperationCards = (
+  golfCourseName: string,
+  stats: {
+    caddies: number;
+    admins: number;
+    reservations: number;
+    fields: number;
+    carts: number;
+  }
+) => [
+  {
+    title: "캐디",
+    value: `${stats.caddies}명`,
+    route: "/caddies",
+    searchParam: golfCourseName,
+  },
+  {
+    title: "관리자",
+    value: `${stats.admins}명`,
+    route: "/users",
+    searchParam: golfCourseName,
+  },
+  {
+    title: "근무",
+    value: `예약 ${stats.reservations}건`,
+    route: "/works",
+    searchParam: golfCourseName,
+  },
+  {
+    title: "필드",
+    value: `${stats.fields}개`,
+    route: "/fields",
+    searchParam: golfCourseName,
+  },
+  {
+    title: "카트",
+    value: `${stats.carts}대`,
+    route: "/carts",
+    searchParam: golfCourseName,
+  },
+];
