@@ -8,9 +8,11 @@ import {
   Search,
   RotateCcw,
   MoreVertical,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useWorkDetail } from "@/modules/work/hooks/use-work-detail";
-import { use } from "react";
+import { use, useState } from "react";
 
 interface WorkDetailPageProps {
   params: Promise<{
@@ -128,13 +130,30 @@ export default function WorkDetailPage({ params }: WorkDetailPageProps) {
   const { id } = use(params);
   const { work } = useWorkDetail(id);
 
+  // 각 코스별 펼치기 상태 관리
+  const [expandedFields, setExpandedFields] = useState<Record<number, boolean>>(
+    {
+      1: true,
+      2: true,
+      3: true,
+      4: true,
+    }
+  );
+
+  // 필터 상태 관리
+  const [filters, setFilters] = useState({
+    status: "근무",
+    group: "1조",
+    badge: "하우스",
+  });
+
   // 존재하지 않는 근무 ID인 경우
   if (!work) {
     notFound();
   }
 
   // 샘플 캐디 데이터 (다양한 상태 포함)
-  const caddies = [
+  const allCaddies = [
     { id: 1, name: "홍길동", group: 1, badge: "하우스", status: "근무" },
     { id: 2, name: "김철수", group: 1, badge: "하우스", status: "휴무" },
     {
@@ -155,7 +174,34 @@ export default function WorkDetailPage({ params }: WorkDetailPageProps) {
     },
     { id: 5, name: "정수지", group: 3, badge: "마샬", status: "배치완료" },
     { id: 6, name: "최영수", group: 3, badge: "새싹", status: "근무" },
+    { id: 7, name: "이철민", group: 1, badge: "하우스", status: "병가" },
+    { id: 8, name: "김영수", group: 4, badge: "2•3부", status: "근무" },
+    { id: 9, name: "박민수", group: 4, badge: "3부", status: "봉사" },
+    { id: 10, name: "정영희", group: 5, badge: "마샬", status: "교육" },
+    { id: 11, name: "최민정", group: 5, badge: "새싹", status: "근무" },
+    { id: 12, name: "이수진", group: 6, badge: "실버", status: "휴무" },
+    { id: 13, name: "김도현", group: 6, badge: "하우스", status: "근무" },
+    { id: 14, name: "박지영", group: 7, badge: "2•3부", status: "근무" },
+    { id: 15, name: "정현우", group: 7, badge: "3부", status: "근무" },
+    { id: 16, name: "최예진", group: 8, badge: "마샬", status: "휴무" },
+    { id: 17, name: "이동현", group: 8, badge: "새싹", status: "근무" },
+    { id: 18, name: "김민서", group: 9, badge: "실버", status: "근무" },
   ];
+
+  // 필터링된 캐디 데이터
+  const filteredCaddies = allCaddies.filter((caddie) => {
+    const statusMatch =
+      filters.status === "전체" || caddie.status === filters.status;
+    const groupMatch =
+      filters.group === "전체" || `${caddie.group}조` === filters.group;
+    const badgeMatch =
+      filters.badge === "전체" || caddie.badge === filters.badge;
+
+    return statusMatch && groupMatch && badgeMatch;
+  });
+
+  // 스케줄용 캐디 데이터 (첫 6명만 사용)
+  const caddies = allCaddies.slice(0, 6);
 
   // 시간 슬롯 생성 (1부: 06:00-12:30, 2부: 13:00-16:30, 3부: 17:00-18:30)
   const timeSlots = {
@@ -176,12 +222,120 @@ export default function WorkDetailPage({ params }: WorkDetailPageProps) {
     }),
   };
 
-  // 필드별 데이터
+  // 필드별 데이터 (4개로 확장)
   const fields = [
     { id: 1, name: "서코스" },
     { id: 2, name: "동코스" },
     { id: 3, name: "남코스" },
+    { id: 4, name: "북코스" },
   ];
+
+  // 펼치기/접기 토글 함수
+  const toggleFieldExpansion = (fieldId: number) => {
+    setExpandedFields((prev) => ({
+      ...prev,
+      [fieldId]: !prev[fieldId],
+    }));
+  };
+
+  // 필드 컨텐츠 렌더링 함수
+  const renderFieldContent = (field: { id: number; name: string }) => {
+    const isExpanded = expandedFields[field.id];
+
+    return (
+      <div
+        key={field.id}
+        className="w-[314px] flex-shrink-0 bg-white rounded-lg overflow-hidden"
+      >
+        {/* 필드 헤더 - 클릭 가능 */}
+        <div
+          className="bg-[#FEB912] flex items-center justify-between py-2 px-4 cursor-pointer hover:bg-[#e5a50f] transition-colors"
+          onClick={() => toggleFieldExpansion(field.id)}
+        >
+          <span className="text-[22px] font-bold text-black">{field.name}</span>
+          {isExpanded ? (
+            <ChevronUp className="w-5 h-5 text-black" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-black" />
+          )}
+        </div>
+
+        {/* 필드 내용 - 펼쳤을 때만 표시 */}
+        {isExpanded && (
+          <div className="bg-[#F7F7F7]">
+            {/* 1부 */}
+            <div>
+              <div className="flex items-center justify-center py-3">
+                <span className="text-[22px] font-bold text-black">1부</span>
+              </div>
+              <div className="p-2">
+                {timeSlots.part1.map((time, timeIndex) => (
+                  <div key={timeIndex} className="flex items-center gap-2 mb-2">
+                    <div className="w-14 h-9 flex items-center justify-center text-sm font-medium text-black/80 flex-shrink-0">
+                      {time}
+                    </div>
+                    <div className="flex-1">
+                      {timeIndex < 4 ? (
+                        <CaddieCard caddie={caddies[timeIndex]} />
+                      ) : (
+                        <CaddieCard isEmpty={true} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 2부 */}
+            <div>
+              <div className="flex items-center justify-center py-3">
+                <span className="text-[22px] font-bold text-black">2부</span>
+              </div>
+              <div className="p-2">
+                {timeSlots.part2.map((time, timeIndex) => (
+                  <div key={timeIndex} className="flex items-center gap-2 mb-2">
+                    <div className="w-14 h-9 flex items-center justify-center text-sm font-medium text-black/80 flex-shrink-0">
+                      {time}
+                    </div>
+                    <div className="flex-1">
+                      {timeIndex < 2 ? (
+                        <CaddieCard caddie={caddies[timeIndex + 2]} />
+                      ) : (
+                        <CaddieCard isEmpty={true} emptyText="예약없음" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3부 */}
+            <div>
+              <div className="flex items-center justify-center py-3">
+                <span className="text-[22px] font-bold text-black">3부</span>
+              </div>
+              <div className="p-2">
+                {timeSlots.part3.map((time, timeIndex) => (
+                  <div key={timeIndex} className="flex items-center gap-2 mb-2">
+                    <div className="w-14 h-9 flex items-center justify-center text-sm font-medium text-black/80 flex-shrink-0">
+                      {time}
+                    </div>
+                    <div className="flex-1">
+                      {timeIndex < 2 ? (
+                        <CaddieCard caddie={caddies[timeIndex + 4]} />
+                      ) : (
+                        <CaddieCard isEmpty={true} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -200,20 +354,15 @@ export default function WorkDetailPage({ params }: WorkDetailPageProps) {
           <div className="flex items-center justify-between pl-4 py-4">
             {/* 왼쪽: 날짜 네비게이션 */}
             <div className="flex items-center gap-4">
-              {/* 이전 화살표 */}
               <button className="w-6 h-6 flex items-center justify-center">
                 <ChevronLeft className="w-4 h-4 text-[#FEB912]" />
               </button>
-
-              {/* 날짜 및 캘린더 */}
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-black opacity-80" />
                 <span className="text-[22px] font-medium text-black opacity-80">
                   2025.05.26.(월)
                 </span>
               </div>
-
-              {/* 다음 화살표 */}
               <button className="w-6 h-6 flex items-center justify-center">
                 <ChevronRight className="w-4 h-4 text-[#FEB912]" />
               </button>
@@ -272,119 +421,11 @@ export default function WorkDetailPage({ params }: WorkDetailPageProps) {
             </div>
           </div>
 
-          {/* 필드별 스케줄 컨테이너 (스크롤 가능) */}
-          <div className="bg-white rounded-lg overflow-hidden">
+          {/* 필드별 스케줄 컨테이너 (가로 배치, 좌우 스크롤) */}
+          <div className="bg-white rounded-lg overflow-hidden w-full max-w-[1020px]">
             <div className="overflow-x-auto">
-              <div className="flex gap-2 min-w-fit p-4">
-                {/* 필드 컬럼들 */}
-                {fields.map((field) => (
-                  <div key={field.id} className="w-[314px] flex-shrink-0">
-                    {/* 필드 헤더 */}
-                    <div className="bg-[#FEB912] rounded-t-lg">
-                      <div className="flex items-center justify-center py-2 px-4">
-                        <span className="text-[22px] font-bold text-black">
-                          {field.name}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 1부 */}
-                    <div className="bg-[#F7F7F7]">
-                      <div className="flex items-center justify-center py-3">
-                        <span className="text-[22px] font-bold text-black">
-                          1부
-                        </span>
-                      </div>
-                      <div className="p-2">
-                        {/* 각 시간대별로 행 생성 */}
-                        {timeSlots.part1.map((time, timeIndex) => (
-                          <div
-                            key={timeIndex}
-                            className="flex items-center gap-2 mb-2"
-                          >
-                            {/* 시간 */}
-                            <div className="w-14 h-9 flex items-center justify-center text-sm font-medium text-black/80 flex-shrink-0">
-                              {time}
-                            </div>
-                            {/* 캐디 카드 슬롯 */}
-                            <div className="flex-1">
-                              {timeIndex < 4 ? (
-                                <CaddieCard caddie={caddies[timeIndex]} />
-                              ) : (
-                                <CaddieCard isEmpty={true} />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 2부 */}
-                    <div className="bg-[#F7F7F7]">
-                      <div className="flex items-center justify-center py-3">
-                        <span className="text-[22px] font-bold text-black">
-                          2부
-                        </span>
-                      </div>
-                      <div className="p-2">
-                        {/* 각 시간대별로 행 생성 */}
-                        {timeSlots.part2.map((time, timeIndex) => (
-                          <div
-                            key={timeIndex}
-                            className="flex items-center gap-2 mb-2"
-                          >
-                            {/* 시간 */}
-                            <div className="w-14 h-9 flex items-center justify-center text-sm font-medium text-black/80 flex-shrink-0">
-                              {time}
-                            </div>
-                            {/* 캐디 카드 슬롯 */}
-                            <div className="flex-1">
-                              {timeIndex < 2 ? (
-                                <CaddieCard caddie={caddies[timeIndex + 2]} />
-                              ) : (
-                                <CaddieCard
-                                  isEmpty={true}
-                                  emptyText="예약없음"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 3부 */}
-                    <div className="bg-[#F7F7F7] rounded-b-lg">
-                      <div className="flex items-center justify-center py-3">
-                        <span className="text-[22px] font-bold text-black">
-                          3부
-                        </span>
-                      </div>
-                      <div className="p-2">
-                        {/* 각 시간대별로 행 생성 */}
-                        {timeSlots.part3.map((time, timeIndex) => (
-                          <div
-                            key={timeIndex}
-                            className="flex items-center gap-2 mb-2"
-                          >
-                            {/* 시간 */}
-                            <div className="w-14 h-9 flex items-center justify-center text-sm font-medium text-black/80 flex-shrink-0">
-                              {time}
-                            </div>
-                            {/* 캐디 카드 슬롯 */}
-                            <div className="flex-1">
-                              {timeIndex < 2 ? (
-                                <CaddieCard caddie={caddies[timeIndex + 4]} />
-                              ) : (
-                                <CaddieCard isEmpty={true} />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex gap-4 min-w-fit p-4">
+                {fields.map(renderFieldContent)}
               </div>
             </div>
           </div>
@@ -405,84 +446,120 @@ export default function WorkDetailPage({ params }: WorkDetailPageProps) {
 
           {/* 필터 섹션 */}
           <div className="space-y-8 mb-8">
-            {/* 상태 필터 */}
             <div>
               <h4 className="text-xl font-medium mb-2">필터</h4>
               <div className="h-0.5 bg-gray-300 mb-4"></div>
-              <div className="flex items-center gap-4 mb-4">
-                <span className="text-base font-medium w-12">상태</span>
-                <div className="flex flex-wrap gap-2">
-                  {["전체", "근무", "휴무", "병가", "봉사", "교육"].map(
-                    (status, index) => (
-                      <button
-                        key={status}
-                        className={`px-3 py-1 text-xs font-bold rounded-full ${
-                          index === 1
-                            ? "bg-[#FEB912] text-white"
-                            : "bg-[#E3E3E3] text-black/80"
-                        }`}
-                      >
-                        {status}
-                      </button>
-                    )
-                  )}
+              <div className="flex items-start gap-4 mb-4">
+                <span className="text-base font-medium w-12 h-[26px] flex items-center flex-shrink-0">
+                  상태
+                </span>
+                <div className="flex-1">
+                  <div className="flex gap-2 mb-2">
+                    {["전체", "근무", "휴무", "병가", "봉사", "교육"].map(
+                      (status) => (
+                        <button
+                          key={status}
+                          onClick={() =>
+                            setFilters((prev) => ({ ...prev, status }))
+                          }
+                          className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                            filters.status === status
+                              ? "bg-[#FEB912] text-white"
+                              : "bg-[#E3E3E3] text-black/80"
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      )
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* 그룹 필터 */}
-              <div className="flex items-center gap-4 mb-4">
-                <span className="text-base font-medium w-12">그룹</span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "전체",
-                    "1조",
-                    "2조",
-                    "3조",
-                    "4조",
-                    "5조",
-                    "6조",
-                    "7조",
-                    "8조",
-                    "9조",
-                  ].map((group, index) => (
-                    <button
-                      key={group}
-                      className={`px-3 py-1 text-xs font-bold rounded-full ${
-                        index === 1
-                          ? "bg-[#FEB912] text-white"
-                          : "bg-[#E3E3E3] text-black/80"
-                      }`}
-                    >
-                      {group}
-                    </button>
-                  ))}
+              <div className="flex items-start gap-4 mb-4">
+                <span className="text-base font-medium w-12 h-[26px] flex items-center flex-shrink-0">
+                  그룹
+                </span>
+                <div className="flex-1">
+                  <div className="flex gap-2 mb-2">
+                    {["전체", "1조", "2조", "3조", "4조", "5조"].map(
+                      (group) => (
+                        <button
+                          key={group}
+                          onClick={() =>
+                            setFilters((prev) => ({ ...prev, group }))
+                          }
+                          className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                            filters.group === group
+                              ? "bg-[#FEB912] text-white"
+                              : "bg-[#E3E3E3] text-black/80"
+                          }`}
+                        >
+                          {group}
+                        </button>
+                      )
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {["6조", "7조", "8조", "9조"].map((group) => (
+                      <button
+                        key={group}
+                        onClick={() =>
+                          setFilters((prev) => ({ ...prev, group }))
+                        }
+                        className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                          filters.group === group
+                            ? "bg-[#FEB912] text-white"
+                            : "bg-[#E3E3E3] text-black/80"
+                        }`}
+                      >
+                        {group}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* 특수반 필터 */}
-              <div className="flex items-center gap-4">
-                <span className="text-base font-medium w-12">특수반</span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "전체",
-                    "하우스",
-                    "2•3부",
-                    "3부",
-                    "마샬",
-                    "새싹",
-                    "실버",
-                  ].map((badge, index) => (
+              <div className="flex items-start gap-4">
+                <span className="text-base font-medium w-12 h-[26px] flex items-center flex-shrink-0">
+                  특수반
+                </span>
+                <div className="flex-1">
+                  <div className="flex gap-2 mb-2">
+                    {["전체", "하우스", "2•3부", "3부", "마샬", "새싹"].map(
+                      (badge) => (
+                        <button
+                          key={badge}
+                          onClick={() =>
+                            setFilters((prev) => ({ ...prev, badge }))
+                          }
+                          className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                            filters.badge === badge
+                              ? "bg-[#FEB912] text-white"
+                              : "bg-[#E3E3E3] text-black/80"
+                          }`}
+                        >
+                          {badge}
+                        </button>
+                      )
+                    )}
+                  </div>
+                  <div className="flex gap-2">
                     <button
-                      key={badge}
-                      className={`px-3 py-1 text-xs font-bold rounded-full ${
-                        index === 1
+                      onClick={() =>
+                        setFilters((prev) => ({ ...prev, badge: "실버" }))
+                      }
+                      className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                        filters.badge === "실버"
                           ? "bg-[#FEB912] text-white"
                           : "bg-[#E3E3E3] text-black/80"
                       }`}
                     >
-                      {badge}
+                      실버
                     </button>
-                  ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -493,26 +570,27 @@ export default function WorkDetailPage({ params }: WorkDetailPageProps) {
             <h4 className="text-xl font-medium mb-2">캐디</h4>
             <div className="h-0.5 bg-gray-300 mb-4"></div>
             <div className="space-y-2">
-              {/* 첫 번째 줄 */}
-              <div className="flex gap-2">
-                {caddies.slice(0, 2).map((caddie) => (
-                  <CaddieCard key={caddie.id} caddie={caddie} />
-                ))}
-              </div>
-
-              {/* 두 번째 줄 */}
-              <div className="flex gap-2">
-                {caddies.slice(2, 4).map((caddie) => (
-                  <CaddieCard key={caddie.id} caddie={caddie} />
-                ))}
-              </div>
-
-              {/* 세 번째 줄 */}
-              <div className="flex gap-2">
-                {caddies.slice(4, 6).map((caddie) => (
-                  <CaddieCard key={caddie.id} caddie={caddie} />
-                ))}
-              </div>
+              {filteredCaddies.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  필터 조건에 맞는 캐디가 없습니다.
+                </div>
+              ) : (
+                Array.from(
+                  { length: Math.ceil(filteredCaddies.length / 2) },
+                  (_, rowIndex) => (
+                    <div key={rowIndex} className="flex gap-2">
+                      {filteredCaddies
+                        .slice(rowIndex * 2, rowIndex * 2 + 2)
+                        .map((caddie) => (
+                          <CaddieCard key={caddie.id} caddie={caddie} />
+                        ))}
+                      {/* 한 줄에 1개만 있을 때 빈 공간 채우기 */}
+                      {filteredCaddies.slice(rowIndex * 2, rowIndex * 2 + 2)
+                        .length === 1 && <div className="w-[218px]"></div>}
+                    </div>
+                  )
+                )
+              )}
             </div>
           </div>
         </div>
