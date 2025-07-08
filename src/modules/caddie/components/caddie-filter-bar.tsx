@@ -1,10 +1,9 @@
 "use client";
 
 import React from "react";
-import { Search, Dropdown } from "@/shared/components/ui";
+import { Search, Dropdown, DeleteButton } from "@/shared/components/ui";
 import { CaddieFilters } from "@/shared/types/caddie";
 import { GROUP_OPTIONS, SPECIAL_TEAM_OPTIONS } from "@/shared/constants/caddie";
-import { Trash2 } from "lucide-react";
 
 interface CaddieFilterBarProps {
   totalCount: number;
@@ -41,19 +40,13 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
       {/* 오른쪽: 삭제 버튼 + 필터 컨트롤들 */}
       <div className="flex items-center gap-8">
         {/* 삭제 버튼 */}
-        <button
+        <DeleteButton
           onClick={onDeleteSelected}
-          className={[
-            "flex items-center gap-2 text-[13px] font-medium transition-colors",
-            selectedCount > 0
-              ? "text-black hover:text-red-600 cursor-pointer"
-              : "text-black opacity-60 cursor-not-allowed",
-          ].join(" ")}
-          disabled={selectedCount === 0}
-        >
-          <Trash2 size={16} />
-          삭제
-        </button>
+          selectedCount={selectedCount}
+          variant="text"
+          size="md"
+          showCount={false}
+        />
 
         {/* 필터 컨트롤들 */}
         <div className="flex items-center gap-8">
