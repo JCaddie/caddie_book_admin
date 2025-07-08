@@ -6,5 +6,8 @@ export { default as TextField } from "./text-field";
 export { default as Dropdown } from "./dropdown";
 export { default as Badge } from "./badge";
 export { default as DataTable } from "./data-table";
+export { default as SelectableDataTable } from "./selectable-data-table";
+export { default as DeleteConfirmationModal } from "./delete-confirmation-modal";
+export { default as DeleteButton } from "./delete-button";
 export { default as Pagination } from "./pagination";
 export { default as EmptyState } from "./empty-state";

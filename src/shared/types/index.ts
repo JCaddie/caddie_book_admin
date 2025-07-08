@@ -19,3 +19,21 @@ export type {
   GolfCourseFilters,
   OperationCard,
 } from "./golf-course";
+
+// 캐디 관련 타입
+export type {
+  Caddie,
+  FilterOption,
+  CaddieFilters,
+  CaddieSelection,
+} from "./caddie";
+
+// 테이블 관련 타입
+export type {
+  Column,
+  BaseTableProps,
+  SelectableTableProps,
+  SelectionState,
+  UseTableSelectionReturn,
+  TableUtilityProps,
+} from "./table";
