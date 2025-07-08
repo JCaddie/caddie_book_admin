@@ -19,3 +19,11 @@ export type {
   GolfCourseFilters,
   OperationCard,
 } from "./golf-course";
+
+// 캐디 관련 타입
+export type {
+  Caddie,
+  FilterOption,
+  CaddieFilters,
+  CaddieSelection,
+} from "./caddie";
