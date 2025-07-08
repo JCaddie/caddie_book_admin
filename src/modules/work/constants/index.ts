@@ -1,3 +1,7 @@
+import { Column } from "@/shared/types/table";
+import { defaultCellRenderer } from "@/shared/hooks";
+import { Work } from "@/modules/work/types";
+
 // 근무 스케줄 상태
 export const WORK_STATUS = {
   PLANNING: "planning",
@@ -42,3 +46,45 @@ export const SAMPLE_GOLF_COURSES = [
   "선샤인 골프장",
   "블루스카이 CC",
 ] as const;
+
+// 테이블 컬럼 정의 (Figma 디자인에 맞춤)
+export const WORKS_TABLE_COLUMNS: Column<Work>[] = [
+  {
+    key: "no",
+    title: "No.",
+    width: 80,
+    align: "center",
+    render: defaultCellRenderer<Work>,
+  },
+  {
+    key: "date",
+    title: "일자",
+    width: 160,
+    align: "center",
+    render: defaultCellRenderer<Work>,
+  },
+  {
+    key: "golfCourse",
+    title: "골프장",
+    flex: true,
+    align: "center",
+    render: defaultCellRenderer<Work>,
+  },
+  {
+    key: "totalStaff",
+    title: "전체 인원수",
+    width: 120,
+    align: "center",
+    render: defaultCellRenderer<Work>,
+  },
+  {
+    key: "availableStaff",
+    title: "가용인원수",
+    width: 120,
+    align: "center",
+    render: defaultCellRenderer<Work>,
+  },
+];
+
+// 페이지네이션 설정
+export const WORKS_PAGE_SIZE = 20;
