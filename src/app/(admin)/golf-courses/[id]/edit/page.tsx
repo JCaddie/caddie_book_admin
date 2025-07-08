@@ -3,28 +3,9 @@
 import React, { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
-import { Button, Input, Dropdown } from "@/shared/components/ui";
-
-// 편집 가능한 골프장 데이터 타입
-interface EditableGolfCourse {
-  id: string;
-  name: string;
-  address: string;
-  contractStatus: string;
-  contractStartDate: string;
-  contractEndDate: string;
-  phone: string;
-  representative: {
-    name: string;
-    contact: string;
-    email: string;
-  };
-  manager: {
-    name: string;
-    contact: string;
-    email: string;
-  };
-}
+import { Button } from "@/shared/components/ui";
+import { GolfCourseEditForm } from "@/shared/components/golf-course";
+import { EditableGolfCourse } from "@/shared/types/golf-course";
 
 const GolfCourseEditPage: React.FC = () => {
   const router = useRouter();
@@ -52,14 +33,6 @@ const GolfCourseEditPage: React.FC = () => {
       email: "cs@daangnservice.com",
     },
   });
-
-  // 계약 상태 옵션
-  const contractStatusOptions = [
-    { value: "계약", label: "계약" },
-    { value: "대기", label: "대기" },
-    { value: "만료", label: "만료" },
-    { value: "해지", label: "해지" },
-  ];
 
   // 입력 필드 변경 핸들러
   const handleInputChange = (field: string, value: string) => {
@@ -128,217 +101,10 @@ const GolfCourseEditPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 기본 정보 편집 */}
-          <div className="border border-gray-200 rounded-md overflow-hidden">
-            {/* 업체명 */}
-            <div className="flex border-b border-gray-200">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">업체명</span>
-              </div>
-              <div className="flex-1 px-4 py-3">
-                <Input
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="w-full border-gray-200"
-                  placeholder="업체명을 입력하세요"
-                />
-              </div>
-            </div>
-
-            {/* 주소 */}
-            <div className="flex border-b border-gray-200">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">주소</span>
-              </div>
-              <div className="flex-1 px-4 py-3">
-                <Input
-                  value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  className="w-full border-gray-200"
-                  placeholder="주소를 입력하세요"
-                />
-              </div>
-            </div>
-
-            {/* 계약 현황 */}
-            <div className="flex border-b border-gray-200">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">
-                  계약 현황
-                </span>
-              </div>
-              <div className="flex-1 px-4 py-3 flex items-center gap-6">
-                <Dropdown
-                  options={contractStatusOptions}
-                  value={formData.contractStatus}
-                  onChange={(value) =>
-                    handleInputChange("contractStatus", value)
-                  }
-                  containerClassName="w-[106px]"
-                />
-                <Input
-                  value={formData.contractStartDate}
-                  onChange={(e) =>
-                    handleInputChange("contractStartDate", e.target.value)
-                  }
-                  className="w-[200px] border-gray-200"
-                  placeholder="시작일"
-                />
-                <span className="text-sm text-gray-900">~</span>
-                <Input
-                  value={formData.contractEndDate}
-                  onChange={(e) =>
-                    handleInputChange("contractEndDate", e.target.value)
-                  }
-                  className="w-[200px] border-gray-200"
-                  placeholder="종료일"
-                />
-              </div>
-            </div>
-
-            {/* 대표번호 */}
-            <div className="flex">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">
-                  대표번호
-                </span>
-              </div>
-              <div className="flex-1 px-4 py-3">
-                <Input
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="w-full border-gray-200"
-                  placeholder="대표번호를 입력하세요"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 대표자/담당자 정보 편집 */}
-          <div className="grid grid-cols-2 gap-0 border border-gray-200 rounded-md overflow-hidden">
-            {/* 대표자 정보 */}
-            <div className="border-r border-gray-200">
-              {/* 대표자 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    대표자
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <Input
-                    value={formData.representative.name}
-                    onChange={(e) =>
-                      handleInputChange("representative.name", e.target.value)
-                    }
-                    className="w-full border-gray-200"
-                    placeholder="대표자명"
-                  />
-                </div>
-              </div>
-
-              {/* 연락처 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    연락처
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <Input
-                    value={formData.representative.contact}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "representative.contact",
-                        e.target.value
-                      )
-                    }
-                    className="w-full border-gray-200"
-                    placeholder="연락처"
-                  />
-                </div>
-              </div>
-
-              {/* 이메일 */}
-              <div className="flex">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    이메일
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <Input
-                    value={formData.representative.email}
-                    onChange={(e) =>
-                      handleInputChange("representative.email", e.target.value)
-                    }
-                    className="w-full border-gray-200"
-                    placeholder="이메일"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 담당자 정보 */}
-            <div>
-              {/* 담당자 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    담당자
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <Input
-                    value={formData.manager.name}
-                    onChange={(e) =>
-                      handleInputChange("manager.name", e.target.value)
-                    }
-                    className="w-full border-gray-200"
-                    placeholder="담당자명"
-                  />
-                </div>
-              </div>
-
-              {/* 연락처 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    연락처
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <Input
-                    value={formData.manager.contact}
-                    onChange={(e) =>
-                      handleInputChange("manager.contact", e.target.value)
-                    }
-                    className="w-full border-gray-200"
-                    placeholder="연락처"
-                  />
-                </div>
-              </div>
-
-              {/* 이메일 */}
-              <div className="flex">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    이메일
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <Input
-                    value={formData.manager.email}
-                    onChange={(e) =>
-                      handleInputChange("manager.email", e.target.value)
-                    }
-                    className="w-full border-gray-200"
-                    placeholder="이메일"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <GolfCourseEditForm
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
         </div>
       </div>
     </RoleGuard>

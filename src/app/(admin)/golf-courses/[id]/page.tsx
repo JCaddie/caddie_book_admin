@@ -2,36 +2,14 @@
 
 import React from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import { Button } from "@/shared/components/ui";
-
-// 골프장 상세 데이터 타입
-interface GolfCourseDetail {
-  id: string;
-  name: string;
-  address: string;
-  contractStatus: string;
-  contractPeriod: string;
-  phone: string;
-  representative: {
-    name: string;
-    contact: string;
-    email: string;
-  };
-  manager: {
-    name: string;
-    contact: string;
-    email: string;
-  };
-  operationStats: {
-    caddies: number;
-    admins: number;
-    reservations: number;
-    fields: number;
-    carts: number;
-  };
-}
+import {
+  GolfCourseInfo,
+  OperationCards,
+} from "@/shared/components/golf-course";
+import { GolfCourseDetail } from "@/shared/types/golf-course";
+import { createOperationCards } from "@/shared/constants/golf-course";
 
 const GolfCourseDetailPage: React.FC = () => {
   const router = useRouter();
@@ -67,44 +45,10 @@ const GolfCourseDetailPage: React.FC = () => {
   };
 
   // 운영현황 카드 데이터
-  const operationCards = [
-    {
-      title: "캐디",
-      value: `${golfCourse.operationStats.caddies}명`,
-      route: "/caddies",
-      searchParam: golfCourse.name,
-    },
-    {
-      title: "관리자",
-      value: `${golfCourse.operationStats.admins}명`,
-      route: "/users",
-      searchParam: golfCourse.name,
-    },
-    {
-      title: "근무",
-      value: `예약 ${golfCourse.operationStats.reservations}건`,
-      route: "/works",
-      searchParam: golfCourse.name,
-    },
-    {
-      title: "필드",
-      value: `${golfCourse.operationStats.fields}개`,
-      route: "/fields",
-      searchParam: golfCourse.name,
-    },
-    {
-      title: "카트",
-      value: `${golfCourse.operationStats.carts}대`,
-      route: "/carts",
-      searchParam: golfCourse.name,
-    },
-  ];
-
-  // 운영현황 카드 클릭 핸들러
-  const handleOperationCardClick = (route: string, searchParam: string) => {
-    // 해당 페이지로 이동하면서 골프장 이름으로 검색
-    router.push(`${route}?search=${encodeURIComponent(searchParam)}`);
-  };
+  const operationCards = createOperationCards(
+    golfCourse.name,
+    golfCourse.operationStats
+  );
 
   return (
     <RoleGuard requiredRole="DEVELOPER">
@@ -129,187 +73,11 @@ const GolfCourseDetailPage: React.FC = () => {
             </Button>
           </div>
 
-          {/* 기본 정보 */}
-          <div className="border border-gray-200 rounded-md overflow-hidden">
-            {/* 업체명 */}
-            <div className="flex border-b border-gray-200">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">업체명</span>
-              </div>
-              <div className="flex-1 px-4 py-3">
-                <span className="text-sm text-gray-900">{golfCourse.name}</span>
-              </div>
-            </div>
-
-            {/* 주소 */}
-            <div className="flex border-b border-gray-200">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">주소</span>
-              </div>
-              <div className="flex-1 px-4 py-3">
-                <span className="text-sm text-gray-900">
-                  {golfCourse.address}
-                </span>
-              </div>
-            </div>
-
-            {/* 계약 현황 */}
-            <div className="flex border-b border-gray-200">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">
-                  계약 현황
-                </span>
-              </div>
-              <div className="flex-1 px-4 py-3 flex items-center gap-6">
-                <div className="bg-green-400 text-white px-2 py-1 rounded text-sm font-medium">
-                  {golfCourse.contractStatus}
-                </div>
-                <span className="text-sm text-gray-900">
-                  {golfCourse.contractPeriod}
-                </span>
-              </div>
-            </div>
-
-            {/* 대표번호 */}
-            <div className="flex">
-              <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">
-                  대표번호
-                </span>
-              </div>
-              <div className="flex-1 px-4 py-3">
-                <span className="text-sm text-gray-900">
-                  {golfCourse.phone}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 대표자/담당자 정보 */}
-          <div className="grid grid-cols-2 gap-0 border border-gray-200 rounded-md overflow-hidden">
-            {/* 대표자 정보 */}
-            <div className="border-r border-gray-200">
-              {/* 대표자 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    대표자
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <span className="text-sm text-gray-900">
-                    {golfCourse.representative.name}
-                  </span>
-                </div>
-              </div>
-
-              {/* 연락처 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    연락처
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <span className="text-sm text-gray-900">
-                    {golfCourse.representative.contact}
-                  </span>
-                </div>
-              </div>
-
-              {/* 이메일 */}
-              <div className="flex">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    이메일
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <span className="text-sm text-gray-900">
-                    {golfCourse.representative.email}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* 담당자 정보 */}
-            <div>
-              {/* 담당자 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    담당자
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <span className="text-sm text-gray-900">
-                    {golfCourse.manager.name}
-                  </span>
-                </div>
-              </div>
-
-              {/* 연락처 */}
-              <div className="flex border-b border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    연락처
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <span className="text-sm text-gray-900">
-                    {golfCourse.manager.contact}
-                  </span>
-                </div>
-              </div>
-
-              {/* 이메일 */}
-              <div className="flex">
-                <div className="bg-gray-50 px-4 py-3 w-24 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">
-                    이메일
-                  </span>
-                </div>
-                <div className="flex-1 px-4 py-3">
-                  <span className="text-sm text-gray-900">
-                    {golfCourse.manager.email}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <GolfCourseInfo golfCourse={golfCourse} />
         </div>
 
         {/* 운영현황 섹션 */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-gray-900">운영현황</h2>
-
-          <div className="grid grid-cols-5 gap-12">
-            {operationCards.map((card, index) => (
-              <div
-                key={index}
-                onClick={() =>
-                  handleOperationCardClick(card.route, card.searchParam)
-                }
-                className="bg-white border border-gray-200 rounded-md p-4 cursor-pointer hover:shadow-md transition-shadow"
-              >
-                {/* 카드 헤더 */}
-                <div className="flex items-center justify-between mb-2 px-2">
-                  <span className="text-base font-bold text-gray-900">
-                    {card.title}
-                  </span>
-                  <ChevronRight size={16} className="text-gray-800" />
-                </div>
-
-                {/* 카드 값 */}
-                <div className="text-center">
-                  <span className="text-2xl font-bold text-gray-600">
-                    {card.value}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <OperationCards cards={operationCards} />
       </div>
     </RoleGuard>
   );
