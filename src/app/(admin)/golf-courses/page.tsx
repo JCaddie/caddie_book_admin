@@ -205,8 +205,8 @@ const GolfCoursesPage: React.FC = () => {
     if (record.isEmpty) {
       return;
     }
-    console.log("골프장 상세:", record);
-    // 실제로는 상세 페이지로 이동
+    // 골프장 상세 페이지로 이동
+    window.location.href = `/golf-courses/${record.id}`;
   };
 
   // 필터 변경 핸들러
