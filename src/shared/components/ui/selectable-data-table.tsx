@@ -72,7 +72,11 @@ function SelectableDataTable<T extends Record<string, unknown>>({
             ref={(input) => {
               if (input) input.indeterminate = selection.isIndeterminate;
             }}
-            onChange={(e) => selection.handleSelectAll(e.target.checked)}
+            onChange={(e) => {
+              e.stopPropagation();
+              selection.handleSelectAll(e.target.checked);
+            }}
+            onClick={(e) => e.stopPropagation()}
             className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
           />
         ) : undefined;
@@ -131,6 +135,7 @@ function SelectableDataTable<T extends Record<string, unknown>>({
                           e.stopPropagation();
                           selection.handleRowSelect(record, e.target.checked);
                         }}
+                        onClick={(e) => e.stopPropagation()}
                         className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
                       />
                     ) : undefined;

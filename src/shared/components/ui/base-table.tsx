@@ -144,6 +144,7 @@ export const TableHeader = <T extends Record<string, unknown>>({
         <div
           className="flex items-center justify-center"
           style={getColumnStyle({} as Column<T>, layout, true)}
+          onClick={(e) => e.stopPropagation()}
         >
           {checkboxElement}
         </div>
@@ -234,6 +235,7 @@ export const TableRow = <T extends Record<string, unknown>>({
         <div
           className="flex items-center justify-center"
           style={getColumnStyle({} as Column<T>, layout, true)}
+          onClick={(e) => e.stopPropagation()}
         >
           {!isEmpty && checkboxElement}
         </div>
