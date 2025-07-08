@@ -88,3 +88,40 @@ export const WORKS_TABLE_COLUMNS: Column<Work>[] = [
 
 // 페이지네이션 설정
 export const WORKS_PAGE_SIZE = 20;
+
+// 샘플 근무 데이터
+export const SAMPLE_WORKS: Work[] = [
+  {
+    id: "1",
+    no: 1,
+    date: "2024.01.15",
+    golfCourse: "제이캐디 아카데미",
+    totalStaff: 10,
+    availableStaff: 8,
+    status: "confirmed",
+    createdAt: "2024-01-15T09:00:00Z",
+    updatedAt: "2024-01-15T14:30:00Z",
+  },
+  {
+    id: "2",
+    no: 2,
+    date: "2024.01.16",
+    golfCourse: "골프파크 CC",
+    totalStaff: 12,
+    availableStaff: 12,
+    status: "planning",
+    createdAt: "2024-01-16T09:00:00Z",
+    updatedAt: "2024-01-16T10:15:00Z",
+  },
+  {
+    id: "3",
+    no: 3,
+    date: "2024.01.17",
+    golfCourse: "그린힐스 CC",
+    totalStaff: 8,
+    availableStaff: 6,
+    status: "completed",
+    createdAt: "2024-01-17T09:00:00Z",
+    updatedAt: "2024-01-17T18:00:00Z",
+  },
+];
