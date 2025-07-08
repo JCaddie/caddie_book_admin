@@ -120,7 +120,11 @@ const GolfCourseDetailPage: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">상세정보</h2>
-            <Button variant="primary" size="md">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push(`/golf-courses/${golfCourseId}/edit`)}
+            >
               수정
             </Button>
           </div>
