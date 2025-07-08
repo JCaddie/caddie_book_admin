@@ -1,13 +1,31 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Work } from "@/modules/work/types";
-import { SAMPLE_WORKS } from "@/modules/work/constants";
+import { SAMPLE_GOLF_COURSES } from "@/modules/work/constants";
+
+// useWorksData와 동일한 샘플 데이터 생성 함수
+const generateSampleWorks = (count: number): Work[] => {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `work-${index + 1}`,
+    no: index + 1,
+    date: "2025.01.06",
+    golfCourse: SAMPLE_GOLF_COURSES[index % SAMPLE_GOLF_COURSES.length],
+    totalStaff: 130,
+    availableStaff: 130,
+    status: "planning" as const,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }));
+};
 
 export function useWorkDetail(workId: string) {
+  // 샘플 데이터 생성 (useWorksData와 동일)
+  const sampleWorks = useMemo(() => generateSampleWorks(26), []);
+
   // 실제로는 API에서 데이터를 가져올 것
   const [work, setWork] = useState<Work | null>(() => {
-    return SAMPLE_WORKS.find((w: Work) => w.id === workId) || null;
+    return sampleWorks.find((w: Work) => w.id === workId) || null;
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -23,11 +41,11 @@ export function useWorkDetail(workId: string) {
   const handleCancel = useCallback(() => {
     setIsEditing(false);
     // 원본 데이터로 복원 (실제로는 API에서 다시 가져올 것)
-    const originalWork = SAMPLE_WORKS.find((w: Work) => w.id === workId);
+    const originalWork = sampleWorks.find((w: Work) => w.id === workId);
     if (originalWork) {
       setWork(originalWork);
     }
-  }, [workId]);
+  }, [workId, sampleWorks]);
 
   // 업데이트
   const handleUpdate = useCallback(
