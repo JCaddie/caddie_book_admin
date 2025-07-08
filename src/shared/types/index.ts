@@ -8,3 +8,14 @@ export type {
   NavigationConfig,
   NavigationState,
 } from "./navigation";
+
+// 골프장 관련 타입
+export type {
+  GolfCourse,
+  ContactInfo,
+  OperationStats,
+  GolfCourseDetail,
+  EditableGolfCourse,
+  GolfCourseFilters,
+  OperationCard,
+} from "./golf-course";
