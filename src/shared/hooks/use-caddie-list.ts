@@ -6,7 +6,6 @@ import {
   generateSampleCaddies,
   filterCaddies,
   createPaddedData,
-  getDeleteConfirmMessage,
 } from "@/shared/lib/caddie-utils";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 
@@ -74,24 +73,24 @@ export const useCaddieList = () => {
     setSelection({ selectedRowKeys, selectedRows });
   };
 
-  // 선택된 항목 삭제
-  const handleDeleteSelected = () => {
-    if (selection.selectedRows.length === 0) {
-      alert("삭제할 항목을 선택해주세요.");
-      return;
-    }
+  // 선택된 항목 삭제 (모달 확인 없이 직접 실행)
+  const deleteSelectedItems = () => {
+    console.log("삭제할 캐디 목록:", selection.selectedRows);
 
-    const confirmMessage = getDeleteConfirmMessage(
-      selection.selectedRows.length
-    );
-    if (confirm(confirmMessage)) {
-      console.log("삭제할 캐디 목록:", selection.selectedRows);
-      // 실제 삭제 API 호출 로직 구현
-      // 삭제 후 선택 상태 초기화
-      setSelection({ selectedRowKeys: [], selectedRows: [] });
-      alert("삭제가 완료되었습니다.");
-    }
+    // 실제 삭제 API 호출 로직 구현
+    // TODO: API 호출
+
+    // 삭제 후 선택 상태 초기화
+    setSelection({ selectedRowKeys: [], selectedRows: [] });
+
+    return Promise.resolve(); // 성공 시 resolve
   };
+
+  // 삭제 가능 여부
+  const canDelete = selection.selectedRows.length > 0;
+
+  // 선택된 항목 수
+  const selectedCount = selection.selectedRows.length;
 
   return {
     // 데이터
@@ -108,7 +107,9 @@ export const useCaddieList = () => {
     // 선택 상태
     selection,
     updateSelection,
-    handleDeleteSelected,
+    deleteSelectedItems,
+    canDelete,
+    selectedCount,
 
     // 페이지네이션
     currentPage,
