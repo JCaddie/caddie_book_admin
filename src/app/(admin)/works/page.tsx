@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { DeleteConfirmationModal } from "@/shared/components/ui";
 import { usePagination } from "@/shared/hooks";
@@ -18,6 +19,8 @@ import {
 } from "@/modules/work/components";
 
 const WorksPage: React.FC = () => {
+  const router = useRouter();
+
   // 커스텀 훅들 사용
   const {
     worksList,
@@ -40,23 +43,22 @@ const WorksPage: React.FC = () => {
 
   // 페이지네이션 훅 사용
   const { currentPage, totalPages, currentData, handlePageChange } =
-    usePagination({
+    usePagination<Work>({
       data: filteredWorks,
       itemsPerPage: WORKS_PAGE_SIZE,
     });
 
-  // 행 클릭 핸들러
+  // 행 클릭 핸들러 - 디테일 페이지로 이동
   const handleRowClick = (work: Work) => {
     if ((work as Work & { isEmpty?: boolean }).isEmpty) {
       return;
     }
-    console.log("근무 스케줄 상세:", work);
+    router.push(`/works/${work.id}`);
   };
 
-  // 생성 핸들러
+  // 생성 핸들러 - 생성 페이지로 이동
   const handleCreate = () => {
-    console.log("근무 스케줄 생성");
-    // 생성 페이지로 이동하거나 모달 열기
+    router.push("/works/create");
   };
 
   // 삭제 확인 핸들러
