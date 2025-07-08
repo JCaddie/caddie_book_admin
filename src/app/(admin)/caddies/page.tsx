@@ -1,8 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SelectableDataTable, Pagination } from "@/shared/components/ui";
+import {
+  SelectableDataTable,
+  Pagination,
+  DeleteConfirmationModal,
+} from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useCaddieList } from "@/shared/hooks";
 import { CaddieFilterBar } from "@/modules/caddie/components";
@@ -11,6 +15,10 @@ import { Caddie } from "@/shared/types/caddie";
 
 const CaddieListPage: React.FC = () => {
   const router = useRouter();
+
+  // 삭제 모달 상태 관리
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 캐디 리스트 상태 관리
   const {
@@ -23,7 +31,9 @@ const CaddieListPage: React.FC = () => {
     updateSelectedSpecialTeam,
     selection,
     updateSelection,
-    handleDeleteSelected,
+    deleteSelectedItems,
+    canDelete,
+    selectedCount,
     currentPage,
     totalPages,
     handlePageChange,
@@ -34,18 +44,43 @@ const CaddieListPage: React.FC = () => {
     router.push(`/caddies/${caddie.id}`);
   };
 
+  // 삭제 버튼 클릭 핸들러
+  const handleDeleteClick = () => {
+    if (canDelete) {
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  // 삭제 확인 핸들러
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteSelectedItems();
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error("삭제 중 오류 발생:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 삭제 취소 핸들러
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
+
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
       <AdminPageHeader title="캐디" />
 
       <CaddieFilterBar
         totalCount={filteredCaddies.length}
-        selectedCount={selection.selectedRows.length}
+        selectedCount={selectedCount}
         filters={filters}
         onSearchChange={updateSearchTerm}
         onGroupChange={updateSelectedGroup}
         onSpecialTeamChange={updateSelectedSpecialTeam}
-        onDeleteSelected={handleDeleteSelected}
+        onDeleteSelected={handleDeleteClick}
       />
 
       <div className="space-y-6">
@@ -67,6 +102,16 @@ const CaddieListPage: React.FC = () => {
           onPageChange={handlePageChange}
         />
       </div>
+
+      {/* 삭제 확인 모달 */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="삭제할까요?"
+        message={`선택한 ${selectedCount}개의 캐디를 삭제합니다. 삭제 시 복원이 불가합니다.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
