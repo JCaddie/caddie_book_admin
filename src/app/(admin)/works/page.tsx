@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { ConfirmationModal } from "@/shared/components/ui";
+import { ConfirmationModal, Pagination } from "@/shared/components/ui";
 import { usePagination, useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 import { Work } from "@/modules/work/types";
 import { WORKS_PAGE_SIZE } from "@/modules/work/constants";
@@ -12,11 +12,7 @@ import {
   useWorksSelection,
   useWorksDelete,
 } from "@/modules/work/hooks";
-import {
-  WorksActionBar,
-  WorksTable,
-  WorksPagination,
-} from "@/modules/work/components";
+import { WorksActionBar, WorksTable } from "@/modules/work/components";
 
 const WorksPage: React.FC = () => {
   const router = useRouter();
@@ -100,7 +96,7 @@ const WorksPage: React.FC = () => {
       />
 
       {/* 페이지네이션 */}
-      <WorksPagination
+      <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
