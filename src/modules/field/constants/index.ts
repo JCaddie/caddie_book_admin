@@ -39,7 +39,7 @@ export const FIELD_CONSTANTS = {
   // UI 텍스트
   UI_TEXT: {
     SEARCH_PLACEHOLDER: "필드명, 골프장명 검색",
-    CREATE_BUTTON: "+ 필드 등록",
+    CREATE_BUTTON: "생성",
     DELETE_TITLE: "필드 삭제",
     DELETE_MESSAGE: "개의 필드를 삭제하시겠습니까?",
     TOTAL_COUNT: "총 {count}건",

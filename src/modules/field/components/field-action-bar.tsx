@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Plus } from "lucide-react";
 import { Button, Search } from "@/shared/components/ui";
 import { FIELD_CONSTANTS } from "../constants";
 
@@ -16,7 +17,7 @@ interface FieldActionBarProps {
 
 export const FieldActionBar: React.FC<FieldActionBarProps> = ({
   totalCount,
-  selectedCount: _,
+  selectedCount: _selectedCount,
   canDelete,
   searchTerm,
   onSearchChange,
@@ -60,6 +61,7 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
             variant="primary"
             size="md"
             onClick={onCreateClick}
+            icon={<Plus size={24} />}
             className="w-24"
           >
             {FIELD_CONSTANTS.UI_TEXT.CREATE_BUTTON}
