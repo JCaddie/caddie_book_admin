@@ -8,12 +8,18 @@ interface PersonnelStatusProps {
   filters: PersonnelFilter;
   filteredCaddies: CaddieData[];
   onFilterUpdate: (key: keyof PersonnelFilter, value: string) => void;
+  onDragStart?: (caddie: CaddieData) => void;
+  onDragEnd?: (caddie: CaddieData) => void;
+  draggedCaddie?: CaddieData | null;
 }
 
 export default function PersonnelStatus({
   filters,
   filteredCaddies,
   onFilterUpdate,
+  onDragStart,
+  onDragEnd,
+  draggedCaddie,
 }: PersonnelStatusProps) {
   return (
     <div className="w-[474px] bg-white rounded-lg p-4 h-fit">
@@ -155,7 +161,13 @@ export default function PersonnelStatus({
                   {filteredCaddies
                     .slice(rowIndex * 2, rowIndex * 2 + 2)
                     .map((caddie) => (
-                      <CaddieCard key={caddie.id} caddie={caddie} />
+                      <CaddieCard
+                        key={caddie.id}
+                        caddie={caddie}
+                        onDragStart={onDragStart}
+                        onDragEnd={onDragEnd}
+                        isDragging={draggedCaddie?.id === caddie.id}
+                      />
                     ))}
                   {/* 한 줄에 1개만 있을 때 빈 공간 채우기 */}
                   {filteredCaddies.slice(rowIndex * 2, rowIndex * 2 + 2)
