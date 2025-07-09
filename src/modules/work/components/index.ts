@@ -8,3 +8,4 @@ export { default as CaddieCard } from "./caddie-card";
 export { default as DateNavigation } from "./date-navigation";
 export { default as WorkSchedule } from "./work-schedule";
 export { default as PersonnelStatus } from "./personnel-status";
+export { default as HolidaySettingsModal } from "./holiday-settings-modal";
