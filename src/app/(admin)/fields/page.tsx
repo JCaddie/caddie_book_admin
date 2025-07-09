@@ -3,8 +3,12 @@
 import React from "react";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { SelectableDataTable, ConfirmationModal } from "@/shared/components/ui";
-import { FieldActionBar, fieldColumns } from "@/modules/field/components";
-import { useFieldManagement } from "@/modules/field/hooks";
+import {
+  FieldActionBar,
+  fieldColumns,
+  useFieldManagement,
+  FIELD_CONSTANTS,
+} from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
 
 export default function FieldsPage() {
@@ -99,8 +103,8 @@ export default function FieldsPage() {
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         onConfirm={deleteSelectedFields}
-        title="필드 삭제"
-        message={`선택한 ${selection.selectedRows.length}개의 필드를 삭제하시겠습니까?`}
+        title={FIELD_CONSTANTS.UI_TEXT.DELETE_TITLE}
+        message={`선택한 ${selection.selectedRows.length}${FIELD_CONSTANTS.UI_TEXT.DELETE_MESSAGE}`}
         confirmText="삭제"
         cancelText="취소"
         isLoading={isDeleting}
