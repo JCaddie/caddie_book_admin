@@ -1,3 +1,17 @@
+/**
+ * 공지사항 모듈 상수 통합 export
+ */
+
+// 폼 관련 상수
+export * from "./form";
+
+// UI 관련 상수
+export * from "./ui";
+
+// API 관련 상수
+export * from "./api";
+
+// 레거시 호환을 위한 통합 상수 (deprecated)
 export const ANNOUNCEMENT_CONSTANTS = {
   PAGE_SIZE: 20,
   MAX_TITLE_LENGTH: 200,
@@ -9,30 +23,18 @@ export const ANNOUNCEMENT_CONSTANTS = {
   BULK_DELETE_CONFIRMATION: "개의 공지사항을 삭제하시겠습니까?",
   PUBLISH_CONFIRMATION: "공지사항을 게시하시겠습니까?",
   UNPUBLISH_CONFIRMATION: "공지사항을 게시 중단하시겠습니까?",
-};
+} as const;
 
-// 페이지네이션 설정
-export const ANNOUNCEMENT_PAGE_SIZE = 10;
-
-// 공지사항 컬럼 너비
+// 레거시 호환을 위한 컬럼 너비 (deprecated)
 export const ANNOUNCEMENT_COLUMN_WIDTHS = {
-  no: 100,
+  no: 80,
   title: 400,
-  views: 120,
-  createdAt: 180,
-  updatedAt: 180,
+  views: 100,
+  createdAt: 120,
+  updatedAt: 120,
 } as const;
 
-// 에러 메시지
-export const ANNOUNCEMENT_ERROR_MESSAGES = {
-  FETCH_FAILED: "공지사항 목록을 불러오는 중 오류가 발생했습니다.",
-  DELETE_FAILED: "공지사항 삭제 중 오류가 발생했습니다.",
-  INVALID_PARAMS: "잘못된 파라미터입니다.",
-  NETWORK_ERROR: "네트워크 오류가 발생했습니다.",
-  UNKNOWN_ERROR: "알 수 없는 오류가 발생했습니다.",
-} as const;
-
-// 폼 유효성 검사 규칙
+// 레거시 호환을 위한 폼 규칙 (deprecated)
 export const ANNOUNCEMENT_FORM_RULES = {
   TITLE_MAX_LENGTH: 200,
   CONTENT_MAX_LENGTH: 5000,
@@ -40,17 +42,25 @@ export const ANNOUNCEMENT_FORM_RULES = {
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
 } as const;
 
-// 폼 에러 메시지
+// 레거시 호환을 위한 폼 에러 (deprecated)
 export const ANNOUNCEMENT_FORM_ERRORS = {
   TITLE_REQUIRED: "제목을 입력해주세요.",
   TITLE_TOO_LONG: "제목은 200자 이내로 입력해주세요.",
   CONTENT_REQUIRED: "내용을 입력해주세요.",
   CONTENT_TOO_LONG: "내용은 5000자 이내로 입력해주세요.",
-  FILES_TOO_MANY: "최대 5개의 파일만 업로드할 수 있습니다.",
-  FILE_TOO_LARGE: "파일 크기가 너무 큽니다. 최대 10MB까지 업로드 가능합니다.",
+  FILES_TOO_MANY: "파일은 최대 5개까지 업로드할 수 있습니다.",
+  FILE_TOO_LARGE: "파일 크기는 10MB 이하여야 합니다.",
 } as const;
 
-// CRUD 에러 메시지
+// 레거시 호환을 위한 파일 업로드 설정 (deprecated)
+export const FILE_UPLOAD_CONFIG = {
+  ACCEPT_TYPES:
+    ".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.zip,.rar,.hwp,.txt,.xlsx,.xls,.ppt,.pptx",
+  MAX_FILES: 5,
+  MAX_SIZE: 10 * 1024 * 1024, // 10MB
+} as const;
+
+// 레거시 호환을 위한 CRUD 에러 (deprecated)
 export const ANNOUNCEMENT_CRUD_ERRORS = {
   FETCH_DETAIL_FAILED: "공지사항을 불러오는 중 오류가 발생했습니다.",
   CREATE_FAILED: "공지사항 생성 중 오류가 발생했습니다.",
@@ -58,13 +68,7 @@ export const ANNOUNCEMENT_CRUD_ERRORS = {
   DELETE_FAILED: "공지사항 삭제 중 오류가 발생했습니다.",
 } as const;
 
-// 파일 업로드 설정
-export const FILE_UPLOAD_CONFIG = {
-  ACCEPT_TYPES: ".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif",
-  MAX_FILES: ANNOUNCEMENT_FORM_RULES.MAX_FILES,
-  MAX_SIZE: ANNOUNCEMENT_FORM_RULES.MAX_FILE_SIZE,
-} as const;
-
+// 레거시 호환을 위한 메시지 (deprecated)
 export const ANNOUNCEMENT_MESSAGES = {
   SUCCESS: {
     CREATED: "공지사항이 성공적으로 생성되었습니다.",
@@ -81,17 +85,4 @@ export const ANNOUNCEMENT_MESSAGES = {
     PUBLISH_FAILED: "공지사항 게시에 실패했습니다.",
     UNPUBLISH_FAILED: "공지사항 게시 중단에 실패했습니다.",
   },
-};
-
-export const ANNOUNCEMENT_VALIDATION = {
-  TITLE: {
-    REQUIRED: "제목을 입력해주세요.",
-    MIN_LENGTH: "제목은 최소 2자 이상이어야 합니다.",
-    MAX_LENGTH: `제목은 최대 ${ANNOUNCEMENT_CONSTANTS.MAX_TITLE_LENGTH}자까지 입력 가능합니다.`,
-  },
-  CONTENT: {
-    REQUIRED: "내용을 입력해주세요.",
-    MIN_LENGTH: "내용은 최소 10자 이상이어야 합니다.",
-    MAX_LENGTH: `내용은 최대 ${ANNOUNCEMENT_CONSTANTS.MAX_CONTENT_LENGTH}자까지 입력 가능합니다.`,
-  },
-};
+} as const;

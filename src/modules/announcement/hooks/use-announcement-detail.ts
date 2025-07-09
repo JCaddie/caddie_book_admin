@@ -39,6 +39,8 @@ export const useAnnouncementDetail = (id: string) => {
             mimeType: "application/pdf",
             url: "/files/document.pdf",
             uploadedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           },
         ],
         createdAt: new Date().toISOString(),

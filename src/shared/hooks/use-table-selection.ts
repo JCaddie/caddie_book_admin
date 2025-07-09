@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
 import { UseTableSelectionReturn } from "@/shared/types/table";
 import { isEmptyRow } from "@/shared/components/ui/base-table";

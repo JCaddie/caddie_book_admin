@@ -18,6 +18,7 @@ import {
 } from "../utils";
 import { useAnnouncementError } from "./use-announcement-error";
 import { useAnnouncementUrlParams } from "./use-announcement-url-params";
+import { ExtendedError } from "../utils/error-handler";
 
 interface UseAnnouncementListReturn {
   // 데이터
@@ -50,7 +51,7 @@ interface UseAnnouncementListReturn {
 
   // 상태
   isDeleting: boolean;
-  error: string | null;
+  error: ExtendedError | null;
   clearError: () => void;
 }
 
