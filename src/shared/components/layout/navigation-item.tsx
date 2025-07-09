@@ -21,17 +21,14 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
 }) => {
   const pathname = usePathname();
 
+  // 서브메뉴가 있는지 확인
+  const hasSubItems = item.subItems && item.subItems.length > 0;
+
   // 현재 경로와 일치하는지 확인 (하위 경로 포함)
   const isActive =
     pathname === item.href ||
     pathname.startsWith(item.href + "/") ||
-    item.subItems?.some(
-      (subItem: SubMenuItem) =>
-        pathname === subItem.href || pathname.startsWith(subItem.href + "/")
-    );
-
-  // 서브메뉴가 있는지 확인
-  const hasSubItems = item.subItems && item.subItems.length > 0;
+    item.subItems?.some((subItem: SubMenuItem) => pathname === subItem.href);
 
   const handleToggleExpand = () => {
     if (hasSubItems && onToggleExpand) {
@@ -110,8 +107,7 @@ const SubMenuItemComponent: React.FC<SubMenuItemComponentProps> = ({
   item,
 }) => {
   const pathname = usePathname();
-  const isActive =
-    pathname === item.href || pathname.startsWith(item.href + "/");
+  const isActive = pathname === item.href;
 
   return (
     <Link href={item.href}>
