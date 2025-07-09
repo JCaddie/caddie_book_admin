@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { AdminPageHeader } from "@/shared/components/layout";
 import {
@@ -13,11 +14,11 @@ import {
 } from "@/shared/components/ui";
 import { Column } from "@/shared/types/table";
 import { usePagination } from "@/shared/hooks";
+import { useTableData, TableItem } from "@/shared/hooks/use-table-data";
 import { ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 
 // 신규 캐디 신청 데이터 타입
-interface NewCaddieApplication extends Record<string, unknown> {
-  id: string;
+interface NewCaddieApplication extends TableItem {
   name: string;
   phone: string;
   email: string;
@@ -302,6 +303,7 @@ const RejectModal = ({
 };
 
 export default function NewCaddiePage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [applications, setApplications] = useState(mockApplications);
@@ -323,6 +325,22 @@ export default function NewCaddiePage() {
       data: filteredApplications,
       itemsPerPage: ITEMS_PER_PAGE,
     });
+
+  // 빈 행 템플릿
+  const emptyRowTemplate: Omit<NewCaddieApplication, "id" | "isEmpty"> = {
+    name: "",
+    phone: "",
+    email: "",
+    requestDate: "",
+    status: "pending",
+  };
+
+  // 테이블 데이터 패딩
+  const { paddedData } = useTableData({
+    data: currentData,
+    itemsPerPage: ITEMS_PER_PAGE,
+    emptyRowTemplate,
+  });
 
   const pendingCount = applications.filter(
     (app) => app.status === "pending"
@@ -402,6 +420,11 @@ export default function NewCaddiePage() {
     handlePageChange(1);
   };
 
+  // 행 클릭 핸들러 (상세 페이지로 이동)
+  const handleRowClick = (record: NewCaddieApplication) => {
+    router.push(`/caddies/${record.id}`);
+  };
+
   // 테이블 컬럼 정의
   const columns: Column<NewCaddieApplication>[] = [
     {
@@ -409,69 +432,84 @@ export default function NewCaddiePage() {
       title: "이름",
       width: 240,
       align: "center",
-      render: (value, record) => (
-        <Link
-          href={`/caddies/${record.id}`}
-          className="text-gray-800 hover:text-blue-600 hover:underline cursor-pointer"
-        >
-          {value as string}
-        </Link>
-      ),
+      render: (value, record) => {
+        if (record.isEmpty) return null;
+        return (
+          <Link
+            href={`/caddies/${record.id}`}
+            className="text-gray-800 hover:text-blue-600 hover:underline cursor-pointer"
+          >
+            {value as string}
+          </Link>
+        );
+      },
     },
     {
       key: "phone",
       title: "연락처",
       flex: true,
       align: "center",
-      render: (value) => (
-        <span className="text-gray-800">{value as string}</span>
-      ),
+      render: (value, record) => {
+        if (record.isEmpty) return null;
+        return <span className="text-gray-800">{value as string}</span>;
+      },
     },
     {
       key: "email",
       title: "이메일",
       flex: true,
       align: "center",
-      render: (value) => (
-        <span className="text-gray-800">{value as string}</span>
-      ),
+      render: (value, record) => {
+        if (record.isEmpty) return null;
+        return <span className="text-gray-800">{value as string}</span>;
+      },
     },
     {
       key: "requestDate",
       title: "요청일자",
       flex: true,
       align: "center",
-      render: (value) => (
-        <span className="text-gray-800">{value as string}</span>
-      ),
+      render: (value, record) => {
+        if (record.isEmpty) return null;
+        return <span className="text-gray-800">{value as string}</span>;
+      },
     },
     {
       key: "actions",
       title: "",
       width: 136,
       align: "center",
-      render: (_, record) => (
-        <div className="flex items-center gap-1 h-8">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleApprove(record.id)}
-            disabled={record.status !== "pending"}
-            className="h-6 px-2 text-xs min-w-[36px]"
-          >
-            승인
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleReject(record.id)}
-            disabled={record.status !== "pending"}
-            className="h-6 px-2 text-xs min-w-[36px]"
-          >
-            거절
-          </Button>
-        </div>
-      ),
+      render: (_, record) => {
+        if (record.isEmpty) return null;
+        return (
+          <div className="flex items-center gap-1 h-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleApprove(record.id);
+              }}
+              disabled={record.status !== "pending"}
+              className="h-6 px-2 text-xs min-w-[36px]"
+            >
+              승인
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReject(record.id);
+              }}
+              disabled={record.status !== "pending"}
+              className="h-6 px-2 text-xs min-w-[36px]"
+            >
+              거절
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -517,10 +555,12 @@ export default function NewCaddiePage() {
         <div className="space-y-6">
           <SelectableDataTable
             columns={columns}
-            data={currentData}
+            data={paddedData}
+            realDataCount={currentData.length}
             selectable={true}
             selectedRowKeys={selectedRowKeys}
             onSelectChange={handleSelectChange}
+            onRowClick={handleRowClick}
             rowKey="id"
             layout="flexible"
             emptyText="신규 캐디 신청이 없습니다"
