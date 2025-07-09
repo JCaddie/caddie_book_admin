@@ -19,8 +19,7 @@ function validateToken(token: string): boolean {
     if (!["1", "2"].includes(userId)) return false;
 
     return true;
-  } catch (error) {
-    console.error("토큰 검증 에러:", error);
+  } catch {
     return false;
   }
 }
@@ -28,8 +27,6 @@ function validateToken(token: string): boolean {
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token");
   const { pathname } = request.nextUrl;
-
-  console.log(`미들웨어 실행: ${pathname}, 토큰: ${token?.value || "none"}`);
 
   // 인증이 필요한 경로들 (관리자 페이지)
   const protectedRoutes = [
@@ -50,40 +47,28 @@ export function middleware(request: NextRequest) {
   const publicRoutes = ["/login", "/register"];
   const isPublicRoute = publicRoutes.includes(pathname);
 
-  console.log(
-    `경로 분석: protected=${isProtectedRoute}, public=${isPublicRoute}`
-  );
-
   // 관리자 페이지 접근 시 인증 체크
   if (isProtectedRoute) {
     if (!token) {
-      console.log("토큰 없음 -> 로그인 페이지로 리다이렉트");
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
     // 토큰 유효성 검증
     if (!validateToken(token.value)) {
-      console.log("유효하지 않은 토큰 -> 로그인 페이지로 리다이렉트");
       // 유효하지 않은 토큰 쿠키 삭제
       const response = NextResponse.redirect(new URL("/login", request.url));
       response.cookies.delete("auth_token");
       response.cookies.delete("user_data");
       return response;
     }
-
-    console.log("유효한 토큰 -> 관리자 페이지 접근 허용");
   }
 
   // 로그인 페이지에 인증된 상태로 접근 시 대시보드로 리다이렉트
   if (isPublicRoute && token) {
     // 토큰이 있어도 유효성 검증
     if (validateToken(token.value)) {
-      console.log(
-        "유효한 토큰으로 로그인 페이지 접근 -> 대시보드로 리다이렉트"
-      );
       return NextResponse.redirect(new URL("/dashboard", request.url));
     } else {
-      console.log("유효하지 않은 토큰 -> 쿠키 삭제 후 로그인 페이지 유지");
       // 유효하지 않은 토큰 쿠키 삭제
       const response = NextResponse.next();
       response.cookies.delete("auth_token");
@@ -96,7 +81,6 @@ export function middleware(request: NextRequest) {
   if (pathname === "/") {
     // 유효하지 않은 토큰이 있다면 삭제
     if (token && !validateToken(token.value)) {
-      console.log("홈페이지 접근 (유효하지 않은 토큰) -> 토큰 삭제");
       const response = NextResponse.next();
       response.cookies.delete("auth_token");
       response.cookies.delete("user_data");
@@ -106,7 +90,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  console.log("미들웨어 통과 -> 다음 핸들러로");
   return NextResponse.next();
 }
 

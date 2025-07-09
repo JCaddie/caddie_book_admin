@@ -12,7 +12,6 @@ const Header: React.FC = () => {
 
   const handleMyInfo = () => {
     // 내 정보 페이지로 이동
-    console.log("내 정보 클릭");
     // TODO: 내 정보 페이지로 라우팅
   };
 

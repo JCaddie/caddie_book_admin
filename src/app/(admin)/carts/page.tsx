@@ -139,7 +139,8 @@ const CartsPage: React.FC = () => {
     if (cart.isEmpty) {
       return;
     }
-    console.log("카트 상세:", cart);
+    // TODO: 카트 상세 페이지로 이동
+    // router.push(`/carts/${cart.id}`);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

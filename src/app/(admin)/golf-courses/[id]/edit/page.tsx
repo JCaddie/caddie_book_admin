@@ -66,7 +66,7 @@ const GolfCourseEditPage: React.FC = () => {
   // 완료 버튼 핸들러
   const handleSubmit = () => {
     // 실제로는 API 호출하여 저장
-    console.log("저장할 데이터:", formData);
+    // TODO: API 호출로 데이터 저장
 
     // 저장 후 상세 페이지로 이동
     router.push(`/golf-courses/${golfCourseId}`);

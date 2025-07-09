@@ -129,7 +129,8 @@ const FieldsPage: React.FC = () => {
     if (field.isEmpty) {
       return;
     }
-    console.log("필드 상세:", field);
+    // TODO: 필드 상세 페이지로 이동
+    // router.push(`/fields/${field.id}`);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

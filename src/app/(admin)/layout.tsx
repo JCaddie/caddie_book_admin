@@ -12,20 +12,10 @@ const AdminRootLayout: React.FC<AdminRootLayoutProps> = ({ children }) => {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
-  console.log(
-    "AdminRootLayout 렌더링 - 로딩:",
-    isLoading,
-    "인증:",
-    isAuthenticated,
-    "사용자:",
-    user
-  );
-
   // 5초 후에도 로딩 상태면 타임아웃 처리
   useEffect(() => {
     if (isLoading) {
       const timer = setTimeout(() => {
-        console.log("로딩 타임아웃 - 5초 경과");
         setLoadingTimeout(true);
       }, 5000);
 

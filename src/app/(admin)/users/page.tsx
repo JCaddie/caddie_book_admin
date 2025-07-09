@@ -130,7 +130,8 @@ const UsersPage: React.FC = () => {
     if (user.isEmpty) {
       return;
     }
-    console.log("사용자 상세:", user);
+    // TODO: 사용자 상세 페이지로 이동
+    // router.push(`/users/${user.id}`);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
