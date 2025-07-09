@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 
-interface UsePaginationProps<T> {
+export interface UsePaginationProps<T> {
   data: T[];
   itemsPerPage?: number;
 }
 
-interface UsePaginationReturn<T> {
+export interface UsePaginationReturn<T> {
   currentPage: number;
   totalPages: number;
   currentData: T[];

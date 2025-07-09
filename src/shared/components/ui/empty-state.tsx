@@ -1,6 +1,6 @@
 import React from "react";
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
   message?: string;
   className?: string;
 }

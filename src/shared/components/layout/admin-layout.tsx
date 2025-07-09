@@ -3,7 +3,7 @@ import Sidebar from "./sidebar";
 import Header from "./header";
 import AuthGuard from "@/shared/components/auth/auth-guard";
 
-interface AdminLayoutProps {
+export interface AdminLayoutProps {
   children: React.ReactNode;
   userRole: UserRole;
 }

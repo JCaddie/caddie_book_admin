@@ -2,7 +2,7 @@
 
 import React from "react";
 
-interface DeleteConfirmationModalProps {
+export interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;

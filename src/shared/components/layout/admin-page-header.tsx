@@ -1,6 +1,6 @@
 import React from "react";
 
-interface AdminPageHeaderProps {
+export interface AdminPageHeaderProps {
   title: string;
   totalCount?: number;
   action?: React.ReactNode;

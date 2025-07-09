@@ -5,7 +5,7 @@ import { UserRole } from "@/shared/types";
 import { NAVIGATION_CONFIG } from "@/shared/constants/navigation";
 import NavigationItem from "./navigation-item";
 
-interface NavigationProps {
+export interface NavigationProps {
   userRole: UserRole;
 }
 
