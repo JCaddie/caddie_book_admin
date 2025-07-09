@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
 import { AdminPageHeader } from "@/shared/components/layout";
 import {
   Button,
@@ -11,6 +10,7 @@ import {
   Search,
   Pagination,
   Badge,
+  DeleteConfirmationModal,
 } from "@/shared/components/ui";
 import { Column } from "@/shared/types/table";
 import { usePagination } from "@/shared/hooks";
@@ -206,102 +206,6 @@ const mockApplications: NewCaddieApplication[] = [
   },
 ];
 
-// 승인 모달 컴포넌트
-const ApprovalModal = ({
-  isOpen,
-  onClose,
-  selectedCount,
-  onConfirm,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedCount: number;
-  onConfirm: () => void;
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm flex items-center justify-center z-50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg p-6 w-80"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">승인 확인</h3>
-          <button onClick={onClose}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <p className="text-gray-600 mb-6">
-          {selectedCount > 0
-            ? `선택한 ${selectedCount}명의 캐디를 승인하시겠습니까?`
-            : "모든 캐디를 승인하시겠습니까?"}
-        </p>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
-            취소
-          </Button>
-          <Button onClick={onConfirm}>승인</Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// 거절 모달 컴포넌트
-const RejectModal = ({
-  isOpen,
-  onClose,
-  selectedCount,
-  onConfirm,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedCount: number;
-  onConfirm: () => void;
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm flex items-center justify-center z-50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg p-6 w-80"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">거절 확인</h3>
-          <button onClick={onClose}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <p className="text-gray-600 mb-6">
-          {selectedCount > 0
-            ? `선택한 ${selectedCount}명의 캐디를 거절하시겠습니까?`
-            : "모든 캐디를 거절하시겠습니까?"}
-        </p>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
-            취소
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={onConfirm}
-            className="bg-red-500 text-white hover:bg-red-600"
-          >
-            거절
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export default function NewCaddiePage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
@@ -310,6 +214,12 @@ export default function NewCaddiePage() {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"all" | "selected">("all");
+  const [isIndividualApprovalModalOpen, setIsIndividualApprovalModalOpen] =
+    useState(false);
+  const [isIndividualRejectModalOpen, setIsIndividualRejectModalOpen] =
+    useState(false);
+  const [selectedCaddieId, setSelectedCaddieId] = useState<string>("");
+  const [selectedCaddieName, setSelectedCaddieName] = useState<string>("");
 
   // 검색 필터링
   const filteredApplications = applications.filter(
@@ -346,20 +256,42 @@ export default function NewCaddiePage() {
     (app) => app.status === "pending"
   ).length;
 
-  const handleApprove = (id: string) => {
-    setApplications((apps) =>
-      apps.map((app) =>
-        app.id === id ? { ...app, status: "approved" as const } : app
-      )
-    );
+  const openIndividualApprovalModal = (id: string, name: string) => {
+    setSelectedCaddieId(id);
+    setSelectedCaddieName(name);
+    setIsIndividualApprovalModalOpen(true);
   };
 
-  const handleReject = (id: string) => {
+  const openIndividualRejectModal = (id: string, name: string) => {
+    setSelectedCaddieId(id);
+    setSelectedCaddieName(name);
+    setIsIndividualRejectModalOpen(true);
+  };
+
+  const handleIndividualApprove = () => {
     setApplications((apps) =>
       apps.map((app) =>
-        app.id === id ? { ...app, status: "rejected" as const } : app
+        app.id === selectedCaddieId
+          ? { ...app, status: "approved" as const }
+          : app
       )
     );
+    setIsIndividualApprovalModalOpen(false);
+    setSelectedCaddieId("");
+    setSelectedCaddieName("");
+  };
+
+  const handleIndividualReject = () => {
+    setApplications((apps) =>
+      apps.map((app) =>
+        app.id === selectedCaddieId
+          ? { ...app, status: "rejected" as const }
+          : app
+      )
+    );
+    setIsIndividualRejectModalOpen(false);
+    setSelectedCaddieId("");
+    setSelectedCaddieName("");
   };
 
   const handleBulkApprove = () => {
@@ -488,7 +420,7 @@ export default function NewCaddiePage() {
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                handleApprove(record.id);
+                openIndividualApprovalModal(record.id, record.name);
               }}
               disabled={record.status !== "pending"}
               className="h-6 px-2 text-xs min-w-[36px]"
@@ -500,7 +432,7 @@ export default function NewCaddiePage() {
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                handleReject(record.id);
+                openIndividualRejectModal(record.id, record.name);
               }}
               disabled={record.status !== "pending"}
               className="h-6 px-2 text-xs min-w-[36px]"
@@ -577,18 +509,54 @@ export default function NewCaddiePage() {
       </div>
 
       {/* 모달 */}
-      <ApprovalModal
+      <DeleteConfirmationModal
         isOpen={isApprovalModalOpen}
         onClose={() => setIsApprovalModalOpen(false)}
-        selectedCount={modalType === "selected" ? selectedRowKeys.length : 0}
         onConfirm={handleBulkApprove}
+        title="승인하시겠습니까?"
+        message={
+          modalType === "selected"
+            ? `선택한 ${selectedRowKeys.length}명의 캐디를 승인하시겠습니까?`
+            : "모든 캐디를 승인하시겠습니까?"
+        }
+        confirmText="승인"
+        cancelText="취소"
       />
 
-      <RejectModal
+      <DeleteConfirmationModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
-        selectedCount={modalType === "selected" ? selectedRowKeys.length : 0}
         onConfirm={handleBulkReject}
+        title="거절하시겠습니까?"
+        message={
+          modalType === "selected"
+            ? `선택한 ${selectedRowKeys.length}명의 캐디를 거절하시겠습니까?`
+            : "모든 캐디를 거절하시겠습니까?"
+        }
+        confirmText="거절"
+        cancelText="취소"
+      />
+
+      {/* 개별 승인 모달 */}
+      <DeleteConfirmationModal
+        isOpen={isIndividualApprovalModalOpen}
+        onClose={() => setIsIndividualApprovalModalOpen(false)}
+        onConfirm={handleIndividualApprove}
+        title="승인하시겠습니까?"
+        message={`${selectedCaddieName}님을 승인하시겠습니까?`}
+        confirmText="승인"
+        cancelText="취소"
+      />
+
+      {/* 개별 거절 모달 */}
+      <DeleteConfirmationModal
+        isOpen={isIndividualRejectModalOpen}
+        onClose={() => setIsIndividualRejectModalOpen(false)}
+        onConfirm={handleIndividualReject}
+        title="거절하시겠습니까?"
+        message={`${selectedCaddieName}님을 거절하시겠습니까?`}
+        confirmText="거절"
+        cancelText="취소"
       />
     </div>
   );
