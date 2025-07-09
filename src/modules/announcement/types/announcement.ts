@@ -1,30 +1,31 @@
-export interface Announcement {
-  id: string;
+import {
+  WithId,
+  WithTimestamps,
+  WithAuthor,
+  BaseFilters,
+  SelectionState,
+  ApiResponse,
+  PaginatedData,
+} from "@/shared/types";
+
+export interface Announcement extends WithId, WithTimestamps, WithAuthor {
   title: string;
   content: string;
   views: number;
-  createdAt: string;
-  updatedAt: string;
-  authorId: string;
-  authorName: string;
   isPublished: boolean;
   publishedAt?: string;
 }
 
-export interface AnnouncementFilters {
-  searchTerm: string;
+// 번호가 추가된 공지사항 타입
+export type AnnouncementWithNo = PaginatedData<Announcement>;
+
+export interface AnnouncementFilters extends BaseFilters {
   isPublished?: boolean;
   startDate?: string;
   endDate?: string;
 }
 
-export interface AnnouncementListResponse {
-  data: Announcement[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+export type AnnouncementListResponse = ApiResponse<Announcement[]>;
 
 export interface CreateAnnouncementData {
   title: string;
@@ -38,7 +39,4 @@ export interface UpdateAnnouncementData {
   isPublished?: boolean;
 }
 
-export interface AnnouncementSelection {
-  selectedRowKeys: string[];
-  selectedRows: Announcement[];
-}
+export type AnnouncementSelection = SelectionState<Announcement>;
