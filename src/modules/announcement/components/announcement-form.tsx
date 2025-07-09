@@ -181,61 +181,39 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       )}
 
       {/* 제목 */}
-      {isReadonly ? (
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-800 w-22">
-            제목
-          </label>
-          <div className="bg-gray-50 border border-gray-300 rounded-md px-3 py-2">
-            <span className="text-sm text-gray-800">
-              {formData.title || announcement?.title || "제목 없음"}
-            </span>
-          </div>
-        </div>
-      ) : (
-        <TextField
-          label="제목"
-          value={formData.title}
-          onChange={handleTitleChange}
-          error={errors.title}
-          disabled={loading}
-          placeholder="제목을 입력하세요"
-          maxLength={ANNOUNCEMENT_FORM_RULES.TITLE_MAX_LENGTH}
-          required
-        />
-      )}
+      <TextField
+        label="제목"
+        value={formData.title}
+        onChange={handleTitleChange}
+        error={errors.title}
+        disabled={isReadonly || loading}
+        placeholder="제목을 입력하세요"
+        maxLength={ANNOUNCEMENT_FORM_RULES.TITLE_MAX_LENGTH}
+        required={!isReadonly}
+      />
 
       {/* 내용 */}
-      {isReadonly ? (
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-800 w-8">
-            내용
-          </label>
-          <div className="bg-gray-50 border border-gray-300 rounded-md px-3 py-2 min-h-[200px]">
-            <div className="text-sm text-gray-800 whitespace-pre-wrap">
-              {formData.content || announcement?.content || "내용 없음"}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-800">
-            내용 <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={formData.content}
-            onChange={(e) => handleContentChange(e.target.value)}
-            disabled={loading}
-            placeholder="내용을 입력하세요"
-            rows={12}
-            maxLength={ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH}
-            className={`w-full px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent border-gray-300 ${
-              errors.content ? "border-red-300" : ""
-            }`}
-          />
-          {errors.content && (
-            <p className="text-sm text-red-500">{errors.content}</p>
-          )}
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-gray-800">
+          내용 {!isReadonly && <span className="text-red-500">*</span>}
+        </label>
+        <textarea
+          value={formData.content}
+          onChange={(e) => handleContentChange(e.target.value)}
+          disabled={isReadonly || loading}
+          placeholder="내용을 입력하세요"
+          rows={12}
+          maxLength={ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH}
+          className={`w-full px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+            isReadonly || loading
+              ? "bg-gray-50 border-gray-300 text-gray-600 cursor-not-allowed"
+              : "border-gray-300"
+          } ${errors.content ? "border-red-300" : ""}`}
+        />
+        {errors.content && (
+          <p className="text-sm text-red-500">{errors.content}</p>
+        )}
+        {!isReadonly && (
           <div className="flex justify-between text-xs text-gray-500">
             <span>
               최대 {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}
@@ -246,77 +224,49 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
               {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}
             </span>
           </div>
-        </div>
-      )}
-
-      {/* 첨부 파일 */}
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-800 w-22">
-          첨부 파일
-        </label>
-        {mode === "view" ? (
-          <div className="space-y-2">
-            {existingFiles.length > 0 ? (
-              existingFiles.map((file) => (
-                <div key={file.id} className="text-sm text-gray-600 opacity-60">
-                  {file.originalName}
-                </div>
-              ))
-            ) : (
-              <div className="text-sm text-gray-500">
-                첨부된 파일이 없습니다.
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <FileUpload
-              existingFiles={existingFiles}
-              onFilesChange={handleFilesChange}
-              onExistingFileRemove={handleExistingFileRemove}
-              disabled={loading}
-              accept={FILE_UPLOAD_CONFIG.ACCEPT_TYPES}
-              maxFiles={FILE_UPLOAD_CONFIG.MAX_FILES}
-              maxSize={FILE_UPLOAD_CONFIG.MAX_SIZE}
-            />
-            {errors.files && (
-              <p className="text-sm text-red-500">{errors.files}</p>
-            )}
-          </>
         )}
       </div>
 
-      {/* 게시 상태 (편집 모드에서만) */}
-      {mode !== "view" && (
-        <div className="flex items-center space-x-3">
-          <label className="text-sm font-semibold text-gray-800">
-            게시 상태
-          </label>
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.isPublished}
-              onChange={handlePublishToggle}
-              disabled={loading}
-              className="sr-only"
-            />
+      {/* 첨부 파일 */}
+      <FileUpload
+        label="첨부 파일"
+        existingFiles={existingFiles}
+        onFilesChange={handleFilesChange}
+        onExistingFileRemove={handleExistingFileRemove}
+        disabled={isReadonly || loading}
+        accept={FILE_UPLOAD_CONFIG.ACCEPT_TYPES}
+        maxFiles={FILE_UPLOAD_CONFIG.MAX_FILES}
+        maxSize={FILE_UPLOAD_CONFIG.MAX_SIZE}
+      />
+      {errors.files && <p className="text-sm text-red-500">{errors.files}</p>}
+
+      {/* 게시 상태 */}
+      <div className="flex items-center space-x-3">
+        <label className="text-sm font-semibold text-gray-800">게시 상태</label>
+        <label className="inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.isPublished}
+            onChange={handlePublishToggle}
+            disabled={isReadonly || loading}
+            className="sr-only"
+          />
+          <span
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              formData.isPublished ? "bg-primary" : "bg-gray-200"
+            } ${isReadonly || loading ? "cursor-not-allowed opacity-50" : ""}`}
+          >
             <span
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.isPublished ? "bg-primary" : "bg-gray-200"
-              } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  formData.isPublished ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </span>
-            <span className="ml-2 text-sm text-gray-700">
-              {formData.isPublished ? "게시됨" : "게시 안함"}
-            </span>
-          </label>
-        </div>
-      )}
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                formData.isPublished ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </span>
+          <span className="ml-2 text-sm text-gray-700">
+            {formData.isPublished ? "게시됨" : "게시 안함"}
+          </span>
+        </label>
+      </div>
 
       {/* 하단 액션 버튼 */}
       <div className="flex items-center justify-end gap-4">
