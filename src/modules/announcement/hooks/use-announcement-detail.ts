@@ -1,0 +1,72 @@
+import { useState, useCallback } from "react";
+import { Announcement } from "../types";
+import { ANNOUNCEMENT_CRUD_ERRORS } from "../constants";
+
+/**
+ * 공지사항 상세 조회 훅
+ */
+export const useAnnouncementDetail = (id: string) => {
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAnnouncement = useCallback(async () => {
+    if (!id) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // TODO: API 호출 구현
+      // const response = await fetch(`/api/announcements/${id}`);
+      // const data = await response.json();
+
+      // 임시 데이터 (실제로는 API에서 가져옴)
+      const mockAnnouncement: Announcement = {
+        id,
+        title: "테스트 공지사항",
+        content:
+          "이것은 테스트 공지사항입니다.\n\n상세 내용이 여기에 들어갑니다.",
+        views: 123,
+        isPublished: true,
+        publishedAt: new Date().toISOString(),
+        files: [
+          {
+            id: "file1",
+            filename: "document.pdf",
+            originalName: "공지사항_첨부파일.pdf",
+            size: 1024 * 1024,
+            mimeType: "application/pdf",
+            url: "/files/document.pdf",
+            uploadedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        authorId: "admin1",
+        authorName: "관리자",
+      };
+
+      setAnnouncement(mockAnnouncement);
+    } catch (err) {
+      setError(ANNOUNCEMENT_CRUD_ERRORS.FETCH_DETAIL_FAILED);
+      console.error("공지사항 조회 오류:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  return {
+    announcement,
+    loading,
+    error,
+    fetchAnnouncement,
+    clearError,
+  };
+};
