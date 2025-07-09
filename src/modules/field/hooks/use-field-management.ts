@@ -1,133 +1,190 @@
 import { useState, useMemo } from "react";
-import { FieldTableRow } from "../types/field";
-
-// 샘플 데이터
-const generateSampleFields = (): FieldTableRow[] => {
-  return Array.from({ length: 26 }, (_, index) => ({
-    id: `field-${index + 1}`,
-    no: index + 1,
-    fieldName: index % 2 === 0 ? "한울(서남)" : "누리(남서)",
-    golfCourse: "제이캐디 아카데미",
-    availablePersonnel: 130,
-    carts: 32,
-    operationStatus: index % 2 === 0 ? "운영" : "정비",
-  }));
-};
+import { FieldTableRow, FieldFilters, FieldSelection } from "../types";
+import { usePagination, useTableData } from "@/shared/hooks";
 
 export const useFieldManagement = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
-  const [allFields, setAllFields] = useState<FieldTableRow[]>(() =>
-    generateSampleFields()
-  );
+  // 필터 상태
+  const [filters, setFilters] = useState<FieldFilters>({
+    searchTerm: "",
+  });
+
+  // 선택 상태
+  const [selection, setSelection] = useState<FieldSelection>({
+    selectedRowKeys: [],
+    selectedRows: [],
+  });
+
+  // 삭제 확인 모달 상태
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // 삭제 로딩 상태
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const filteredFields = useMemo(() => {
-    if (!searchTerm) return allFields;
+  // 샘플 데이터 생성
+  const generateSampleData = (): FieldTableRow[] => {
+    const sampleData: FieldTableRow[] = [];
 
-    return allFields.filter(
-      (field) =>
-        field.fieldName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        field.golfCourse.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [allFields, searchTerm]);
-
-  const selectedRows = useMemo(() => {
-    return filteredFields.filter((field) => selectedRowKeys.includes(field.id));
-  }, [filteredFields, selectedRowKeys]);
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    // 검색시 선택 초기화
-    setSelectedRowKeys([]);
-  };
-
-  const handleSelectionChange = (newSelectedRowKeys: string[]) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
-
-  const handleDeleteClick = () => {
-    if (selectedRowKeys.length > 0) {
-      setIsDeleteModalOpen(true);
+    for (let i = 1; i <= 26; i++) {
+      sampleData.push({
+        id: `field-${i}`,
+        no: i,
+        fieldName: `${i}번 필드`,
+        golfCourse:
+          i <= 5
+            ? "청담 컨트리클럽"
+            : i <= 10
+            ? "파인힐 골프장"
+            : i <= 15
+            ? "그린밸리 CC"
+            : i <= 20
+            ? "오크우드 골프장"
+            : "레이크사이드 CC",
+        capacity: Math.floor(Math.random() * 10) + 15,
+        cart: Math.floor(Math.random() * 5) + 3 + "대",
+        status: i % 7 === 0 ? "정비중" : "운영중",
+      });
     }
+
+    return sampleData;
   };
 
-  const handleDeleteConfirm = async () => {
+  // 샘플 데이터
+  const allFields = useMemo(() => generateSampleData(), []);
+
+  // 필터링된 데이터
+  const filteredFields = useMemo(() => {
+    return allFields.filter((field) => {
+      const matchesSearch =
+        field.fieldName
+          .toLowerCase()
+          .includes(filters.searchTerm.toLowerCase()) ||
+        field.golfCourse
+          .toLowerCase()
+          .includes(filters.searchTerm.toLowerCase());
+
+      return matchesSearch;
+    });
+  }, [allFields, filters]);
+
+  // 페이지네이션
+  const { currentPage, totalPages, currentData, handlePageChange } =
+    usePagination({
+      data: filteredFields,
+      itemsPerPage: 20,
+    });
+
+  // 빈 행 템플릿
+  const emptyRowTemplate: Omit<FieldTableRow, "id" | "isEmpty"> = {
+    no: 0,
+    fieldName: "",
+    golfCourse: "",
+    capacity: 0,
+    cart: "",
+    status: "",
+  };
+
+  // 빈 행이 추가된 데이터 (20개 고정)
+  const { paddedData } = useTableData({
+    data: currentData,
+    itemsPerPage: 20,
+    emptyRowTemplate,
+  });
+
+  // 필터 업데이트 함수
+  const updateSearchTerm = (searchTerm: string) => {
+    setFilters((prev) => ({ ...prev, searchTerm }));
+  };
+
+  // 선택 상태 업데이트
+  const updateSelection = (
+    selectedRowKeys: string[],
+    selectedRows: FieldTableRow[]
+  ) => {
+    setSelection({ selectedRowKeys, selectedRows });
+  };
+
+  // 새 필드 추가
+  const addField = () => {
+    const newField: FieldTableRow = {
+      id: `field-${Date.now()}`,
+      no: allFields.length + 1,
+      fieldName: `${allFields.length + 1}번 필드`,
+      golfCourse: "새 골프장",
+      capacity: 20,
+      cart: "4대",
+      status: "운영중",
+    };
+
+    // 실제 구현에서는 API 호출
+    // 목적상 샘플 데이터를 업데이트하는 로직은 생략
+    console.log("새 필드 추가:", newField);
+  };
+
+  // 삭제 확인 모달 열기
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  // 삭제 확인 모달 닫기
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  // 선택된 필드 삭제
+  const deleteSelectedFields = async () => {
     setIsDeleting(true);
 
     try {
-      // 실제 API 호출 대신 시뮬레이션
+      // 1초 지연 (API 호출 시뮬레이션)
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // 선택된 항목들을 데이터에서 제거
-      setAllFields((prev) =>
-        prev.filter((field) => !selectedRowKeys.includes(field.id))
-      );
-      setSelectedRowKeys([]);
-      setIsDeleteModalOpen(false);
+      // 실제 구현에서는 API 호출
+      console.log("삭제할 필드들:", selection.selectedRows);
 
-      console.log(`${selectedRowKeys.length}개 필드가 삭제되었습니다.`);
+      // 선택 상태 초기화
+      setSelection({ selectedRowKeys: [], selectedRows: [] });
+
+      // 모달 닫기
+      setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error("삭제 중 오류가 발생했습니다:", error);
+      console.error("삭제 중 오류 발생:", error);
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const handleDeleteCancel = () => {
-    setIsDeleteModalOpen(false);
-  };
-
-  const handleCreateField = () => {
-    // TODO: 필드 생성 페이지로 이동 또는 모달 열기
-    console.log("새 필드 생성");
-
-    // 임시로 새 필드 추가 시뮬레이션
-    const newField: FieldTableRow = {
-      id: `field-${Date.now()}`,
-      no: allFields.length + 1,
-      fieldName: "새 필드",
-      golfCourse: "제이캐디 아카데미",
-      availablePersonnel: 100,
-      carts: 20,
-      operationStatus: "운영",
-    };
-
-    setAllFields((prev) => [newField, ...prev]);
-  };
-
-  const handleRowClick = (field: FieldTableRow) => {
-    // TODO: 필드 상세 페이지로 이동
-    console.log("Row clicked:", field);
-  };
+  // 삭제 가능 여부
+  const canDelete = selection.selectedRows.length > 0;
 
   return {
     // 데이터
-    fields: filteredFields,
-    selectedRowKeys,
-    selectedRows,
+    filteredFields,
+    paddedData,
+    realDataCount: currentData.length,
     totalCount: filteredFields.length,
-    hasSelectedItems: selectedRowKeys.length > 0,
 
-    // 검색
-    searchTerm,
-    handleSearchChange,
+    // 필터 상태
+    filters,
+    updateSearchTerm,
 
-    // 선택
-    handleSelectionChange,
+    // 선택 상태
+    selection,
+    updateSelection,
+    canDelete,
 
-    // 삭제
+    // 페이지네이션
+    currentPage,
+    totalPages,
+    handlePageChange,
+
+    // 액션
+    addField,
+    openDeleteModal,
+    closeDeleteModal,
+    deleteSelectedFields,
+
+    // 모달 상태
     isDeleteModalOpen,
     isDeleting,
-    handleDeleteClick,
-    handleDeleteConfirm,
-    handleDeleteCancel,
-
-    // 생성
-    handleCreateField,
-
-    // 행 클릭
-    handleRowClick,
   };
 };
