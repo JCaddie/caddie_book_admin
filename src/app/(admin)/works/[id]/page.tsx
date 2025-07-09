@@ -6,10 +6,7 @@ import { useWorkDetail } from "@/modules/work/hooks/use-work-detail";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import {
-  WorkDetailPageProps,
-  CaddieData,
-} from "@/modules/work/types/work-detail";
+import { WorkDetailPageProps, CaddieData } from "@/modules/work/types";
 import {
   FIELDS,
   PERSONNEL_STATS,
@@ -37,7 +34,7 @@ export default function WorkDetailPage({
   );
   const { filters, filteredCaddies, updateFilter } = usePersonnelFilter();
   const { isResetModalOpen, openResetModal, closeResetModal, handleReset } =
-    useResetModal(golfCourseId, currentDate);
+    useResetModal();
 
   // TODO: 나중에 hook을 수정하여 golfCourseId와 date를 받도록 변경
   // 현재는 임시로 golfCourseId를 workId로 사용

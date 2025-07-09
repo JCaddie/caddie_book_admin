@@ -1,5 +1,9 @@
 import { TableItem } from "@/shared/hooks";
 
+// ================================
+// 신규 캐디 도메인 타입
+// ================================
+
 // 신규 캐디 신청 상태
 export type NewCaddieStatus = "pending" | "approved" | "rejected";
 
@@ -12,8 +16,16 @@ export interface NewCaddieApplication extends TableItem {
   status: NewCaddieStatus;
 }
 
+// ================================
+// UI 관련 타입
+// ================================
+
 // 모달 타입
 export type ModalType = "all" | "selected";
+
+// ================================
+// 상태 관리 타입
+// ================================
 
 // 신규 캐디 상태 관리 타입
 export interface NewCaddieState {

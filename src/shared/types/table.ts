@@ -1,5 +1,9 @@
 import React from "react";
 
+// ================================
+// 테이블 기본 구조 타입
+// ================================
+
 // 컬럼 정의 인터페이스
 export interface Column<T> {
   key: keyof T | string;
@@ -9,6 +13,10 @@ export interface Column<T> {
   align?: "left" | "center" | "right";
   render?: (value: unknown, record: T, index: number) => React.ReactNode;
 }
+
+// ================================
+// 테이블 Props 타입
+// ================================
 
 // 기본 테이블 Props 인터페이스
 export interface BaseTableProps<T> {
@@ -33,6 +41,10 @@ export interface SelectableTableProps<T> extends BaseTableProps<T> {
   realDataCount?: number; // 실제 데이터 개수 (빈 행 제외)
 }
 
+// ================================
+// 테이블 선택 기능 타입
+// ================================
+
 // 선택 상태 관리 타입
 export interface SelectionState {
   selectedRowKeys: string[];
@@ -49,6 +61,10 @@ export interface UseTableSelectionReturn<T> {
   handleSelectAll: (checked: boolean) => void;
   clearSelection: () => void;
 }
+
+// ================================
+// 테이블 유틸리티 타입
+// ================================
 
 // 테이블 공통 유틸리티 타입
 export interface TableUtilityProps<T = Record<string, unknown>> {
