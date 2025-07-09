@@ -11,6 +11,9 @@ export default function CaddieCard({
   caddie,
   isEmpty = false,
   emptyText = "미배정",
+  onDragStart,
+  onDragEnd,
+  isDragging = false,
 }: CaddieCardProps) {
   if (isEmpty) {
     return (
@@ -25,9 +28,24 @@ export default function CaddieCard({
   const cardStyle = getCaddieCardStyle(caddie.status);
   const specialBadgeStyle = getSpecialBadgeStyle(caddie.specialBadge);
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData("text/plain", JSON.stringify(caddie));
+    e.dataTransfer.effectAllowed = "move";
+    onDragStart?.(caddie);
+  };
+
+  const handleDragEnd = () => {
+    onDragEnd?.(caddie);
+  };
+
   return (
     <div
-      className={`w-[218px] flex items-center justify-between px-2 py-1.5 bg-white rounded-md border border-[#DDDDDD] ${cardStyle}`}
+      className={`w-[218px] flex items-center justify-between px-2 py-1.5 bg-white rounded-md border border-[#DDDDDD] ${cardStyle} ${
+        isDragging ? "opacity-50" : ""
+      } cursor-move`}
+      draggable={true}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <div className="flex items-center gap-1.5">
         {/* 조 배지 */}
