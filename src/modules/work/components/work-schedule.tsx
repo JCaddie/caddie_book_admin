@@ -58,29 +58,10 @@ export default function WorkSchedule({
   // 스케줄용 캐디 데이터 (첫 6명만 사용)
   const caddies = SAMPLE_CADDIES.slice(0, 6);
 
-  // 초기 캐디 위치 설정
+  // 초기 캐디 위치 설정 (기본적으로 빈 상태)
   const initializeCaddiePositions = () => {
-    const positions = new Map<string, CaddiePosition>();
-    caddies.forEach((caddie, index) => {
-      const fieldIndex = Math.floor(index / 2) % fields.length;
-      const timeIndex = index % 2;
-      const part = Math.floor(index / (fields.length * 2)) + 1;
-
-      // 고유한 위치 키 생성
-      const positionKey = `${caddie.id}_${fieldIndex}_${timeIndex}_${part}`;
-      positions.set(positionKey, {
-        fieldIndex,
-        timeIndex,
-        part,
-      });
-    });
-    setCaddiePositions(positions);
+    setCaddiePositions(new Map());
   };
-
-  // 초기화 시 캐디 위치 설정
-  React.useEffect(() => {
-    initializeCaddiePositions();
-  }, []);
 
   // 특정 위치에 배정된 캐디 찾기
   const getCaddieAtPosition = (
