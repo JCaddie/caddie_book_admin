@@ -37,6 +37,11 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           href: "/caddies",
         },
         {
+          id: "new-caddie",
+          label: "신규 캐디",
+          href: "/caddies/new",
+        },
+        {
           id: "group-status",
           label: "그룹 현황",
           href: "/caddies/groups",
@@ -96,6 +101,11 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           id: "caddie-list",
           label: "캐디 리스트",
           href: "/caddies",
+        },
+        {
+          id: "new-caddie",
+          label: "신규 캐디",
+          href: "/caddies/new",
         },
         {
           id: "group-status",

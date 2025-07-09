@@ -9,9 +9,9 @@ import {
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useCaddieList } from "@/shared/hooks";
-import { CaddieFilterBar } from "@/modules/caddie/components";
 import { CADDIE_COLUMNS } from "@/shared/constants/caddie";
 import { Caddie } from "@/shared/types/caddie";
+import CaddieFilterBar from "../../../modules/caddie/components/caddie-filter-bar";
 
 const CaddieListPage: React.FC = () => {
   const router = useRouter();
