@@ -1,22 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { tokenUtils } from "@/shared/lib/utils";
+import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 // 토큰 유효성 검증 함수
 function validateToken(token: string): boolean {
   try {
-    // 목 토큰 검증 (실제 구현에서는 JWT 검증)
-    const parts = token.split("-");
-    if (parts.length < 3) return false;
-
-    const tokenType = parts[0];
-    const prefix = parts[1];
-    const userId = parts[2];
-
-    // 기본 형식 검증
-    if (tokenType !== "mock" || prefix !== "token") return false;
+    // 통합된 토큰 유틸리티 사용
+    if (!tokenUtils.isValidFormat(token)) return false;
 
     // 사용자 ID 검증 (테스트 환경에서는 1, 2만 유효)
-    if (!["1", "2"].includes(userId)) return false;
+    const userId = tokenUtils.extractUserId(token);
+    if (!userId || !["1", "2"].includes(userId)) return false;
+
+    // 토큰 만료 검증
+    if (tokenUtils.isExpired(token)) return false;
 
     return true;
   } catch {
@@ -25,7 +23,7 @@ function validateToken(token: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("auth_token");
+  const token = request.cookies.get(AUTH_CONSTANTS.COOKIES.AUTH_TOKEN);
   const { pathname } = request.nextUrl;
 
   // 인증이 필요한 경로들 (관리자 페이지)
@@ -44,21 +42,25 @@ export function middleware(request: NextRequest) {
   );
 
   // 인증이 필요하지 않은 경로들
-  const publicRoutes = ["/login", "/register"];
+  const publicRoutes = [AUTH_CONSTANTS.ROUTES.LOGIN, "/register"];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // 관리자 페이지 접근 시 인증 체크
   if (isProtectedRoute) {
     if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(
+        new URL(AUTH_CONSTANTS.ROUTES.LOGIN, request.url)
+      );
     }
 
     // 토큰 유효성 검증
     if (!validateToken(token.value)) {
       // 유효하지 않은 토큰 쿠키 삭제
-      const response = NextResponse.redirect(new URL("/login", request.url));
-      response.cookies.delete("auth_token");
-      response.cookies.delete("user_data");
+      const response = NextResponse.redirect(
+        new URL(AUTH_CONSTANTS.ROUTES.LOGIN, request.url)
+      );
+      response.cookies.delete(AUTH_CONSTANTS.COOKIES.AUTH_TOKEN);
+      response.cookies.delete(AUTH_CONSTANTS.COOKIES.USER_DATA);
       return response;
     }
   }
@@ -67,23 +69,25 @@ export function middleware(request: NextRequest) {
   if (isPublicRoute && token) {
     // 토큰이 있어도 유효성 검증
     if (validateToken(token.value)) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(
+        new URL(AUTH_CONSTANTS.ROUTES.DASHBOARD, request.url)
+      );
     } else {
       // 유효하지 않은 토큰 쿠키 삭제
       const response = NextResponse.next();
-      response.cookies.delete("auth_token");
-      response.cookies.delete("user_data");
+      response.cookies.delete(AUTH_CONSTANTS.COOKIES.AUTH_TOKEN);
+      response.cookies.delete(AUTH_CONSTANTS.COOKIES.USER_DATA);
       return response;
     }
   }
 
   // 홈페이지(/) 접근 시 클라이언트 사이드에서 리다이렉트 처리
-  if (pathname === "/") {
+  if (pathname === AUTH_CONSTANTS.ROUTES.HOME) {
     // 유효하지 않은 토큰이 있다면 삭제
     if (token && !validateToken(token.value)) {
       const response = NextResponse.next();
-      response.cookies.delete("auth_token");
-      response.cookies.delete("user_data");
+      response.cookies.delete(AUTH_CONSTANTS.COOKIES.AUTH_TOKEN);
+      response.cookies.delete(AUTH_CONSTANTS.COOKIES.USER_DATA);
       return response;
     }
     // 홈페이지는 클라이언트 사이드에서 리다이렉트 처리

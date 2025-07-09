@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { TextField } from "@/shared/components/ui";
 import { User } from "@/shared/types";
+import { tokenUtils } from "@/shared/lib/utils";
+import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
@@ -39,7 +41,7 @@ export default function LoginPage() {
     if (!isLoading && isAuthenticated) {
       // 약간의 지연을 주어 상태 업데이트가 확실히 완료되도록 함
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(AUTH_CONSTANTS.ROUTES.DASHBOARD);
       }, 100);
     }
   }, [isAuthenticated, isLoading, router]);
@@ -77,8 +79,8 @@ export default function LoginPage() {
       );
 
       if (account) {
-        // 간단한 토큰 생성 (실제로는 서버에서 발급받음)
-        const token = `mock-token-${account.id}-${Date.now()}`;
+        // 통합된 토큰 유틸리티로 토큰 생성
+        const token = tokenUtils.generateMockToken(account.id);
 
         // 사용자 정보 생성
         const user: User = {
@@ -119,7 +121,7 @@ export default function LoginPage() {
       );
 
       if (account) {
-        const token = `mock-token-${account.id}-${Date.now()}`;
+        const token = tokenUtils.generateMockToken(account.id);
 
         // 사용자 정보 생성
         const user: User = {
