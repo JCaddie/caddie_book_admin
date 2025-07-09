@@ -33,14 +33,14 @@ const CartsPage: React.FC = () => {
 
   // 새 카트 생성 페이지로 이동
   const handleCreateNew = () => {
-    router.push("/admin/carts/new");
+    router.push("/carts/new");
   };
 
   // 카트 상세 페이지로 이동
   const handleRowClick = (cart: Cart) => {
     // 빈 행이 아닌 경우에만 상세 페이지로 이동
     if (cart.id && !cart.id.startsWith("empty")) {
-      router.push(`/admin/carts/${cart.id}`);
+      router.push(`/carts/${cart.id}`);
     }
   };
 
