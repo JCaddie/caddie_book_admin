@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Caddie, CaddieFilters, CaddieSelection } from "@/shared/types/caddie";

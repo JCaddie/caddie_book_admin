@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 
 export interface TableItem extends Record<string, unknown> {
