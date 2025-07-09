@@ -31,7 +31,6 @@ export default function FieldsPage() {
     // 선택 상태
     selection,
     updateSelection,
-    canDelete,
 
     // 페이지네이션
     currentPage,
@@ -56,7 +55,6 @@ export default function FieldsPage() {
       <FieldActionBar
         totalCount={totalCount}
         selectedCount={selection.selectedRows.length}
-        canDelete={canDelete}
         searchTerm={filters.searchTerm}
         onSearchChange={updateSearchTerm}
         onDeleteClick={openDeleteModal}

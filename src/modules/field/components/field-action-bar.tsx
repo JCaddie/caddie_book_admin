@@ -8,7 +8,6 @@ import { FIELD_CONSTANTS } from "../constants";
 interface FieldActionBarProps {
   totalCount: number;
   selectedCount: number;
-  canDelete: boolean;
   searchTerm: string;
   onSearchChange: (value: string) => void;
   onDeleteClick: () => void;
@@ -17,8 +16,7 @@ interface FieldActionBarProps {
 
 export const FieldActionBar: React.FC<FieldActionBarProps> = ({
   totalCount,
-  selectedCount: _selectedCount,
-  canDelete,
+  selectedCount,
   searchTerm,
   onSearchChange,
   onDeleteClick,
@@ -50,7 +48,7 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
             variant="secondary"
             size="md"
             onClick={onDeleteClick}
-            disabled={!canDelete}
+            disabled={selectedCount === 0}
             className="w-24"
           >
             삭제
