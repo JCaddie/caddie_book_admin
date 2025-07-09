@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { DeleteConfirmationModal } from "@/shared/components/ui";
-import { usePagination } from "@/shared/hooks";
+import { usePagination, useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 import { Work } from "@/modules/work/types";
 import { WORKS_PAGE_SIZE } from "@/modules/work/constants";
 import {
@@ -20,6 +20,9 @@ import {
 
 const WorksPage: React.FC = () => {
   const router = useRouter();
+
+  // 페이지 타이틀 설정
+  useDocumentTitle({ title: PAGE_TITLES.WORKS });
 
   // 커스텀 훅들 사용
   const {

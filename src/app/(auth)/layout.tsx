@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "로그인",
+  description: "캐디북 관리자 시스템에 로그인하세요",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 interface AuthLayoutProps {
   children: React.ReactNode;
 }

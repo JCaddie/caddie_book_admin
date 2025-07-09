@@ -7,7 +7,13 @@ import {
   AdminPageHeader,
   TableWithPagination,
 } from "@/shared/components/layout";
-import { usePagination, TableItem, defaultCellRenderer } from "@/shared/hooks";
+import {
+  usePagination,
+  TableItem,
+  defaultCellRenderer,
+  useDocumentTitle,
+  PAGE_TITLES,
+} from "@/shared/hooks";
 import { Car, Trash2 } from "lucide-react";
 
 // 카트 데이터 타입
@@ -26,6 +32,9 @@ const CartsPage: React.FC = () => {
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("전체");
+
+  // 페이지 타이틀 설정
+  useDocumentTitle({ title: PAGE_TITLES.CARTS });
 
   // URL 검색 파라미터로부터 자동 검색 설정
   useEffect(() => {

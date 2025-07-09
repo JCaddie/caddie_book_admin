@@ -6,11 +6,15 @@ import RoleGuard from "@/shared/components/auth/role-guard";
 import { Button } from "@/shared/components/ui";
 import { GolfCourseEditForm } from "@/shared/components/golf-course";
 import { EditableGolfCourse } from "@/shared/types/golf-course";
+import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 
 const GolfCourseEditPage: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const golfCourseId = params.id as string;
+
+  // 페이지 타이틀 설정
+  useDocumentTitle({ title: PAGE_TITLES.GOLF_COURSE_EDIT });
 
   // 편집 가능한 골프장 데이터 상태
   const [formData, setFormData] = useState<EditableGolfCourse>({

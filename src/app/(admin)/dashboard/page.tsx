@@ -2,8 +2,12 @@
 
 import React from "react";
 import { Badge } from "@/shared/components/ui";
+import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 
 const DashboardPage: React.FC = () => {
+  // 페이지 타이틀 설정
+  useDocumentTitle({ title: PAGE_TITLES.DASHBOARD });
+
   return (
     <div className="space-y-6">
       <div>

@@ -8,13 +8,16 @@ import {
   DeleteConfirmationModal,
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useCaddieList } from "@/shared/hooks";
+import { useCaddieList, useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 import { CADDIE_COLUMNS } from "@/shared/constants/caddie";
 import { Caddie } from "@/shared/types/caddie";
 import CaddieFilterBar from "../../../modules/caddie/components/caddie-filter-bar";
 
 const CaddieListPage: React.FC = () => {
   const router = useRouter();
+
+  // 페이지 타이틀 설정
+  useDocumentTitle({ title: PAGE_TITLES.CADDIES });
 
   // 삭제 모달 상태 관리
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
