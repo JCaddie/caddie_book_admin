@@ -1,12 +1,15 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { use } from "react";
+import { use, useState } from "react";
 import { useWorkDetail } from "@/modules/work/hooks/use-work-detail";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import { WorkDetailPageProps } from "@/modules/work/types/work-detail";
+import {
+  WorkDetailPageProps,
+  CaddieData,
+} from "@/modules/work/types/work-detail";
 import {
   FIELDS,
   PERSONNEL_STATS,
@@ -23,6 +26,9 @@ export default function WorkDetailPage({
 }: WorkDetailPageProps) {
   const { id: golfCourseId } = use(params);
   const { date } = use(searchParams);
+
+  // 드래그 상태 관리
+  const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
 
   // 커스텀 훅들 사용
   const { currentDate, handleDateChange } = useDateNavigation(
@@ -44,6 +50,15 @@ export default function WorkDetailPage({
 
   // 시간 슬롯 생성
   const timeSlots = generateTimeSlots();
+
+  // 공통 드래그 이벤트 핸들러
+  const handleDragStart = (caddie: CaddieData) => {
+    setDraggedCaddie(caddie);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedCaddie(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -70,6 +85,9 @@ export default function WorkDetailPage({
           timeSlots={timeSlots}
           personnelStats={PERSONNEL_STATS}
           onResetClick={openResetModal}
+          draggedCaddie={draggedCaddie}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         />
 
         {/* 오른쪽: 인력 현황 사이드바 */}
@@ -77,6 +95,9 @@ export default function WorkDetailPage({
           filters={filters}
           filteredCaddies={filteredCaddies}
           onFilterUpdate={updateFilter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          draggedCaddie={draggedCaddie}
         />
       </div>
 
