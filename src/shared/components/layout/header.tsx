@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
-import { DeleteConfirmationModal } from "@/shared/components/ui";
+import { ConfirmationModal } from "@/shared/components/ui";
 import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 const Header: React.FC = () => {
@@ -72,7 +72,7 @@ const Header: React.FC = () => {
       </header>
 
       {/* 로그아웃 확인 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isLogoutModalOpen}
         onClose={handleLogoutCancel}
         onConfirm={handleLogoutConfirm}

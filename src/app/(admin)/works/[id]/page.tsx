@@ -15,7 +15,7 @@ import {
 import DateNavigation from "@/modules/work/components/date-navigation";
 import WorkSchedule from "@/modules/work/components/work-schedule";
 import PersonnelStatus from "@/modules/work/components/personnel-status";
-import DeleteConfirmationModal from "@/shared/components/ui/delete-confirmation-modal";
+import ConfirmationModal from "@/shared/components/ui/confirmation-modal";
 
 export default function WorkDetailPage({
   params,
@@ -99,7 +99,7 @@ export default function WorkDetailPage({
       </div>
 
       {/* 초기화 확인 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isResetModalOpen}
         onClose={closeResetModal}
         onConfirm={handleReset}

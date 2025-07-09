@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   SelectableDataTable,
   Pagination,
-  DeleteConfirmationModal,
+  ConfirmationModal,
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useCaddieList, useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
@@ -107,7 +107,7 @@ const CaddieListPage: React.FC = () => {
       </div>
 
       {/* 삭제 확인 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}

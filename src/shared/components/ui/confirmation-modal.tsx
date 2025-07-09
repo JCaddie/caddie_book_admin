@@ -2,7 +2,7 @@
 
 import React from "react";
 
-export interface DeleteConfirmationModalProps {
+export interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -13,7 +13,7 @@ export interface DeleteConfirmationModalProps {
   isLoading?: boolean;
 }
 
-const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
@@ -145,4 +145,4 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   );
 };
 
-export default DeleteConfirmationModal;
+export default ConfirmationModal;

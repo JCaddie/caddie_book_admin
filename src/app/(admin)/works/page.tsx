@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { DeleteConfirmationModal } from "@/shared/components/ui";
+import { ConfirmationModal } from "@/shared/components/ui";
 import { usePagination, useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 import { Work } from "@/modules/work/types";
 import { WORKS_PAGE_SIZE } from "@/modules/work/constants";
@@ -107,7 +107,7 @@ const WorksPage: React.FC = () => {
       />
 
       {/* 삭제 확인 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDeleteWrapper}

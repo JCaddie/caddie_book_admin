@@ -7,7 +7,7 @@ import {
   Search,
   Pagination,
   Badge,
-  DeleteConfirmationModal,
+  ConfirmationModal,
 } from "@/shared/components/ui";
 import { useNewCaddieManagement } from "@/modules/caddie/hooks";
 import { createNewCaddieColumns } from "@/modules/caddie/components";
@@ -118,7 +118,7 @@ export default function NewCaddiePage() {
       </div>
 
       {/* 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isApprovalModalOpen}
         onClose={() => setIsApprovalModalOpen(false)}
         onConfirm={handleBulkApprove}
@@ -132,7 +132,7 @@ export default function NewCaddiePage() {
         cancelText={NEW_CADDIE_CONSTANTS.CANCEL_BUTTON_TEXT}
       />
 
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         onConfirm={handleBulkReject}
@@ -147,7 +147,7 @@ export default function NewCaddiePage() {
       />
 
       {/* 개별 승인 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isIndividualApprovalModalOpen}
         onClose={() => setIsIndividualApprovalModalOpen(false)}
         onConfirm={handleIndividualApprove}
@@ -158,7 +158,7 @@ export default function NewCaddiePage() {
       />
 
       {/* 개별 거절 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isIndividualRejectModalOpen}
         onClose={() => setIsIndividualRejectModalOpen(false)}
         onConfirm={handleIndividualReject}
