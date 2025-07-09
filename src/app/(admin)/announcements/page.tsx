@@ -9,12 +9,8 @@ import {
   useAnnouncementColumns,
   AnnouncementActionBar,
 } from "@/modules/announcement/components";
-import { Announcement } from "@/modules/announcement/types";
-
-type AnnouncementWithNo = Announcement & { no: number } & Record<
-    string,
-    unknown
-  >;
+import { AnnouncementWithNo } from "@/modules/announcement/types";
+import { isValidAnnouncement } from "@/modules/announcement/utils";
 
 const AnnouncementsPage: React.FC = () => {
   const router = useRouter();
@@ -37,6 +33,7 @@ const AnnouncementsPage: React.FC = () => {
     deleteSelectedAnnouncements,
     isDeleting,
     error,
+    clearError,
   } = useAnnouncementList();
 
   // 새 공지사항 생성 페이지로 이동
@@ -46,8 +43,8 @@ const AnnouncementsPage: React.FC = () => {
 
   // 공지사항 상세 페이지로 이동
   const handleRowClick = (announcement: AnnouncementWithNo) => {
-    // 빈 행이 아닌 경우에만 상세 페이지로 이동
-    if (announcement.id && !announcement.id.startsWith("empty")) {
+    // 유효한 공지사항인 경우에만 상세 페이지로 이동
+    if (isValidAnnouncement(announcement)) {
       router.push(`/announcements/${announcement.id}`);
     }
   };
@@ -57,13 +54,16 @@ const AnnouncementsPage: React.FC = () => {
     selectedRowKeys: string[],
     selectedRows: AnnouncementWithNo[]
   ) => {
-    // 빈 행은 선택에서 제외
-    const validSelectedRows = selectedRows.filter(
-      (row) => row.id && !row.id.startsWith("empty")
-    );
+    // 유효한 행만 선택에 포함
+    const validSelectedRows = selectedRows.filter(isValidAnnouncement);
     const validSelectedRowKeys = validSelectedRows.map((row) => row.id);
 
     updateSelection(validSelectedRowKeys, validSelectedRows);
+  };
+
+  // 에러 메시지 닫기
+  const handleErrorClose = () => {
+    clearError();
   };
 
   return (
@@ -82,15 +82,24 @@ const AnnouncementsPage: React.FC = () => {
 
       {/* 에러 메시지 표시 */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-          <p className="text-sm font-medium">{error}</p>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md relative">
+          <div className="flex justify-between items-start">
+            <p className="text-sm font-medium">{error}</p>
+            <button
+              onClick={handleErrorClose}
+              className="text-red-500 hover:text-red-700 ml-4"
+              aria-label="에러 메시지 닫기"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
       <div className="space-y-6">
         <SelectableDataTable<AnnouncementWithNo>
           columns={columns}
-          data={data as AnnouncementWithNo[]}
+          data={data}
           selectable={true}
           selectedRowKeys={selection.selectedRowKeys}
           onSelectChange={handleSelectionChange}
