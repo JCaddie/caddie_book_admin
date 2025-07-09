@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Edit2, Trash2, Save } from "lucide-react";
+import { Save } from "lucide-react";
 
 import {
   Button,
@@ -172,60 +172,52 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       })) || [];
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm ${className}`}>
-      {/* 헤더 */}
-      <div className="flex items-center justify-between p-6 border-b">
-        <h2 className="text-lg font-semibold text-gray-900">
-          {mode === "create" && "공지사항 등록"}
-          {mode === "edit" && "공지사항 수정"}
-          {mode === "view" && "공지사항 상세"}
-        </h2>
+    <div className={`space-y-6 ${className}`}>
+      {/* 일반 에러 메시지 */}
+      {errors.general && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{errors.general}</p>
+        </div>
+      )}
 
-        {/* 상세보기 모드 액션 버튼 */}
-        {mode === "view" && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleEdit}
-              icon={<Edit2 size={16} />}
-            >
-              수정
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setIsDeleteModalOpen(true)}
-              icon={<Trash2 size={16} />}
-            >
-              삭제
-            </Button>
+      {/* 제목 */}
+      {isReadonly ? (
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-800 w-22">
+            제목
+          </label>
+          <div className="bg-gray-50 border border-gray-300 rounded-md px-3 py-2">
+            <span className="text-sm text-gray-800">
+              {formData.title || announcement?.title || "제목 없음"}
+            </span>
           </div>
-        )}
-      </div>
-
-      {/* 폼 내용 */}
-      <div className="p-6 space-y-6">
-        {/* 일반 에러 메시지 */}
-        {errors.general && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{errors.general}</p>
-          </div>
-        )}
-
-        {/* 제목 */}
+        </div>
+      ) : (
         <TextField
           label="제목"
           value={formData.title}
           onChange={handleTitleChange}
           error={errors.title}
-          disabled={isReadonly || loading}
+          disabled={loading}
           placeholder="제목을 입력하세요"
           maxLength={ANNOUNCEMENT_FORM_RULES.TITLE_MAX_LENGTH}
           required
         />
+      )}
 
-        {/* 내용 */}
+      {/* 내용 */}
+      {isReadonly ? (
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-800 w-8">
+            내용
+          </label>
+          <div className="bg-gray-50 border border-gray-300 rounded-md px-3 py-2 min-h-[200px]">
+            <div className="text-sm text-gray-800 whitespace-pre-wrap">
+              {formData.content || announcement?.content || "내용 없음"}
+            </div>
+          </div>
+        </div>
+      ) : (
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-800">
             내용 <span className="text-red-500">*</span>
@@ -233,15 +225,13 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
           <textarea
             value={formData.content}
             onChange={(e) => handleContentChange(e.target.value)}
-            disabled={isReadonly || loading}
+            disabled={loading}
             placeholder="내용을 입력하세요"
             rows={12}
             maxLength={ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH}
-            className={`w-full px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-              isReadonly
-                ? "bg-gray-50 border-gray-200 text-gray-600 cursor-not-allowed"
-                : "border-gray-300"
-            } ${errors.content ? "border-red-300" : ""}`}
+            className={`w-full px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent border-gray-300 ${
+              errors.content ? "border-red-300" : ""
+            }`}
           />
           {errors.content && (
             <p className="text-sm text-red-500">{errors.content}</p>
@@ -257,8 +247,47 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
             </span>
           </div>
         </div>
+      )}
 
-        {/* 게시 상태 */}
+      {/* 첨부 파일 */}
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-gray-800 w-22">
+          첨부 파일
+        </label>
+        {mode === "view" ? (
+          <div className="space-y-2">
+            {existingFiles.length > 0 ? (
+              existingFiles.map((file) => (
+                <div key={file.id} className="text-sm text-gray-600 opacity-60">
+                  {file.originalName}
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500">
+                첨부된 파일이 없습니다.
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <FileUpload
+              existingFiles={existingFiles}
+              onFilesChange={handleFilesChange}
+              onExistingFileRemove={handleExistingFileRemove}
+              disabled={loading}
+              accept={FILE_UPLOAD_CONFIG.ACCEPT_TYPES}
+              maxFiles={FILE_UPLOAD_CONFIG.MAX_FILES}
+              maxSize={FILE_UPLOAD_CONFIG.MAX_SIZE}
+            />
+            {errors.files && (
+              <p className="text-sm text-red-500">{errors.files}</p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* 게시 상태 (편집 모드에서만) */}
+      {mode !== "view" && (
         <div className="flex items-center space-x-3">
           <label className="text-sm font-semibold text-gray-800">
             게시 상태
@@ -268,15 +297,13 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
               type="checkbox"
               checked={formData.isPublished}
               onChange={handlePublishToggle}
-              disabled={isReadonly || loading}
+              disabled={loading}
               className="sr-only"
             />
             <span
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                 formData.isPublished ? "bg-primary" : "bg-gray-200"
-              } ${
-                isReadonly || loading ? "cursor-not-allowed opacity-50" : ""
-              }`}
+              } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -289,40 +316,50 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
             </span>
           </label>
         </div>
-
-        {/* 첨부 파일 */}
-        <FileUpload
-          existingFiles={existingFiles}
-          onFilesChange={handleFilesChange}
-          onExistingFileRemove={handleExistingFileRemove}
-          disabled={isReadonly || loading}
-          accept={FILE_UPLOAD_CONFIG.ACCEPT_TYPES}
-          maxFiles={FILE_UPLOAD_CONFIG.MAX_FILES}
-          maxSize={FILE_UPLOAD_CONFIG.MAX_SIZE}
-        />
-
-        {errors.files && <p className="text-sm text-red-500">{errors.files}</p>}
-      </div>
+      )}
 
       {/* 하단 액션 버튼 */}
-      <div className="flex items-center justify-end gap-2 p-6 border-t bg-gray-50">
-        <Button
-          variant="secondary"
-          onClick={handleCancel}
-          disabled={loading || isSaving}
-        >
-          취소
-        </Button>
-        {mode !== "view" && (
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={loading || isSaving}
-            loading={isSaving}
-            icon={<Save size={16} />}
-          >
-            {mode === "create" ? "등록" : "완료"}
-          </Button>
+      <div className="flex items-center justify-end gap-4">
+        {mode === "view" ? (
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="w-30"
+            >
+              삭제
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleEdit}
+              className="w-30"
+            >
+              수정
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="secondary"
+              onClick={handleCancel}
+              disabled={loading || isSaving}
+              className="w-30"
+            >
+              취소
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              disabled={loading || isSaving}
+              loading={isSaving}
+              icon={<Save size={16} />}
+              className="w-30"
+            >
+              {mode === "create" ? "등록" : "완료"}
+            </Button>
+          </>
         )}
       </div>
 
