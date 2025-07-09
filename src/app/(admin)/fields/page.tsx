@@ -2,7 +2,11 @@
 
 import React from "react";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { SelectableDataTable, ConfirmationModal } from "@/shared/components/ui";
+import {
+  SelectableDataTable,
+  ConfirmationModal,
+  Pagination,
+} from "@/shared/components/ui";
 import {
   FieldActionBar,
   fieldColumns,
@@ -72,30 +76,11 @@ export default function FieldsPage() {
           className="border-gray-200"
         />
 
-        {/* 페이지네이션 */}
-        <div className="flex justify-center">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-            >
-              이전
-            </button>
-
-            <span className="text-sm text-gray-600">
-              {currentPage} / {totalPages}
-            </span>
-
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-            >
-              다음
-            </button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {/* 삭제 확인 모달 */}

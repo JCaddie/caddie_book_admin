@@ -1,7 +1,6 @@
 // Works 목록 페이지 컴포넌트들
 export { default as WorksActionBar } from "./works-action-bar";
 export { default as WorksTable } from "./works-table";
-export { default as WorksPagination } from "./works-pagination";
 
 // Work 상세 페이지 컴포넌트들
 export { default as CaddieCard } from "./caddie-card";
