@@ -49,14 +49,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const validateFile = (file: File): string | null => {
-    if (file.size > maxSize) {
-      return `파일 크기가 너무 큽니다. 최대 ${formatFileSize(
-        maxSize
-      )}까지 업로드 가능합니다.`;
-    }
-    return null;
-  };
+  const validateFile = useCallback(
+    (file: File): string | null => {
+      if (file.size > maxSize) {
+        return `파일 크기가 너무 큽니다. 최대 ${formatFileSize(
+          maxSize
+        )}까지 업로드 가능합니다.`;
+      }
+      return null;
+    },
+    [maxSize]
+  );
 
   const handleFileSelect = useCallback(() => {
     if (disabled) return;
@@ -111,7 +114,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         fileInputRef.current.value = "";
       }
     },
-    [existingFiles.length, uploadedFiles, maxFiles, onFilesChange, maxSize]
+    [existingFiles.length, uploadedFiles, maxFiles, onFilesChange, validateFile]
   );
 
   const handleUploadedFileRemove = useCallback(
