@@ -18,6 +18,9 @@ export interface CaddieCardProps {
   };
   isEmpty?: boolean;
   emptyText?: string;
+  onDragStart?: (caddie: CaddieData) => void;
+  onDragEnd?: (caddie: CaddieData) => void;
+  isDragging?: boolean;
 }
 
 export interface CaddieData {
