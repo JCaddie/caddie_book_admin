@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
-import LogoutModal from "@/shared/components/ui/logout-modal";
+import { DeleteConfirmationModal } from "@/shared/components/ui";
+import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -23,7 +24,7 @@ const Header: React.FC = () => {
     logout();
     setIsLogoutModalOpen(false);
     // 로그아웃 후 로그인 페이지로 리디렉션
-    router.push("/login");
+    router.push(AUTH_CONSTANTS.ROUTES.LOGIN);
   };
 
   const handleLogoutCancel = () => {
@@ -71,10 +72,14 @@ const Header: React.FC = () => {
       </header>
 
       {/* 로그아웃 확인 모달 */}
-      <LogoutModal
+      <DeleteConfirmationModal
         isOpen={isLogoutModalOpen}
         onClose={handleLogoutCancel}
         onConfirm={handleLogoutConfirm}
+        title="로그아웃 하시겠습니까?"
+        message="현재 세션이 종료되고 로그인 페이지로 이동합니다."
+        confirmText="로그아웃"
+        cancelText="취소"
       />
     </>
   );
