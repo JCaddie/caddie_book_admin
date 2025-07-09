@@ -1,7 +1,7 @@
 import { UserRole } from "@/shared/types";
 import Navigation from "./navigation";
 
-interface SidebarProps {
+export interface SidebarProps {
   userRole: UserRole;
 }
 

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { TextField } from "@/shared/components/ui";
 import { User } from "@/shared/types";
+import { tokenUtils } from "@/shared/lib/utils";
+import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
@@ -37,10 +39,9 @@ export default function LoginPage() {
   // 이미 인증된 사용자는 대시보드로 리디렉션
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      console.log("로그인 페이지: 인증된 사용자 감지, 대시보드로 리디렉션");
       // 약간의 지연을 주어 상태 업데이트가 확실히 완료되도록 함
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(AUTH_CONSTANTS.ROUTES.DASHBOARD);
       }, 100);
     }
   }, [isAuthenticated, isLoading, router]);
@@ -62,7 +63,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("로그인 시도:", { email, password });
 
     if (!email || !password) {
       setError("이메일과 비밀번호를 모두 입력해주세요.");
@@ -78,12 +78,9 @@ export default function LoginPage() {
         (acc) => acc.email === email && acc.password === password
       );
 
-      console.log("계정 찾기 결과:", account);
-
       if (account) {
-        // 간단한 토큰 생성 (실제로는 서버에서 발급받음)
-        const token = `mock-token-${account.id}-${Date.now()}`;
-        console.log("토큰 생성:", token);
+        // 통합된 토큰 유틸리티로 토큰 생성
+        const token = tokenUtils.generateMockToken(account.id);
 
         // 사용자 정보 생성
         const user: User = {
@@ -97,9 +94,7 @@ export default function LoginPage() {
         };
 
         // 로그인 함수 호출 (토큰과 사용자 정보 함께 전달)
-        console.log("로그인 함수 호출 전 - 사용자 정보:", user);
         login(token, user);
-        console.log("로그인 함수 호출 완료");
       } else {
         setError("이메일 또는 비밀번호가 잘못되었습니다.");
       }
@@ -115,8 +110,6 @@ export default function LoginPage() {
     testEmail: string,
     testPassword: string
   ) => {
-    console.log("테스트 계정 로그인:", { testEmail, testPassword });
-
     setEmail(testEmail);
     setPassword(testPassword);
     setError("");
@@ -127,11 +120,8 @@ export default function LoginPage() {
         (acc) => acc.email === testEmail && acc.password === testPassword
       );
 
-      console.log("테스트 계정 찾기 결과:", account);
-
       if (account) {
-        const token = `mock-token-${account.id}-${Date.now()}`;
-        console.log("테스트 계정 토큰 생성:", token);
+        const token = tokenUtils.generateMockToken(account.id);
 
         // 사용자 정보 생성
         const user: User = {
@@ -145,9 +135,7 @@ export default function LoginPage() {
         };
 
         // 로그인 함수 호출 (토큰과 사용자 정보 함께 전달)
-        console.log("테스트 계정 로그인 함수 호출 전 - 사용자 정보:", user);
         login(token, user);
-        console.log("테스트 계정 로그인 함수 호출 완료");
       } else {
         setError("계정 정보를 찾을 수 없습니다.");
       }

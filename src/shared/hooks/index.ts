@@ -15,3 +15,6 @@ export { useCaddieList } from "./use-caddie-list";
 
 // 테이블 선택 기능 훅
 export { useTableSelection } from "./use-table-selection";
+
+// 동적 페이지 타이틀 설정 훅
+export { useDocumentTitle, PAGE_TITLES } from "./use-document-title";

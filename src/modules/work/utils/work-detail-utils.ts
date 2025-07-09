@@ -1,4 +1,4 @@
-import { CaddieData, PersonnelFilter } from "../types/work-detail";
+import { CaddieData, PersonnelFilter } from "../types";
 
 // 날짜 포맷팅 함수
 export const formatDate = (date: Date): string => {

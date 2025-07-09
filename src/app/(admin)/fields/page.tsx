@@ -7,7 +7,13 @@ import {
   AdminPageHeader,
   TableWithPagination,
 } from "@/shared/components/layout";
-import { usePagination, TableItem, defaultCellRenderer } from "@/shared/hooks";
+import {
+  usePagination,
+  TableItem,
+  defaultCellRenderer,
+  useDocumentTitle,
+  PAGE_TITLES,
+} from "@/shared/hooks";
 import { MapPin, Trash2 } from "lucide-react";
 
 // 필드 데이터 타입
@@ -25,6 +31,9 @@ const FieldsPage: React.FC = () => {
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("전체");
+
+  // 페이지 타이틀 설정
+  useDocumentTitle({ title: PAGE_TITLES.FIELDS });
 
   // URL 검색 파라미터로부터 자동 검색 설정
   useEffect(() => {
@@ -129,7 +138,8 @@ const FieldsPage: React.FC = () => {
     if (field.isEmpty) {
       return;
     }
-    console.log("필드 상세:", field);
+    // TODO: 필드 상세 페이지로 이동
+    // router.push(`/fields/${field.id}`);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

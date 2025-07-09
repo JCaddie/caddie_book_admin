@@ -1,7 +1,7 @@
 "use client";
 
 import { MoreVertical } from "lucide-react";
-import { CaddieCardProps } from "../types/work-detail";
+import { CaddieCardProps } from "../types";
 import {
   getSpecialBadgeStyle,
   getCaddieCardStyle,

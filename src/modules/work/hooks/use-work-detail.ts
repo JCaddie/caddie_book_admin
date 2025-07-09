@@ -66,9 +66,6 @@ export function useWorkDetail(workId: string) {
 
       // 성공 후 편집 모드 종료
       setIsEditing(false);
-
-      // 성공 알림 (실제로는 toast 등 사용)
-      console.log("근무 정보가 저장되었습니다.");
     } catch (error) {
       console.error("저장 중 오류가 발생했습니다:", error);
     }
@@ -89,7 +86,6 @@ export function useWorkDetail(workId: string) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // 삭제 후 목록 페이지로 이동 (실제로는 router.push 사용)
-      console.log("근무가 삭제되었습니다.");
       window.history.back();
     } catch (error) {
       console.error("삭제 중 오류가 발생했습니다:", error);

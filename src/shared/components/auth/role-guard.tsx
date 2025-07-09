@@ -3,7 +3,7 @@
 import { UserRole } from "@/shared/types";
 import { useAuth } from "@/shared/hooks/use-auth";
 
-interface RoleGuardProps {
+export interface RoleGuardProps {
   children: React.ReactNode;
   requiredRole?: UserRole;
   requiredRoles?: UserRole[];

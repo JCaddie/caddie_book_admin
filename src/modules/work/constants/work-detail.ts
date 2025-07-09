@@ -1,9 +1,4 @@
-import {
-  CaddieData,
-  Field,
-  TimeSlots,
-  PersonnelStats,
-} from "../types/work-detail";
+import { CaddieData, Field, TimeSlots, PersonnelStats } from "../types";
 
 // 필드별 데이터 (4개로 확장)
 export const FIELDS: Field[] = [

@@ -49,11 +49,6 @@ const useWorksDelete = (selectedRowKeys: string[]): UseWorksDeleteReturn => {
 
       // 선택 상태 초기화
       clearSelection();
-
-      console.log(
-        `${selectedRowKeys.length}개 항목이 삭제되었습니다.`,
-        selectedRows
-      );
     } catch (error) {
       console.error("삭제 중 오류가 발생했습니다:", error);
     } finally {

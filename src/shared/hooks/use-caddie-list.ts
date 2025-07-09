@@ -75,8 +75,6 @@ export const useCaddieList = () => {
 
   // 선택된 항목 삭제 (모달 확인 없이 직접 실행)
   const deleteSelectedItems = () => {
-    console.log("삭제할 캐디 목록:", selection.selectedRows);
-
     // 실제 삭제 API 호출 로직 구현
     // TODO: API 호출
 

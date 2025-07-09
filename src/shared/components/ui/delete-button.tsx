@@ -3,7 +3,7 @@
 import React from "react";
 import { Trash2 } from "lucide-react";
 
-interface DeleteButtonProps {
+export interface DeleteButtonProps {
   onClick: () => void;
   disabled?: boolean;
   selectedCount?: number;

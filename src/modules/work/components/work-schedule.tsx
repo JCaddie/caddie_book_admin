@@ -2,12 +2,7 @@
 
 import React, { useState } from "react";
 import { RotateCcw } from "lucide-react";
-import {
-  Field,
-  TimeSlots,
-  PersonnelStats,
-  CaddieData,
-} from "../types/work-detail";
+import { Field, TimeSlots, PersonnelStats, CaddieData } from "../types";
 import { SAMPLE_CADDIES } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
 

@@ -6,10 +6,7 @@ import { useWorkDetail } from "@/modules/work/hooks/use-work-detail";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import {
-  WorkDetailPageProps,
-  CaddieData,
-} from "@/modules/work/types/work-detail";
+import { WorkDetailPageProps, CaddieData } from "@/modules/work/types";
 import {
   FIELDS,
   PERSONNEL_STATS,
@@ -18,7 +15,7 @@ import {
 import DateNavigation from "@/modules/work/components/date-navigation";
 import WorkSchedule from "@/modules/work/components/work-schedule";
 import PersonnelStatus from "@/modules/work/components/personnel-status";
-import DeleteConfirmationModal from "@/shared/components/ui/delete-confirmation-modal";
+import ConfirmationModal from "@/shared/components/ui/confirmation-modal";
 
 export default function WorkDetailPage({
   params,
@@ -37,7 +34,7 @@ export default function WorkDetailPage({
   );
   const { filters, filteredCaddies, updateFilter } = usePersonnelFilter();
   const { isResetModalOpen, openResetModal, closeResetModal, handleReset } =
-    useResetModal(golfCourseId, currentDate);
+    useResetModal();
 
   // TODO: 나중에 hook을 수정하여 golfCourseId와 date를 받도록 변경
   // 현재는 임시로 golfCourseId를 workId로 사용
@@ -102,7 +99,7 @@ export default function WorkDetailPage({
       </div>
 
       {/* 초기화 확인 모달 */}
-      <DeleteConfirmationModal
+      <ConfirmationModal
         isOpen={isResetModalOpen}
         onClose={closeResetModal}
         onConfirm={handleReset}
