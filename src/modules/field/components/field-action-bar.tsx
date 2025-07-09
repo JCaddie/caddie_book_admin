@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Button, DeleteButton, Search } from "@/shared/components/ui";
+import { FIELD_CONSTANTS } from "../constants";
 
 interface FieldActionBarProps {
   totalCount: number;
@@ -46,13 +47,13 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
         {/* 검색 및 생성 버튼 */}
         <div className="flex items-center gap-8">
           <Search
-            placeholder="필드명, 골프장명 검색"
+            placeholder={FIELD_CONSTANTS.UI_TEXT.SEARCH_PLACEHOLDER}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             containerClassName="w-[360px]"
           />
           <Button variant="primary" onClick={onCreateClick}>
-            + 필드 등록
+            {FIELD_CONSTANTS.UI_TEXT.CREATE_BUTTON}
           </Button>
         </div>
       </div>
