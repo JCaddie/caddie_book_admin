@@ -1,1 +1,2 @@
-export { default as CaddieFilterBar } from "./caddie-filter-bar";
+export * from "./caddie-filter-bar";
+export * from "./new-caddie-columns";
