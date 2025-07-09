@@ -39,8 +39,51 @@ export type {
 } from "./table";
 
 export * from "./caddie";
+export * from "./field";
 export * from "./golf-course";
+export * from "./navigation";
 export * from "./table";
 export * from "./user";
-export * from "./navigation";
-export * from "./field";
+
+// 공통 데이터 타입
+export interface WithId {
+  id: string;
+}
+
+export interface WithNo {
+  no: number;
+}
+
+export interface WithTimestamps {
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WithAuthor {
+  authorId: string;
+  authorName: string;
+}
+
+// 페이지네이션을 위한 데이터 타입
+export type PaginatedData<T> = T & WithId & WithNo & Record<string, unknown>;
+
+// 공통 필터 타입
+export interface BaseFilters {
+  searchTerm: string;
+}
+
+// API 응답 공통 타입
+export interface ApiResponse<T> {
+  data: T;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// 에러 타입
+export interface ApiError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}

@@ -45,10 +45,10 @@ export interface SelectableTableProps<T> extends BaseTableProps<T> {
 // 테이블 선택 기능 타입
 // ================================
 
-// 선택 상태 관리 타입
-export interface SelectionState {
+// 선택 상태 관리 타입 (제네릭으로 개선)
+export interface SelectionState<T = unknown> {
   selectedRowKeys: string[];
-  selectedRows: unknown[];
+  selectedRows: T[];
 }
 
 // 선택 기능 Hook 반환 타입
