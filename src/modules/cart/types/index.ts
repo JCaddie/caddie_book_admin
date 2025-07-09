@@ -40,3 +40,29 @@ export interface CreateCartData {
 export interface UpdateCartData extends Partial<CreateCartData> {
   status?: CartStatus;
 }
+
+// 카트 상세 정보
+export interface CartDetail {
+  id: string;
+  name: string;
+  status: CartStatus;
+  fieldName: string;
+  managerName: string;
+  golfCourseName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 카트 사용 이력 아이템
+export interface CartHistoryItem extends Record<string, unknown> {
+  id: string;
+  no: number;
+  date: string;
+  time: string;
+  cartName: string;
+  group: string;
+  personInCharge: string;
+  fieldName: string;
+  managerName: string;
+  isEmpty?: boolean;
+}

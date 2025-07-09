@@ -1,4 +1,10 @@
-import { Cart, CartStatus, CartFilters } from "../types";
+import {
+  Cart,
+  CartStatus,
+  CartFilters,
+  CartDetail,
+  CartHistoryItem,
+} from "../types";
 import {
   getCyclicItem,
   getRandomPastDate,
@@ -28,6 +34,30 @@ const GOLF_COURSES = ["제이캐디아카데미", "라이딩클럽", "골프존"
 
 // 담당자명 배열
 const MANAGER_NAMES = ["홍길동", "김철수", "박영희", "이영수", "최민수"];
+
+// 그룹명 배열
+const GROUP_NAMES = ["1조", "2조", "3조", "4조", "5조"];
+
+// 담당자명 배열 (이력용)
+const PERSON_IN_CHARGE_NAMES = [
+  "강감찬",
+  "이순신",
+  "김유신",
+  "을지문덕",
+  "연개소문",
+];
+
+// 시간 배열
+const TIME_SLOTS = [
+  "09:00",
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+];
 
 /**
  * 샘플 카트 데이터 생성
@@ -90,4 +120,55 @@ export const createEmptyCartTemplate = (): Omit<Cart, "id"> => ({
   managerName: "",
   createdAt: "",
   updatedAt: "",
+});
+
+/**
+ * 카트 상세 정보 생성
+ */
+export const generateCartDetail = (cartId: string): CartDetail => {
+  return {
+    id: cartId,
+    name: "카트1",
+    status: "사용중",
+    fieldName: "한울(서남)",
+    managerName: "홍길동",
+    golfCourseName: "제이캐디아카데미",
+    createdAt: "2024-01-15T09:00:00Z",
+    updatedAt: "2024-12-01T15:30:00Z",
+  };
+};
+
+/**
+ * 카트 사용 이력 데이터 생성
+ */
+export const generateCartHistory = (count: number = 50): CartHistoryItem[] => {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `history-${index + 1}`,
+    no: index + 1,
+    date: "2025.05.26.(월)",
+    time: getCyclicItem(TIME_SLOTS, index),
+    cartName: `카트${(index % 3) + 1}`,
+    group: getCyclicItem(GROUP_NAMES, index),
+    personInCharge: getCyclicItem(PERSON_IN_CHARGE_NAMES, index),
+    fieldName: getCyclicItem(FIELD_NAMES, index),
+    managerName: getCyclicItem(MANAGER_NAMES, index),
+  }));
+};
+
+/**
+ * 빈 카트 이력 행 템플릿 생성
+ */
+export const createEmptyCartHistoryTemplate = (): Omit<
+  CartHistoryItem,
+  "id"
+> => ({
+  no: 0,
+  date: "",
+  time: "",
+  cartName: "",
+  group: "",
+  personInCharge: "",
+  fieldName: "",
+  managerName: "",
+  isEmpty: true,
 });
