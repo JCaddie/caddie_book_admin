@@ -4,12 +4,7 @@ import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 
-import {
-  Button,
-  TextField,
-  FileUpload,
-  ConfirmationModal,
-} from "@/shared/components/ui";
+import { Button, FileUpload, ConfirmationModal } from "@/shared/components/ui";
 import type { UploadedFile, ExistingFile } from "@/shared/components/ui";
 import {
   Announcement,
@@ -172,7 +167,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       })) || [];
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-8 ${className}`}>
       {/* 일반 에러 메시지 */}
       {errors.general && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -181,64 +176,89 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       )}
 
       {/* 제목 */}
-      <TextField
-        label="제목"
-        value={formData.title}
-        onChange={handleTitleChange}
-        error={errors.title}
-        disabled={isReadonly || loading}
-        placeholder="제목을 입력하세요"
-        maxLength={ANNOUNCEMENT_FORM_RULES.TITLE_MAX_LENGTH}
-        required={!isReadonly}
-      />
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-20">
+          <label className="text-sm font-semibold text-gray-800">제목</label>
+        </div>
+        <div className="flex-1">
+          <input
+            value={formData.title}
+            onChange={handleTitleChange}
+            disabled={isReadonly || loading}
+            placeholder="제목을 입력하세요"
+            maxLength={ANNOUNCEMENT_FORM_RULES.TITLE_MAX_LENGTH}
+            className={`w-full h-10 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+              isReadonly || loading
+                ? "bg-gray-50 border-gray-300 text-gray-600 cursor-not-allowed"
+                : "border-gray-300"
+            } ${errors.title ? "border-red-300" : ""}`}
+          />
+          {errors.title && (
+            <p className="text-sm text-red-500 mt-1">{errors.title}</p>
+          )}
+        </div>
+      </div>
 
       {/* 내용 */}
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-800">
-          내용 {!isReadonly && <span className="text-red-500">*</span>}
-        </label>
-        <textarea
-          value={formData.content}
-          onChange={(e) => handleContentChange(e.target.value)}
-          disabled={isReadonly || loading}
-          placeholder="내용을 입력하세요"
-          rows={12}
-          maxLength={ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH}
-          className={`w-full px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-            isReadonly || loading
-              ? "bg-gray-50 border-gray-300 text-gray-600 cursor-not-allowed"
-              : "border-gray-300"
-          } ${errors.content ? "border-red-300" : ""}`}
-        />
-        {errors.content && (
-          <p className="text-sm text-red-500">{errors.content}</p>
-        )}
-        {!isReadonly && (
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>
-              최대 {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}
-              자
-            </span>
-            <span>
-              {formData.content.length.toLocaleString()}/
-              {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}
-            </span>
-          </div>
-        )}
+      <div className="flex gap-2">
+        <div className="flex items-start gap-2 w-20 pt-2">
+          <label className="text-sm font-semibold text-gray-800">내용</label>
+        </div>
+        <div className="flex-1">
+          <textarea
+            value={formData.content}
+            onChange={(e) => handleContentChange(e.target.value)}
+            disabled={isReadonly || loading}
+            placeholder="내용을 입력하세요"
+            rows={12}
+            maxLength={ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH}
+            className={`w-full px-3 py-2 border rounded-md resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+              isReadonly || loading
+                ? "bg-gray-50 border-gray-300 text-gray-600 cursor-not-allowed"
+                : "border-gray-300"
+            } ${errors.content ? "border-red-300" : ""}`}
+          />
+          {errors.content && (
+            <p className="text-sm text-red-500 mt-1">{errors.content}</p>
+          )}
+          {!isReadonly && (
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>
+                최대{" "}
+                {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}자
+              </span>
+              <span>
+                {formData.content.length.toLocaleString()}/
+                {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 첨부 파일 */}
-      <FileUpload
-        label="첨부 파일"
-        existingFiles={existingFiles}
-        onFilesChange={handleFilesChange}
-        onExistingFileRemove={handleExistingFileRemove}
-        disabled={isReadonly || loading}
-        accept={FILE_UPLOAD_CONFIG.ACCEPT_TYPES}
-        maxFiles={FILE_UPLOAD_CONFIG.MAX_FILES}
-        maxSize={FILE_UPLOAD_CONFIG.MAX_SIZE}
-      />
-      {errors.files && <p className="text-sm text-red-500">{errors.files}</p>}
+      <div className="flex gap-2">
+        <div className="flex items-start gap-2 w-20 pt-2">
+          <label className="text-sm font-semibold text-gray-800">
+            첨부 파일
+          </label>
+        </div>
+        <div className="flex-1">
+          <FileUpload
+            existingFiles={existingFiles}
+            onFilesChange={handleFilesChange}
+            onExistingFileRemove={handleExistingFileRemove}
+            disabled={isReadonly || loading}
+            accept={FILE_UPLOAD_CONFIG.ACCEPT_TYPES}
+            maxFiles={FILE_UPLOAD_CONFIG.MAX_FILES}
+            maxSize={FILE_UPLOAD_CONFIG.MAX_SIZE}
+            className="w-full"
+          />
+          {errors.files && (
+            <p className="text-sm text-red-500 mt-1">{errors.files}</p>
+          )}
+        </div>
+      </div>
 
       {/* 게시 상태 */}
       <div className="flex items-center space-x-3">
