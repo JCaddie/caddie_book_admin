@@ -24,10 +24,16 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
 }) => {
   return (
     <div className="flex items-center justify-between">
+      {/* 왼쪽: 총 건수 */}
       <div className="flex items-center gap-3">
         <span className="text-base font-bold text-black">
           총 {totalCount}건
         </span>
+      </div>
+
+      {/* 오른쪽: 삭제 버튼 + 검색 + 생성 버튼 */}
+      <div className="flex items-center gap-8">
+        {/* 삭제 버튼 */}
         <DeleteButton
           onClick={onDeleteClick}
           selectedCount={selectedCount}
@@ -36,18 +42,19 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
           size="md"
           showCount={false}
         />
-      </div>
 
-      <div className="flex items-center gap-8">
-        <Search
-          placeholder="필드명, 골프장명 검색"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          containerClassName="w-[360px]"
-        />
-        <Button variant="primary" onClick={onCreateClick}>
-          + 필드 등록
-        </Button>
+        {/* 검색 및 생성 버튼 */}
+        <div className="flex items-center gap-8">
+          <Search
+            placeholder="필드명, 골프장명 검색"
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            containerClassName="w-[360px]"
+          />
+          <Button variant="primary" onClick={onCreateClick}>
+            + 필드 등록
+          </Button>
+        </div>
       </div>
     </div>
   );
