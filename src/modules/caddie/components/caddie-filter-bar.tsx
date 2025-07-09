@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Dropdown, DeleteButton } from "@/shared/components/ui";
+import { Search, Dropdown, Button } from "@/shared/components/ui";
 import { CaddieFilters } from "@/shared/types/caddie";
 import { GROUP_OPTIONS, SPECIAL_TEAM_OPTIONS } from "@/shared/constants/caddie";
 
@@ -37,17 +37,8 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
         </span>
       </div>
 
-      {/* 오른쪽: 삭제 버튼 + 필터 컨트롤들 */}
+      {/* 오른쪽: 필터 컨트롤들 + 검색창 + 버튼들 */}
       <div className="flex items-center gap-8">
-        {/* 삭제 버튼 */}
-        <DeleteButton
-          onClick={onDeleteSelected}
-          selectedCount={selectedCount}
-          variant="text"
-          size="md"
-          showCount={false}
-        />
-
         {/* 필터 컨트롤들 */}
         <div className="flex items-center gap-8">
           <Dropdown
@@ -71,6 +62,20 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
               placeholder="검색어 입력"
             />
           </div>
+        </div>
+
+        {/* 버튼 그룹 */}
+        <div className="flex items-center gap-2">
+          {/* 삭제 버튼 */}
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={onDeleteSelected}
+            disabled={selectedCount === 0}
+            className="w-24"
+          >
+            삭제
+          </Button>
         </div>
       </div>
     </div>
