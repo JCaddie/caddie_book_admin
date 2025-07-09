@@ -1,19 +1,13 @@
 import { useCreateAnnouncement } from "@/modules/announcement/hooks";
 import { AnnouncementForm } from "@/modules/announcement/components";
 import { AdminPageHeader } from "@/shared/components/layout";
-
-interface FormData {
-  title: string;
-  content: string;
-  isPublished: boolean;
-  files: File[];
-  removeFileIds: string[];
-}
+import { AnnouncementFormData } from "@/modules/announcement/types";
 
 const NewAnnouncementPage: React.FC = () => {
-  const { createAnnouncement, loading, error } = useCreateAnnouncement();
+  const { createAnnouncement, loading, error, clearError } =
+    useCreateAnnouncement();
 
-  const handleSave = async (data: FormData) => {
+  const handleSave = async (data: AnnouncementFormData) => {
     const announcementData = {
       title: data.title,
       content: data.content,
@@ -33,7 +27,16 @@ const NewAnnouncementPage: React.FC = () => {
 
         {error && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{error}</p>
+            <div className="flex justify-between items-start">
+              <p className="text-red-600 text-sm">{error}</p>
+              <button
+                onClick={clearError}
+                className="text-red-500 hover:text-red-700 ml-4"
+                aria-label="에러 메시지 닫기"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
       </div>

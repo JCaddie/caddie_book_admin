@@ -11,24 +11,27 @@ import {
   ConfirmationModal,
 } from "@/shared/components/ui";
 import type { UploadedFile, ExistingFile } from "@/shared/components/ui";
-import { Announcement, AnnouncementFormMode } from "../types";
+import {
+  Announcement,
+  AnnouncementFormMode,
+  AnnouncementFormData,
+  AnnouncementFormErrors,
+} from "../types";
+import { ANNOUNCEMENT_FORM_RULES, FILE_UPLOAD_CONFIG } from "../constants";
+import {
+  validateAnnouncementForm,
+  validateTitle,
+  validateContent,
+} from "../utils";
 
 interface AnnouncementFormProps {
   mode: AnnouncementFormMode;
   announcement?: Announcement;
-  onSave?: (data: FormData) => Promise<void>;
+  onSave?: (data: AnnouncementFormData) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
   onCancel?: () => void;
   loading?: boolean;
   className?: string;
-}
-
-interface FormData {
-  title: string;
-  content: string;
-  isPublished: boolean;
-  files: File[];
-  removeFileIds: string[];
 }
 
 const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
@@ -43,10 +46,10 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
   const router = useRouter();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<AnnouncementFormErrors>({});
 
   // 폼 데이터 상태
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<AnnouncementFormData>({
     title: announcement?.title || "",
     content: announcement?.content || "",
     isPublished: announcement?.isPublished || false,
@@ -57,28 +60,27 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
   // 읽기 전용 모드 체크
   const isReadonly = mode === "view";
 
-  // 제목 입력 핸들러
+  // 제목 입력 핸들러 (실시간 유효성 검사)
   const handleTitleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setFormData((prev) => ({ ...prev, title: value }));
-      if (errors.title) {
-        setErrors((prev) => ({ ...prev, title: "" }));
-      }
+
+      // 실시간 유효성 검사
+      const titleError = validateTitle(value);
+      setErrors((prev) => ({ ...prev, title: titleError || undefined }));
     },
-    [errors.title]
+    []
   );
 
-  // 내용 입력 핸들러
-  const handleContentChange = useCallback(
-    (value: string) => {
-      setFormData((prev) => ({ ...prev, content: value }));
-      if (errors.content) {
-        setErrors((prev) => ({ ...prev, content: "" }));
-      }
-    },
-    [errors.content]
-  );
+  // 내용 입력 핸들러 (실시간 유효성 검사)
+  const handleContentChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, content: value }));
+
+    // 실시간 유효성 검사
+    const contentError = validateContent(value);
+    setErrors((prev) => ({ ...prev, content: contentError || undefined }));
+  }, []);
 
   // 게시 상태 토글 핸들러
   const handlePublishToggle = useCallback(() => {
@@ -91,6 +93,9 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       ...prev,
       files: files.map((f) => f.file),
     }));
+
+    // 파일 관련 에러 초기화
+    setErrors((prev) => ({ ...prev, files: undefined }));
   }, []);
 
   // 기존 파일 삭제 핸들러
@@ -101,39 +106,29 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
     }));
   }, []);
 
-  // 유효성 검사
-  const validateForm = useCallback((): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = "제목을 입력해주세요.";
-    } else if (formData.title.length > 200) {
-      newErrors.title = "제목은 200자 이내로 입력해주세요.";
-    }
-
-    if (!formData.content.trim()) {
-      newErrors.content = "내용을 입력해주세요.";
-    } else if (formData.content.length > 5000) {
-      newErrors.content = "내용은 5000자 이내로 입력해주세요.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
-  // 저장 핸들러
+  // 폼 저장 핸들러
   const handleSave = useCallback(async () => {
-    if (!validateForm()) return;
+    // 전체 폼 유효성 검사
+    const { isValid, errors: validationErrors } =
+      validateAnnouncementForm(formData);
+
+    if (!isValid) {
+      setErrors(validationErrors);
+      return;
+    }
 
     setIsSaving(true);
+    setErrors({});
+
     try {
       await onSave?.(formData);
     } catch (error) {
       console.error("저장 중 오류 발생:", error);
+      setErrors({ general: "저장 중 오류가 발생했습니다." });
     } finally {
       setIsSaving(false);
     }
-  }, [formData, onSave, validateForm]);
+  }, [formData, onSave]);
 
   // 삭제 핸들러
   const handleDelete = useCallback(async () => {
@@ -144,6 +139,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       await onDelete?.(announcement.id);
     } catch (error) {
       console.error("삭제 중 오류 발생:", error);
+      setErrors({ general: "삭제 중 오류가 발생했습니다." });
     }
   }, [announcement?.id, onDelete]);
 
@@ -210,6 +206,13 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
 
       {/* 폼 내용 */}
       <div className="p-6 space-y-6">
+        {/* 일반 에러 메시지 */}
+        {errors.general && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">{errors.general}</p>
+          </div>
+        )}
+
         {/* 제목 */}
         <TextField
           label="제목"
@@ -218,7 +221,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
           error={errors.title}
           disabled={isReadonly || loading}
           placeholder="제목을 입력하세요"
-          maxLength={200}
+          maxLength={ANNOUNCEMENT_FORM_RULES.TITLE_MAX_LENGTH}
           required
         />
 
@@ -233,7 +236,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
             disabled={isReadonly || loading}
             placeholder="내용을 입력하세요"
             rows={12}
-            maxLength={5000}
+            maxLength={ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH}
             className={`w-full px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
               isReadonly
                 ? "bg-gray-50 border-gray-200 text-gray-600 cursor-not-allowed"
@@ -244,8 +247,14 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
             <p className="text-sm text-red-500">{errors.content}</p>
           )}
           <div className="flex justify-between text-xs text-gray-500">
-            <span>최대 5000자</span>
-            <span>{formData.content.length}/5000</span>
+            <span>
+              최대 {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}
+              자
+            </span>
+            <span>
+              {formData.content.length.toLocaleString()}/
+              {ANNOUNCEMENT_FORM_RULES.CONTENT_MAX_LENGTH.toLocaleString()}
+            </span>
           </div>
         </div>
 
@@ -287,7 +296,12 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
           onFilesChange={handleFilesChange}
           onExistingFileRemove={handleExistingFileRemove}
           disabled={isReadonly || loading}
+          accept={FILE_UPLOAD_CONFIG.ACCEPT_TYPES}
+          maxFiles={FILE_UPLOAD_CONFIG.MAX_FILES}
+          maxSize={FILE_UPLOAD_CONFIG.MAX_SIZE}
         />
+
+        {errors.files && <p className="text-sm text-red-500">{errors.files}</p>}
       </div>
 
       {/* 하단 액션 버튼 */}

@@ -13,7 +13,7 @@ const AnnouncementDetailPage: React.FC = () => {
   const params = useParams();
   const id = params.id as string;
 
-  const { announcement, loading, error, fetchAnnouncement } =
+  const { announcement, loading, error, fetchAnnouncement, clearError } =
     useAnnouncementDetail(id);
   const { deleteAnnouncement, loading: deleteLoading } =
     useDeleteAnnouncement();
@@ -50,7 +50,16 @@ const AnnouncementDetailPage: React.FC = () => {
         <AdminPageHeader title="공지사항 상세" />
         <div className="max-w-4xl mx-auto p-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-600 text-sm">{error}</p>
+            <div className="flex justify-between items-start">
+              <p className="text-red-600 text-sm">{error}</p>
+              <button
+                onClick={clearError}
+                className="text-red-500 hover:text-red-700 ml-4"
+                aria-label="에러 메시지 닫기"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         </div>
       </div>

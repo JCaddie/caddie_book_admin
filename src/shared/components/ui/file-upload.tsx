@@ -3,6 +3,7 @@
 import React, { useRef, useState, useCallback } from "react";
 import { Plus, X } from "lucide-react";
 import Button from "./button";
+import { formatFileSize } from "@/modules/announcement/utils";
 
 export interface UploadedFile {
   id: string;
@@ -47,14 +48,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
 
   const validateFile = (file: File): string | null => {
     if (file.size > maxSize) {
@@ -118,7 +111,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         fileInputRef.current.value = "";
       }
     },
-    [existingFiles.length, uploadedFiles, maxFiles, onFilesChange]
+    [existingFiles.length, uploadedFiles, maxFiles, onFilesChange, maxSize]
   );
 
   const handleUploadedFileRemove = useCallback(
@@ -157,15 +150,22 @@ const FileUpload: React.FC<FileUploadProps> = ({
             key={file.id}
             className="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 text-orange-600 rounded-md text-sm font-semibold"
           >
-            <span className="truncate max-w-[200px]">{file.originalName}</span>
-            <button
-              type="button"
-              onClick={() => handleExistingFileRemove(file.id)}
-              className="flex-shrink-0 p-0.5 hover:bg-orange-100 rounded transition-colors"
-              disabled={disabled}
-            >
-              <X size={16} />
-            </button>
+            <span className="truncate max-w-[200px]" title={file.originalName}>
+              {file.originalName}
+            </span>
+            <span className="text-xs text-gray-500">
+              ({formatFileSize(file.size)})
+            </span>
+            {!disabled && (
+              <button
+                type="button"
+                onClick={() => handleExistingFileRemove(file.id)}
+                className="flex-shrink-0 p-0.5 hover:bg-orange-100 rounded transition-colors"
+                title="파일 삭제"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         ))}
 
@@ -175,15 +175,22 @@ const FileUpload: React.FC<FileUploadProps> = ({
             key={file.id}
             className="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 text-orange-600 rounded-md text-sm font-semibold"
           >
-            <span className="truncate max-w-[200px]">{file.name}</span>
-            <button
-              type="button"
-              onClick={() => handleUploadedFileRemove(file.id)}
-              className="flex-shrink-0 p-0.5 hover:bg-orange-100 rounded transition-colors"
-              disabled={disabled}
-            >
-              <X size={16} />
-            </button>
+            <span className="truncate max-w-[200px]" title={file.name}>
+              {file.name}
+            </span>
+            <span className="text-xs text-gray-500">
+              ({formatFileSize(file.size)})
+            </span>
+            {!disabled && (
+              <button
+                type="button"
+                onClick={() => handleUploadedFileRemove(file.id)}
+                className="flex-shrink-0 p-0.5 hover:bg-orange-100 rounded transition-colors"
+                title="파일 삭제"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         ))}
 

@@ -34,6 +34,23 @@ export type AnnouncementWithNo = PaginatedData<Announcement>;
 // 폼 모드 타입
 export type AnnouncementFormMode = "view" | "create" | "edit";
 
+// 공지사항 폼 데이터 타입 (공통)
+export interface AnnouncementFormData {
+  title: string;
+  content: string;
+  isPublished: boolean;
+  files: File[];
+  removeFileIds: string[];
+}
+
+// 유효성 검사 에러 타입
+export interface AnnouncementFormErrors {
+  title?: string;
+  content?: string;
+  files?: string;
+  general?: string;
+}
+
 export interface AnnouncementFilters extends BaseFilters {
   isPublished?: boolean;
   startDate?: string;
