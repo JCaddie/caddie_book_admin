@@ -59,11 +59,9 @@ const CartsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-10 p-8">
-      {/* 페이지 헤더 */}
+    <div className="bg-white rounded-xl p-8 space-y-6">
       <AdminPageHeader title="카트 리스트" />
 
-      {/* 액션 바 */}
       <CartActionBar
         totalCount={totalCount}
         selectedCount={selection.selectedRowKeys.length}
@@ -81,8 +79,7 @@ const CartsPage: React.FC = () => {
         </div>
       )}
 
-      {/* 테이블 */}
-      <div className="bg-white rounded-md border border-gray-200">
+      <div className="space-y-6">
         <SelectableDataTable<Cart>
           columns={columns}
           data={data}
@@ -91,24 +88,21 @@ const CartsPage: React.FC = () => {
           onSelectChange={handleSelectionChange}
           onRowClick={handleRowClick}
           rowKey="id"
-          layout="fixed"
-          containerWidth={1536} // Figma 디자인 기준 고정 너비
+          layout="flexible"
+          containerWidth="auto"
           realDataCount={realDataCount}
           emptyText="카트 데이터가 없습니다"
-          className="rounded-md"
+          className="border-gray-200"
         />
-      </div>
 
-      {/* 페이지네이션 */}
-      {totalPages > 1 && (
-        <div className="flex justify-center">
+        {totalPages > 1 && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
           />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

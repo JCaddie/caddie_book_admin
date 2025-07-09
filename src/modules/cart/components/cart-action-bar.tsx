@@ -50,7 +50,7 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
 
     return (
       <>
-        <div className="flex items-center justify-between gap-4 p-4 bg-white rounded-md border border-gray-200">
+        <div className="flex items-center justify-between gap-4 p-4 bg-white rounded-md">
           {/* 좌측: 총 건수 */}
           <div className="flex items-center">
             <span className="text-base font-bold text-gray-900">

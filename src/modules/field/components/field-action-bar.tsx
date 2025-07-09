@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button, DeleteButton, Search } from "@/shared/components/ui";
+import { Button, Search } from "@/shared/components/ui";
 import { FIELD_CONSTANTS } from "../constants";
 
 interface FieldActionBarProps {
@@ -16,7 +16,7 @@ interface FieldActionBarProps {
 
 export const FieldActionBar: React.FC<FieldActionBarProps> = ({
   totalCount,
-  selectedCount,
+  selectedCount: _,
   canDelete,
   searchTerm,
   onSearchChange,
@@ -32,27 +32,36 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
         </span>
       </div>
 
-      {/* 오른쪽: 삭제 버튼 + 검색 + 생성 버튼 */}
+      {/* 오른쪽: 검색창 + 버튼들 */}
       <div className="flex items-center gap-8">
-        {/* 삭제 버튼 */}
-        <DeleteButton
-          onClick={onDeleteClick}
-          selectedCount={selectedCount}
-          disabled={!canDelete}
-          variant="text"
-          size="md"
-          showCount={false}
+        {/* 검색 */}
+        <Search
+          placeholder={FIELD_CONSTANTS.UI_TEXT.SEARCH_PLACEHOLDER}
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          containerClassName="w-[360px]"
         />
 
-        {/* 검색 및 생성 버튼 */}
-        <div className="flex items-center gap-8">
-          <Search
-            placeholder={FIELD_CONSTANTS.UI_TEXT.SEARCH_PLACEHOLDER}
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            containerClassName="w-[360px]"
-          />
-          <Button variant="primary" onClick={onCreateClick}>
+        {/* 버튼 그룹 */}
+        <div className="flex items-center gap-2">
+          {/* 삭제 버튼 */}
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={onDeleteClick}
+            disabled={!canDelete}
+            className="w-24"
+          >
+            삭제
+          </Button>
+
+          {/* 생성 버튼 */}
+          <Button
+            variant="primary"
+            size="md"
+            onClick={onCreateClick}
+            className="w-24"
+          >
             {FIELD_CONSTANTS.UI_TEXT.CREATE_BUTTON}
           </Button>
         </div>
