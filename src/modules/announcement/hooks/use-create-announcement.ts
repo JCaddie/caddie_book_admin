@@ -36,7 +36,7 @@ export const useCreateAnnouncement = () => {
         console.log("공지사항 생성:", data);
 
         // 성공 시 목록 페이지로 이동
-        router.push("/admin/announcements");
+        router.push("/announcements");
       } catch (err) {
         setError(ANNOUNCEMENT_CRUD_ERRORS.CREATE_FAILED);
         console.error("공지사항 생성 오류:", err);

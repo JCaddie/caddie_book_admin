@@ -37,7 +37,7 @@ export const useUpdateAnnouncement = (id: string) => {
         console.log("공지사항 수정:", data);
 
         // 성공 시 상세 페이지로 이동
-        router.push(`/admin/announcements/${id}`);
+        router.push(`/announcements/${id}`);
       } catch (err) {
         setError(ANNOUNCEMENT_CRUD_ERRORS.UPDATE_FAILED);
         console.error("공지사항 수정 오류:", err);

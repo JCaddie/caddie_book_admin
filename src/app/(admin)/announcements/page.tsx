@@ -38,14 +38,14 @@ const AnnouncementsPage: React.FC = () => {
 
   // 새 공지사항 생성 페이지로 이동
   const handleCreateNew = () => {
-    router.push("/admin/announcements/new");
+    router.push("/announcements/new");
   };
 
   // 공지사항 상세 페이지로 이동
   const handleRowClick = (announcement: AnnouncementWithNo) => {
     // 유효한 공지사항인 경우에만 상세 페이지로 이동
     if (isValidAnnouncement(announcement)) {
-      router.push(`/admin/announcements/${announcement.id}`);
+      router.push(`/announcements/${announcement.id}`);
     }
   };
 

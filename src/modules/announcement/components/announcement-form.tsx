@@ -155,7 +155,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
   // 수정 모드로 이동
   const handleEdit = useCallback(() => {
     if (announcement?.id) {
-      router.push(`/admin/announcements/${announcement.id}/edit`);
+      router.push(`/announcements/${announcement.id}/edit`);
     }
   }, [announcement?.id, router]);
 

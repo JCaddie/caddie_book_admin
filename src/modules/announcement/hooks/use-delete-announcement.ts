@@ -28,7 +28,7 @@ export const useDeleteAnnouncement = () => {
         console.log("공지사항 삭제:", id);
 
         // 성공 시 목록 페이지로 이동
-        router.push("/admin/announcements");
+        router.push("/announcements");
       } catch (err) {
         setError(ANNOUNCEMENT_CRUD_ERRORS.DELETE_FAILED);
         console.error("공지사항 삭제 오류:", err);
