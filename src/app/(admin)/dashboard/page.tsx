@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 
 import {
@@ -15,11 +16,27 @@ import {
 } from "@/modules/dashboard";
 
 const DashboardPage: React.FC = () => {
+  const router = useRouter();
+
   // 페이지 타이틀 설정
   useDocumentTitle({ title: PAGE_TITLES.DASHBOARD });
 
   // 대시보드 데이터
   const { data, isLoading, role } = useDashboardData();
+
+  // 공지사항 목록으로 이동 (제이캐디만 타입 필터링)
+  const handleNavigateToAnnouncements = (type: "JCADDIE" | "GOLF_COURSE") => {
+    if (type === "JCADDIE") {
+      router.push(`/announcements?type=${type}`);
+    } else {
+      router.push("/announcements");
+    }
+  };
+
+  // 공지사항 상세 페이지로 이동
+  const handleAnnouncementClick = (announcementId: string) => {
+    router.push(`/announcements/${announcementId}`);
+  };
 
   // 로딩 중일 때
   if (isLoading) {
@@ -43,7 +60,8 @@ const DashboardPage: React.FC = () => {
         <AnnouncementSection
           type="JCADDIE"
           announcements={data.announcements.jcaddie}
-          onNavigate={() => console.log("Navigate to announcements")}
+          onNavigate={() => handleNavigateToAnnouncements("JCADDIE")}
+          onAnnouncementClick={handleAnnouncementClick}
         />
 
         {/* Admin인 경우 골프장 공지사항 추가 */}
@@ -51,9 +69,8 @@ const DashboardPage: React.FC = () => {
           <AnnouncementSection
             type="GOLF_COURSE"
             announcements={data.announcements.golfCourse}
-            onNavigate={() =>
-              console.log("Navigate to golf course announcements")
-            }
+            onNavigate={() => handleNavigateToAnnouncements("GOLF_COURSE")}
+            onAnnouncementClick={handleAnnouncementClick}
           />
         )}
       </div>
