@@ -5,7 +5,11 @@ import { AdminPageHeader } from "@/shared/components/layout";
 import { SelectableDataTable, Pagination } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { useUserManagement } from "@/modules/user/hooks";
-import { userColumns, UserActionBar } from "@/modules/user/components";
+import {
+  userColumns,
+  UserActionBar,
+  UserCreateModal,
+} from "@/modules/user/components";
 import { USER_TABLE_CONFIG } from "@/modules/user/constants";
 
 export default function UsersPage() {
@@ -20,10 +24,14 @@ export default function UsersPage() {
     roleFilter,
     currentPage,
     totalPages,
+    isCreateModalOpen,
+    isCreating,
     handlePageChange,
     handleUpdateSelection,
     handleDeleteUsers,
     handleCreateUser,
+    handleCloseModal,
+    handleSubmitUser,
     setSearchTerm,
     setRoleFilter,
   } = useUserManagement();
@@ -61,6 +69,14 @@ export default function UsersPage() {
           onPageChange={handlePageChange}
         />
       </div>
+
+      {/* 사용자 생성 모달 */}
+      <UserCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmitUser}
+        isLoading={isCreating}
+      />
     </div>
   );
 }
