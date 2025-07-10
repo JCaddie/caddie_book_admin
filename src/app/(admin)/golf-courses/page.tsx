@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Trash2 } from "lucide-react";
+import React, { useState, useMemo, useCallback } from "react";
+import { Plus } from "lucide-react";
 import RoleGuard from "@/shared/components/auth/role-guard";
-import { Button, Search, Dropdown, EmptyState } from "@/shared/components/ui";
-import { TableWithPagination } from "@/shared/components/layout";
+import {
+  Button,
+  Search,
+  Dropdown,
+  EmptyState,
+  SelectableDataTable,
+  ConfirmationModal,
+  Pagination,
+} from "@/shared/components/ui";
 import {
   usePagination,
   useTableData,
@@ -26,6 +33,11 @@ const GolfCoursesPage: React.FC = () => {
     category: "",
     dailyTeams: "",
   });
+
+  // 선택 상태 관리
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // URL 검색 파라미터 처리
   const { searchTerm, setSearchTerm } = useUrlSearchParams();
@@ -100,6 +112,7 @@ const GolfCoursesPage: React.FC = () => {
     emptyRowTemplate: GOLF_COURSE_EMPTY_ROW_TEMPLATE,
   });
 
+  // 행 클릭 핸들러
   const handleRowClick = (record: GolfCourse) => {
     // 빈 행인 경우 클릭 이벤트 무시
     if (record.isEmpty) {
@@ -108,6 +121,52 @@ const GolfCoursesPage: React.FC = () => {
     // 골프장 상세 페이지로 이동
     window.location.href = `/golf-courses/${record.id}`;
   };
+
+  // 선택 변경 핸들러
+  const handleUpdateSelection = useCallback(
+    (keys: string[]) => {
+      // 빈 행 제외한 선택만 허용
+      const filteredKeys = keys.filter((key) => {
+        const record = paddedData.find((item) => item.id === key);
+        return record && !record.isEmpty;
+      });
+      setSelectedRowKeys(filteredKeys);
+    },
+    [paddedData]
+  );
+
+  // 삭제 핸들러
+  const handleDeleteSelected = useCallback(() => {
+    if (selectedRowKeys.length === 0) return;
+    setIsDeleteModalOpen(true);
+  }, [selectedRowKeys]);
+
+  // 삭제 확인 핸들러
+  const handleConfirmDelete = useCallback(async () => {
+    if (selectedRowKeys.length === 0) return;
+
+    setIsDeleting(true);
+    try {
+      // 실제 API 호출 시뮬레이션
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // 선택된 아이템 삭제 로직
+      console.log("삭제할 골프장 ID:", selectedRowKeys);
+
+      // 삭제 후 선택 초기화
+      setSelectedRowKeys([]);
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error("삭제 중 오류 발생:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [selectedRowKeys]);
+
+  // 생성 버튼 핸들러
+  const handleCreateClick = useCallback(() => {
+    window.location.href = "/golf-courses/new";
+  }, []);
 
   // 필터 변경 핸들러
   const handleFilterChange = (filterKey: string, value: string) => {
@@ -133,7 +192,7 @@ const GolfCoursesPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900">골프장 리스트</h2>
         </div>
 
-        {/* Figma 디자인에 맞는 상단 필터 영역 */}
+        {/* 액션바 */}
         <div className="flex items-center justify-between">
           {/* 왼쪽: 총 건수 */}
           <div className="text-base font-bold text-gray-900">
@@ -142,12 +201,6 @@ const GolfCoursesPage: React.FC = () => {
 
           {/* 오른쪽: 필터 및 액션 버튼들 */}
           <div className="flex items-center gap-8">
-            {/* 삭제 버튼 (비활성화 상태) */}
-            <div className="flex items-center gap-2 opacity-60">
-              <Trash2 size={16} className="text-gray-400" />
-              <span className="text-sm font-medium text-gray-500">삭제</span>
-            </div>
-
             {/* 필터 드롭다운들 */}
             <div className="flex items-center gap-2">
               <Dropdown
@@ -189,7 +242,7 @@ const GolfCoursesPage: React.FC = () => {
               />
             </div>
 
-            {/* 검색 및 생성 버튼 */}
+            {/* 검색 및 버튼 그룹 */}
             <div className="flex items-center gap-2">
               <Search
                 placeholder="검색어 입력"
@@ -197,7 +250,26 @@ const GolfCoursesPage: React.FC = () => {
                 onChange={handleSearch}
                 value={searchTerm}
               />
-              <Button variant="primary" size="md" className="w-24">
+
+              {/* 삭제 버튼 */}
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={handleDeleteSelected}
+                disabled={selectedRowKeys.length === 0 || isDeleting}
+                className="w-24"
+              >
+                삭제
+              </Button>
+
+              {/* 생성 버튼 */}
+              <Button
+                variant="primary"
+                size="md"
+                className="w-24"
+                onClick={handleCreateClick}
+                icon={<Plus size={24} />}
+              >
                 생성
               </Button>
             </div>
@@ -249,16 +321,36 @@ const GolfCoursesPage: React.FC = () => {
             <EmptyState className="rounded-t-none border-t-0" />
           </div>
         ) : (
-          <TableWithPagination
-            columns={GOLF_COURSE_TABLE_COLUMNS}
-            data={paddedData}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            onRowClick={handleRowClick}
-            layout="flexible"
-          />
+          <div className="space-y-6">
+            <SelectableDataTable
+              columns={GOLF_COURSE_TABLE_COLUMNS}
+              data={paddedData}
+              selectable
+              selectedRowKeys={selectedRowKeys}
+              onSelectChange={handleUpdateSelection}
+              onRowClick={handleRowClick}
+              realDataCount={filteredData.length}
+              layout="flexible"
+            />
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
         )}
+
+        {/* 삭제 확인 모달 */}
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+          title="골프장 삭제"
+          message={`선택한 ${selectedRowKeys.length}개의 골프장을 삭제하시겠습니까?`}
+          confirmText="삭제"
+          isLoading={isDeleting}
+        />
       </div>
     </RoleGuard>
   );
