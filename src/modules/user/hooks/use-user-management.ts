@@ -13,6 +13,8 @@ export const useUserManagement = (): UseUserManagementReturn => {
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [isCreating, setIsCreating] = React.useState(false);
 
   // 필터링된 데이터
   const filteredData = React.useMemo(() => {
@@ -97,7 +99,40 @@ export const useUserManagement = (): UseUserManagementReturn => {
   }, [selectedRowKeys]);
 
   const handleCreateUser = React.useCallback(() => {
-    console.log("사용자 생성");
+    setIsCreateModalOpen(true);
+  }, []);
+
+  const handleCloseModal = React.useCallback(() => {
+    setIsCreateModalOpen(false);
+  }, []);
+
+  const handleSubmitUser = React.useCallback(
+    async (userData: {
+      username: string;
+      password: string;
+      name: string;
+      phone: string;
+      email: string;
+    }) => {
+      setIsCreating(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        console.log("사용자 생성:", userData);
+        setIsCreateModalOpen(false);
+      } catch (error) {
+        console.error("사용자 생성 오류:", error);
+      } finally {
+        setIsCreating(false);
+      }
+    },
+    []
+  );
+
+  const handleRowClick = React.useCallback((user: User) => {
+    if (user.isEmpty) return;
+
+    // 사용자 상세 페이지로 이동
+    window.location.href = `/users/${user.id}`;
   }, []);
 
   return {
@@ -113,6 +148,10 @@ export const useUserManagement = (): UseUserManagementReturn => {
     roleFilter,
     currentPage: paginationPage,
 
+    // 모달 상태
+    isCreateModalOpen,
+    isCreating,
+
     // 페이지네이션
     totalPages,
     handlePageChange,
@@ -121,6 +160,9 @@ export const useUserManagement = (): UseUserManagementReturn => {
     handleUpdateSelection,
     handleDeleteUsers,
     handleCreateUser,
+    handleCloseModal,
+    handleSubmitUser,
+    handleRowClick,
     setSearchTerm,
     setRoleFilter,
   };

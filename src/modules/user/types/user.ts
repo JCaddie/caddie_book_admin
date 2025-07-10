@@ -39,6 +39,10 @@ export interface UseUserManagementReturn {
   roleFilter: string;
   currentPage: number;
 
+  // 모달 상태
+  isCreateModalOpen: boolean;
+  isCreating: boolean;
+
   // 페이지네이션
   totalPages: number;
   handlePageChange: (page: number) => void;
@@ -47,6 +51,15 @@ export interface UseUserManagementReturn {
   handleUpdateSelection: (keys: string[], rows: User[]) => void;
   handleDeleteUsers: () => Promise<void>;
   handleCreateUser: () => void;
+  handleCloseModal: () => void;
+  handleSubmitUser: (userData: {
+    username: string;
+    password: string;
+    name: string;
+    phone: string;
+    email: string;
+  }) => Promise<void>;
+  handleRowClick: (user: User) => void;
   setSearchTerm: (term: string) => void;
   setRoleFilter: (role: string) => void;
 }
