@@ -94,6 +94,9 @@ export interface AnnouncementFormErrors {
   general?: string;
 }
 
+// 공지사항 타입 (대시보드 연동용)
+export type AnnouncementType = "JCADDIE" | "GOLF_COURSE";
+
 // 공지사항 필터 타입
 export interface AnnouncementFilters extends BaseFilters {
   isPublished?: boolean;
@@ -103,6 +106,7 @@ export interface AnnouncementFilters extends BaseFilters {
   startDate?: string;
   endDate?: string;
   authorId?: string;
+  type?: AnnouncementType;
 }
 
 // 공지사항 정렬 타입
