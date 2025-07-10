@@ -88,6 +88,42 @@ export const mockAdminData: AdminDashboardData = {
         { rank: 3, name: "유재석", count: 4 },
       ],
     },
+    {
+      position: "3부",
+      averageHours: 3,
+      ranking: [
+        { rank: 1, name: "정우성", count: 4 },
+        { rank: 2, name: "김태희", count: 3 },
+        { rank: 3, name: "이민호", count: 3 },
+      ],
+    },
+    {
+      position: "새싹",
+      averageHours: 2,
+      ranking: [
+        { rank: 1, name: "박서준", count: 3 },
+        { rank: 2, name: "김고은", count: 2 },
+        { rank: 3, name: "유아인", count: 2 },
+      ],
+    },
+    {
+      position: "실버",
+      averageHours: 2,
+      ranking: [
+        { rank: 1, name: "강감찬", count: 3 },
+        { rank: 2, name: "이순신", count: 2 },
+        { rank: 3, name: "세종대왕", count: 2 },
+      ],
+    },
+    {
+      position: "주말",
+      averageHours: 2,
+      ranking: [
+        { rank: 1, name: "김유신", count: 3 },
+        { rank: 2, name: "을지문덕", count: 2 },
+        { rank: 3, name: "연개소문", count: 2 },
+      ],
+    },
   ],
   teamChart: {
     labels: ["월", "화", "수", "목", "금", "토", "일"],

@@ -2,13 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { MasterDashboardData } from "../../types";
-import { DASHBOARD_STYLES } from "../../constants/styles";
 import { StatsSectionConfig } from "../../constants/stats-configs";
 import {
   PeriodToggle,
   StatBadge,
   LineChartComponent,
-  SectionHeader,
   type PeriodType,
   type StatBadgeItem,
   type LineChartLegendItem,
@@ -65,28 +63,30 @@ const StatsSection = ({ data, config }: StatsSectionProps) => {
   );
 
   return (
-    <div
-      className={`${DASHBOARD_STYLES.CARD} ${DASHBOARD_STYLES.CARD_PADDING}`}
-    >
-      <SectionHeader
-        title={config.title}
-        rightElement={<PeriodToggle value={viewType} onChange={setViewType} />}
-      />
-
-      {/* 통계 배지 - 헤더와 차트 사이에 배치 */}
-      <div className="mb-4">
-        <StatBadge items={statBadgeItems} />
+    <div className="bg-white rounded-xl flex flex-col gap-2">
+      {/* 헤더 */}
+      <div className="flex justify-between items-center px-2">
+        <h3 className="text-lg font-bold text-gray-800">{config.title}</h3>
+        <PeriodToggle value={viewType} onChange={setViewType} />
       </div>
 
-      <LineChartComponent
-        chartData={
-          config.dataKey === "contractStats"
-            ? data.contractChart
-            : data.userChart
-        }
-        legends={legendItems}
-        type={config.dataKey === "contractStats" ? "contract" : "user"}
-      />
+      {/* 차트 영역 */}
+      <div className="border border-gray-200 rounded-xl p-4">
+        {/* 통계 배지 */}
+        <div className="mb-4">
+          <StatBadge items={statBadgeItems} />
+        </div>
+
+        <LineChartComponent
+          chartData={
+            config.dataKey === "contractStats"
+              ? data.contractChart
+              : data.userChart
+          }
+          legends={legendItems}
+          type={config.dataKey === "contractStats" ? "contract" : "user"}
+        />
+      </div>
     </div>
   );
 };

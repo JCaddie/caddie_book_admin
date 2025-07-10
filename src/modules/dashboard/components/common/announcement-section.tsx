@@ -19,10 +19,10 @@ const AnnouncementSection = ({
   const title = type === "JCADDIE" ? "제이캐디 공지사항" : "골프장 공지사항";
 
   return (
-    <div className="rounded-md p-4 space-y-2">
+    <div className="bg-white rounded-xl space-y-2">
       {/* 헤더 */}
       <div
-        className="flex justify-between items-center px-2 cursor-pointer rounded-md hover:bg-gray-50 transition-colors duration-200"
+        className="flex justify-between items-center px-2 pt-2 cursor-pointer rounded-md hover:bg-gray-50 transition-colors duration-200"
         onClick={onNavigate}
       >
         <h3 className="text-base font-bold text-black hover:text-blue-600 transition-colors duration-200">
