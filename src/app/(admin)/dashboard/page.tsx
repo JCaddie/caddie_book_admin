@@ -57,39 +57,49 @@ const DashboardPage: React.FC = () => {
       <DashboardHeader />
 
       {/* 공통 공지사항 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AnnouncementSection
-          type="JCADDIE"
-          announcements={data.announcements.jcaddie}
-          onNavigate={() => handleNavigateToAnnouncements("JCADDIE")}
-          onAnnouncementClick={handleAnnouncementClick}
-        />
+      <div className="flex flex-row gap-6">
+        <div className="flex-1">
+          <AnnouncementSection
+            type="JCADDIE"
+            announcements={data.announcements.jcaddie}
+            onNavigate={() => handleNavigateToAnnouncements("JCADDIE")}
+            onAnnouncementClick={handleAnnouncementClick}
+          />
+        </div>
 
         {/* Admin인 경우 골프장 공지사항 추가 */}
         {role === "ADMIN" && data.announcements.golfCourse && (
-          <AnnouncementSection
-            type="GOLF_COURSE"
-            announcements={data.announcements.golfCourse}
-            onNavigate={() => handleNavigateToAnnouncements("GOLF_COURSE")}
-            onAnnouncementClick={handleAnnouncementClick}
-          />
+          <div className="flex-1">
+            <AnnouncementSection
+              type="GOLF_COURSE"
+              announcements={data.announcements.golfCourse}
+              onNavigate={() => handleNavigateToAnnouncements("GOLF_COURSE")}
+              onAnnouncementClick={handleAnnouncementClick}
+            />
+          </div>
         )}
       </div>
 
       {/* 역할별 섹션 */}
       {role === "MASTER" && data.master && (
-        <div className="space-y-6">
-          <StatsSection data={data.master} config={CONTRACT_STATS_CONFIG} />
-          <StatsSection data={data.master} config={USER_STATS_CONFIG} />
+        <div className="flex flex-row gap-6">
+          <div className="flex-1">
+            <StatsSection data={data.master} config={CONTRACT_STATS_CONFIG} />
+          </div>
+          <div className="flex-1">
+            <StatsSection data={data.master} config={USER_STATS_CONFIG} />
+          </div>
         </div>
       )}
 
       {role === "ADMIN" && data.admin && (
         <div className="space-y-6">
           {/* 상단 영역: 근무 횟수 + 팀 수 차트 */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <WorkHoursSection data={data.admin} />
-            <div className="lg:col-span-2">
+          <div className="flex flex-row gap-6">
+            <div className="flex-1">
+              <WorkHoursSection data={data.admin} />
+            </div>
+            <div className="flex-1">
               <TeamCountSection />
             </div>
           </div>
