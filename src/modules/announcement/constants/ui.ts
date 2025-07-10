@@ -12,14 +12,14 @@ export const PAGINATION_CONFIG = {
 // 테이블 컬럼 너비
 export const ANNOUNCEMENT_COLUMN_WIDTHS = {
   no: 80,
-  title: 400,
+  title: 300,
   category: 120,
   priority: 100,
   views: 100,
   isPublished: 120,
   isPinned: 80,
-  createdAt: 120,
-  updatedAt: 120,
+  createdAt: 170,
+  updatedAt: 170,
   author: 100,
 } as const;
 

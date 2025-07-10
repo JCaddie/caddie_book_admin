@@ -28,10 +28,10 @@ export const ANNOUNCEMENT_CONSTANTS = {
 // 레거시 호환을 위한 컬럼 너비 (deprecated)
 export const ANNOUNCEMENT_COLUMN_WIDTHS = {
   no: 80,
-  title: 400,
+  title: 300,
   views: 100,
-  createdAt: 120,
-  updatedAt: 120,
+  createdAt: 170,
+  updatedAt: 170,
 } as const;
 
 // 레거시 호환을 위한 폼 규칙 (deprecated)
