@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Work } from "@/modules/work/types";
-import { SAMPLE_GOLF_COURSES } from "@/modules/work/constants";
+import { SAMPLE_GOLF_COURSES, WORKS_PAGE_SIZE } from "@/modules/work/constants";
+import { usePagination, useTableData } from "@/shared/hooks";
 
 export interface UseWorksDataReturn {
   worksList: Work[];
@@ -9,7 +10,11 @@ export interface UseWorksDataReturn {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   filteredWorks: Work[];
+  paddedData: Work[];
+  currentPage: number;
+  totalPages: number;
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handlePageChange: (page: number) => void;
 }
 
 // 샘플 데이터 생성 함수
@@ -61,6 +66,44 @@ const useWorksData = (): UseWorksDataReturn => {
     });
   }, [worksList, searchTerm]);
 
+  // 페이지네이션
+  const { currentPage, totalPages, currentData, handlePageChange } =
+    usePagination({
+      data: filteredWorks,
+      itemsPerPage: WORKS_PAGE_SIZE,
+    });
+
+  // 페이지네이션된 데이터에 번호 추가
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * WORKS_PAGE_SIZE;
+    return currentData.map((work, index) => ({
+      ...work,
+      no: startIndex + index + 1,
+    }));
+  }, [currentData, currentPage]);
+
+  // 빈 행 템플릿
+  const emptyRowTemplate = useMemo(
+    () => ({
+      no: 0,
+      date: "",
+      golfCourse: "",
+      totalStaff: 0,
+      availableStaff: 0,
+      status: "planning" as const,
+      createdAt: "",
+      updatedAt: "",
+    }),
+    []
+  );
+
+  // 패딩된 데이터 생성 (빈 행 추가)
+  const { paddedData } = useTableData({
+    data: paginatedData,
+    itemsPerPage: WORKS_PAGE_SIZE,
+    emptyRowTemplate,
+  });
+
   // 검색 변경 핸들러
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -72,7 +115,11 @@ const useWorksData = (): UseWorksDataReturn => {
     searchTerm,
     setSearchTerm,
     filteredWorks,
+    paddedData,
+    currentPage,
+    totalPages,
     handleSearchChange,
+    handlePageChange,
   };
 };
 

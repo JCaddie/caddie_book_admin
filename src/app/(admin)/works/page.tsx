@@ -4,9 +4,8 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { ConfirmationModal, Pagination } from "@/shared/components/ui";
-import { usePagination, useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
+import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
 import { Work } from "@/modules/work/types";
-import { WORKS_PAGE_SIZE } from "@/modules/work/constants";
 import {
   useWorksData,
   useWorksSelection,
@@ -26,7 +25,11 @@ const WorksPage: React.FC = () => {
     setWorksList,
     searchTerm,
     filteredWorks,
+    paddedData,
+    currentPage,
+    totalPages,
     handleSearchChange,
+    handlePageChange,
   } = useWorksData();
 
   const { selectedRowKeys, selectedRows, handleSelectChange, clearSelection } =
@@ -40,16 +43,9 @@ const WorksPage: React.FC = () => {
     handleCloseDeleteModal,
   } = useWorksDelete(selectedRowKeys);
 
-  // 페이지네이션 훅 사용
-  const { currentPage, totalPages, currentData, handlePageChange } =
-    usePagination<Work>({
-      data: filteredWorks,
-      itemsPerPage: WORKS_PAGE_SIZE,
-    });
-
   // 행 클릭 핸들러 - 디테일 페이지로 이동
   const handleRowClick = (work: Work) => {
-    if ((work as Work & { isEmpty?: boolean }).isEmpty) {
+    if (work.isEmpty) {
       return;
     }
     router.push(`/works/${work.id}`);
@@ -88,7 +84,7 @@ const WorksPage: React.FC = () => {
 
       {/* 테이블 */}
       <WorksTable
-        data={currentData}
+        data={paddedData}
         selectedRowKeys={selectedRowKeys}
         onSelectChange={handleSelectChange}
         onRowClick={handleRowClick}

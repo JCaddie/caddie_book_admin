@@ -19,8 +19,14 @@ const useWorksSelection = (): UseWorksSelectionReturn => {
     newSelectedRowKeys: string[],
     newSelectedRows: Work[]
   ) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-    setSelectedRows(newSelectedRows);
+    // 빈 행은 선택에서 제외
+    const validSelectedRows = newSelectedRows.filter(
+      (row) => row.id && !row.isEmpty
+    );
+    const validSelectedRowKeys = validSelectedRows.map((row) => row.id);
+
+    setSelectedRowKeys(validSelectedRowKeys);
+    setSelectedRows(validSelectedRows);
   };
 
   // 선택 초기화
