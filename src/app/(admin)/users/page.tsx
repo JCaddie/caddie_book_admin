@@ -9,6 +9,7 @@ import {
 } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { Column } from "@/shared/types/table";
+import { UserRole } from "@/shared/types/user";
 
 // User 타입 정의 (Record<string, unknown>을 확장)
 interface User extends Record<string, unknown> {
@@ -17,14 +18,14 @@ interface User extends Record<string, unknown> {
   name: string;
   phone: string;
   email: string;
-  role: "master" | "admin" | "user";
+  role: UserRole;
+  no?: number; // 페이지네이션을 위한 번호 필드
 }
 
 // 역할 매핑
-const ROLE_LABELS: Record<string, string> = {
-  master: "마스터",
-  admin: "관리자",
-  user: "사용자",
+const ROLE_LABELS: Record<UserRole, string> = {
+  DEVELOPER: "개발사",
+  BRANCH: "지점",
 };
 
 // 테이블 컬럼 정의
@@ -34,7 +35,13 @@ const userColumns: Column<User>[] = [
     title: "No.",
     width: 80,
     align: "center",
-    render: (_value, _record, index) => <div>{index + 1}</div>,
+    render: (_value, record) => {
+      // 빈 행인 경우 번호를 표시하지 않음
+      if (record.id && record.id.startsWith("empty")) {
+        return <div></div>;
+      }
+      return <div>{record.no}</div>;
+    },
   },
   {
     key: "username",
@@ -69,38 +76,218 @@ const userColumns: Column<User>[] = [
     title: "권한",
     width: 160,
     align: "center",
-    render: (value) => {
-      const role = String(value || "");
-      return <div>{ROLE_LABELS[role] || role}</div>;
+    render: (value, record) => {
+      // 빈 행인 경우 권한을 표시하지 않음
+      if (record.id && record.id.startsWith("empty")) {
+        return <div></div>;
+      }
+      const role = value as UserRole;
+      return <div>{ROLE_LABELS[role] || String(role)}</div>;
     },
   },
 ];
 
-// Mock 데이터
+// Mock 데이터 (25개)
 const mockUsers: User[] = [
   {
     id: "1",
-    username: "jcaddie",
-    name: "홍길동",
+    username: "developer01",
+    name: "개발사1",
     phone: "010-1234-5678",
-    email: "adminkim@admin.com",
-    role: "master",
+    email: "dev1@company.com",
+    role: "DEVELOPER",
   },
   {
     id: "2",
-    username: "admin01",
-    name: "김관리",
+    username: "branch01",
+    name: "지점관리자1",
     phone: "010-2345-6789",
-    email: "admin01@admin.com",
-    role: "admin",
+    email: "branch1@golf.com",
+    role: "BRANCH",
   },
   {
     id: "3",
-    username: "user01",
-    name: "이사용",
+    username: "branch02",
+    name: "지점관리자2",
     phone: "010-3456-7890",
-    email: "user01@user.com",
-    role: "user",
+    email: "branch2@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "4",
+    username: "branch03",
+    name: "지점관리자3",
+    phone: "010-4567-8901",
+    email: "branch3@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "5",
+    username: "branch04",
+    name: "지점관리자4",
+    phone: "010-5678-9012",
+    email: "branch4@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "6",
+    username: "branch05",
+    name: "지점관리자5",
+    phone: "010-6789-0123",
+    email: "branch5@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "7",
+    username: "branch06",
+    name: "지점관리자6",
+    phone: "010-7890-1234",
+    email: "branch6@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "8",
+    username: "branch07",
+    name: "지점관리자7",
+    phone: "010-8901-2345",
+    email: "branch7@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "9",
+    username: "branch08",
+    name: "지점관리자8",
+    phone: "010-9012-3456",
+    email: "branch8@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "10",
+    username: "branch09",
+    name: "지점관리자9",
+    phone: "010-0123-4567",
+    email: "branch9@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "11",
+    username: "branch10",
+    name: "지점관리자10",
+    phone: "010-1234-5679",
+    email: "branch10@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "12",
+    username: "branch11",
+    name: "지점관리자11",
+    phone: "010-2345-6780",
+    email: "branch11@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "13",
+    username: "branch12",
+    name: "지점관리자12",
+    phone: "010-3456-7891",
+    email: "branch12@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "14",
+    username: "kim123",
+    name: "김철수",
+    phone: "010-4567-8902",
+    email: "kim123@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "15",
+    username: "lee456",
+    name: "이영희",
+    phone: "010-5678-9013",
+    email: "lee456@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "16",
+    username: "park789",
+    name: "박민수",
+    phone: "010-6789-0124",
+    email: "park789@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "17",
+    username: "choi012",
+    name: "최서연",
+    phone: "010-7890-1235",
+    email: "choi012@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "18",
+    username: "jung345",
+    name: "정우진",
+    phone: "010-8901-2346",
+    email: "jung345@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "19",
+    username: "kang678",
+    name: "강민지",
+    phone: "010-9012-3457",
+    email: "kang678@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "20",
+    username: "yoon901",
+    name: "윤성호",
+    phone: "010-0123-4568",
+    email: "yoon901@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "21",
+    username: "lim234",
+    name: "임하은",
+    phone: "010-1234-5680",
+    email: "lim234@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "22",
+    username: "han567",
+    name: "한재훈",
+    phone: "010-2345-6781",
+    email: "han567@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "23",
+    username: "oh890",
+    name: "오수빈",
+    phone: "010-3456-7892",
+    email: "oh890@golf.com",
+    role: "BRANCH",
+  },
+  {
+    id: "24",
+    username: "developer02",
+    name: "개발사2",
+    phone: "010-4567-8903",
+    email: "dev2@company.com",
+    role: "DEVELOPER",
+  },
+  {
+    id: "25",
+    username: "moon456",
+    name: "문예린",
+    phone: "010-5678-9014",
+    email: "moon456@golf.com",
+    role: "BRANCH",
   },
 ];
 
@@ -158,9 +345,8 @@ const ActionBar: React.FC<ActionBarProps> = ({
           onChange={(e) => onRoleFilterChange(e.target.value)}
         >
           <option value="">권한</option>
-          <option value="master">마스터</option>
-          <option value="admin">관리자</option>
-          <option value="user">사용자</option>
+          <option value="DEVELOPER">개발사</option>
+          <option value="BRANCH">지점</option>
         </select>
 
         {/* 검색 */}
@@ -234,10 +420,22 @@ const useUserManagement = () => {
     });
   }, [searchTerm, roleFilter]);
 
+  // 페이지네이션된 데이터
+  const paginatedData = React.useMemo(() => {
+    const itemsPerPage = 20;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredData
+      .slice(startIndex, startIndex + itemsPerPage)
+      .map((user, index) => ({
+        ...user,
+        no: startIndex + index + 1, // 페이지네이션을 고려한 번호 계산
+      }));
+  }, [filteredData, currentPage]);
+
   // 패딩된 데이터 생성 (빈 행 추가)
   const paddedData = React.useMemo(() => {
     const itemsPerPage = 20;
-    const emptyRowsCount = Math.max(0, itemsPerPage - filteredData.length);
+    const emptyRowsCount = Math.max(0, itemsPerPage - paginatedData.length);
     const emptyRows = Array(emptyRowsCount)
       .fill(null)
       .map((_, index) => ({
@@ -246,16 +444,23 @@ const useUserManagement = () => {
         name: "",
         phone: "",
         email: "",
-        role: "user" as const,
+        role: "BRANCH" as UserRole,
+        no: 0, // 빈 행은 번호 0
       }));
-    return [...filteredData, ...emptyRows];
-  }, [filteredData]);
+    return [...paginatedData, ...emptyRows];
+  }, [paginatedData]);
 
   // 액션 핸들러들
   const handleUpdateSelection = React.useCallback(
     (keys: string[], rows: User[]) => {
-      setSelectedRowKeys(keys);
-      setSelectedRows(rows);
+      // 빈 행은 선택에서 제외
+      const validSelectedRows = rows.filter(
+        (row) => row.id && !row.id.startsWith("empty")
+      );
+      const validSelectedRowKeys = validSelectedRows.map((row) => row.id);
+
+      setSelectedRowKeys(validSelectedRowKeys);
+      setSelectedRows(validSelectedRows);
     },
     []
   );
