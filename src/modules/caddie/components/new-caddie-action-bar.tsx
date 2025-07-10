@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Button, Badge } from "@/shared/components/ui";
+import { Search, Button } from "@/shared/components/ui";
 import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
 
 interface NewCaddieActionBarProps {
@@ -25,10 +25,11 @@ const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
 }) => {
   return (
     <div className="flex items-center justify-between">
-      {/* 왼쪽: 신규 캐디 수 */}
+      {/* 왼쪽: 총 건수 */}
       <div className="flex items-center gap-3">
-        <span className="text-base font-bold text-black">신규</span>
-        <Badge variant="orange">{pendingCount}</Badge>
+        <span className="text-base font-bold text-black">
+          총 {pendingCount}건
+        </span>
       </div>
 
       {/* 오른쪽: 검색 + 버튼들 */}
