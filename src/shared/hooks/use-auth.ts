@@ -14,6 +14,7 @@ interface AuthState {
 interface UseAuthReturn extends AuthState {
   login: (token: string, user: User) => void;
   logout: () => void;
+  switchRole: (targetRole: UserRole) => void;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
 }
@@ -142,10 +143,61 @@ export const useAuth = (): UseAuthReturn => {
     return authState.user ? roles.includes(authState.user.role) : false;
   };
 
+  const switchRole = (targetRole: UserRole) => {
+    if (!authState.user) return;
+
+    // 테스트 사용자 정보 (실제로는 서버에서 가져오거나 JWT에서 디코딩)
+    const testUsers: Record<UserRole, User> = {
+      MASTER: {
+        id: "1",
+        name: "마스터 관리자",
+        email: "dev@example.com",
+        role: "MASTER",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      ADMIN: {
+        id: "2",
+        name: "골프장 관리자",
+        email: "golf@example.com",
+        role: "ADMIN",
+        golfCourseId: "golf-course-1",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    };
+
+    const targetUser = testUsers[targetRole];
+    if (targetUser) {
+      // 새로운 토큰 생성
+      const newToken = `mock-token-${targetUser.id}-${Date.now()}`;
+
+      // 쿠키 업데이트
+      cookieUtils.set(
+        AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+        newToken,
+        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+      );
+      cookieUtils.set(
+        AUTH_CONSTANTS.COOKIES.USER_DATA,
+        encodeURIComponent(JSON.stringify(targetUser)),
+        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+      );
+
+      // 상태 업데이트
+      setAuthState({
+        isAuthenticated: true,
+        isLoading: false,
+        user: targetUser,
+      });
+    }
+  };
+
   return {
     ...authState,
     login,
     logout,
+    switchRole,
     hasRole,
     hasAnyRole,
   };
