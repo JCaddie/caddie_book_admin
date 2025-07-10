@@ -34,6 +34,11 @@ const ContractStatusSection = ({ data }: ContractStatusSectionProps) => {
         value: contractStats.contract,
         color: DASHBOARD_COLORS.CONTRACT.CONTRACT,
       },
+      {
+        label: "대기",
+        value: contractStats.waiting,
+        color: DASHBOARD_COLORS.CONTRACT.WAITING,
+      },
     ],
     [contractStats]
   );
@@ -63,13 +68,13 @@ const ContractStatusSection = ({ data }: ContractStatusSectionProps) => {
     >
       <SectionHeader
         title="계약 현황"
-        rightElement={
-          <div className="flex items-center gap-2">
-            <StatBadge items={statBadgeItems} />
-            <PeriodToggle value={viewType} onChange={setViewType} />
-          </div>
-        }
+        rightElement={<PeriodToggle value={viewType} onChange={setViewType} />}
       />
+
+      {/* 통계 배지 - 헤더와 차트 사이에 배치 */}
+      <div className="mb-4">
+        <StatBadge items={statBadgeItems} />
+      </div>
 
       <ChartPlaceholder legends={legendItems} />
     </div>

@@ -77,7 +77,7 @@ const DashboardPage: React.FC = () => {
 
       {/* 역할별 섹션 */}
       {role === "MASTER" && data.master && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
           <ContractStatusSection data={data.master} />
           <UserStatusSection data={data.master} />
         </div>
