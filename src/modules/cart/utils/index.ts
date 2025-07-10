@@ -120,6 +120,7 @@ export const createEmptyCartTemplate = (): Omit<Cart, "id"> => ({
   managerName: "",
   createdAt: "",
   updatedAt: "",
+  isEmpty: true,
 });
 
 /**

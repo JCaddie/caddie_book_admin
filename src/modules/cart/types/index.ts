@@ -9,6 +9,7 @@ export interface Cart extends Record<string, unknown> {
   managerName: string;
   createdAt: string;
   updatedAt: string;
+  isEmpty?: boolean; // 빈 행 여부
 }
 
 // 카트 상태

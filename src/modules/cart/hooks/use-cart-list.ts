@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Cart, CartFilters, CartSelection, CartStatus } from "../types";
-import { usePagination } from "@/shared/hooks";
-import { createPaddedData, simulateApiDelay } from "@/shared/lib/data-utils";
+import { usePagination, useTableData } from "@/shared/hooks";
+import { simulateApiDelay } from "@/shared/lib/data-utils";
 import { DEFAULT_CART_FILTERS, CART_ITEMS_PER_PAGE } from "../constants";
 import {
   generateSampleCarts,
@@ -52,14 +52,24 @@ export const useCartList = () => {
       itemsPerPage: CART_ITEMS_PER_PAGE,
     });
 
+  // 페이지네이션된 데이터에 번호 추가
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * CART_ITEMS_PER_PAGE;
+    return currentData.map((cart, index) => ({
+      ...cart,
+      no: startIndex + index + 1,
+    }));
+  }, [currentData, currentPage]);
+
+  // 빈 행 템플릿
+  const emptyRowTemplate = useMemo(() => createEmptyCartTemplate(), []);
+
   // 빈 행이 추가된 데이터 (메모이제이션)
-  const paddedData = useMemo(() => {
-    return createPaddedData(
-      currentData,
-      CART_ITEMS_PER_PAGE,
-      createEmptyCartTemplate()
-    );
-  }, [currentData]);
+  const { paddedData } = useTableData({
+    data: paginatedData,
+    itemsPerPage: CART_ITEMS_PER_PAGE,
+    emptyRowTemplate,
+  });
 
   // 필터 업데이트 함수들 (useCallback으로 최적화)
   const updateSearchTerm = useCallback((searchTerm: string) => {
@@ -81,7 +91,16 @@ export const useCartList = () => {
   // 선택 관련 함수들 (useCallback으로 최적화)
   const updateSelection = useCallback(
     (selectedRowKeys: string[], selectedRows: Cart[]) => {
-      setSelection({ selectedRowKeys, selectedRows });
+      // 빈 행은 선택에서 제외
+      const validSelectedRows = selectedRows.filter(
+        (row) => row.id && !row.isEmpty
+      );
+      const validSelectedRowKeys = validSelectedRows.map((row) => row.id);
+
+      setSelection({
+        selectedRowKeys: validSelectedRowKeys,
+        selectedRows: validSelectedRows,
+      });
     },
     []
   );

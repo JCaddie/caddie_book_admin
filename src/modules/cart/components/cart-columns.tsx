@@ -26,71 +26,89 @@ export const useCartColumns = (): Column<Cart>[] => {
         key: "no",
         title: "No.",
         width: CART_COLUMN_WIDTHS.no,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {value as number}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: Cart) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {value as number}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: "name",
         title: "카트명",
         width: CART_COLUMN_WIDTHS.name,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {value as string}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: Cart) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {value as string}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: "status",
         title: "상태",
         width: CART_COLUMN_WIDTHS.status,
-        render: (value: unknown) => (
-          <div className="flex justify-center">
-            <StatusBadge status={value as CartStatus} />
-          </div>
-        ),
+        render: (value: unknown, record: Cart) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="flex justify-center">
+              <StatusBadge status={value as CartStatus} />
+            </div>
+          );
+        },
       },
       {
         key: "fieldName",
         title: "필드명",
         width: CART_COLUMN_WIDTHS.fieldName,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {value as string}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: Cart) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {value as string}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: "golfCourseName",
         title: "골프장",
         width: CART_COLUMN_WIDTHS.golfCourseName,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {value as string}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: Cart) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {value as string}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: "managerName",
         title: "담당자",
         width: CART_COLUMN_WIDTHS.managerName,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {value as string}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: Cart) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {value as string}
+              </span>
+            </div>
+          );
+        },
       },
     ],
     []

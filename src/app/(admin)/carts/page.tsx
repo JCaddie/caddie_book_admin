@@ -39,7 +39,7 @@ const CartsPage: React.FC = () => {
   // 카트 상세 페이지로 이동
   const handleRowClick = (cart: Cart) => {
     // 빈 행이 아닌 경우에만 상세 페이지로 이동
-    if (cart.id && !cart.id.startsWith("empty")) {
+    if (cart.id && !cart.isEmpty) {
       router.push(`/carts/${cart.id}`);
     }
   };
@@ -49,13 +49,8 @@ const CartsPage: React.FC = () => {
     selectedRowKeys: string[],
     selectedRows: Cart[]
   ) => {
-    // 빈 행은 선택에서 제외
-    const validSelectedRows = selectedRows.filter(
-      (row) => row.id && !row.id.startsWith("empty")
-    );
-    const validSelectedRowKeys = validSelectedRows.map((row) => row.id);
-
-    updateSelection(validSelectedRowKeys, validSelectedRows);
+    // useCartList의 updateSelection에서 이미 빈 행 처리를 하므로 직접 호출
+    updateSelection(selectedRowKeys, selectedRows);
   };
 
   return (
