@@ -8,12 +8,9 @@ interface WorkHoursSectionProps {
 
 const WorkHoursSection = ({ data }: WorkHoursSectionProps) => {
   return (
-    <div
-      className="bg-white rounded-xl flex flex-col gap-2"
-      style={{ width: "272px", height: "366px" }}
-    >
-      {/* 헤더 */}
-      <div className="flex justify-between items-center px-2">
+    <div className="bg-white rounded-xl flex flex-col gap-2 w-[272px] h-[366px]">
+      {/* 헤더 - 토글 버튼과 동일한 높이 맞추기 */}
+      <div className="flex justify-between items-center px-2 min-h-[40px]">
         <h3 className="text-lg font-bold text-gray-800">주간 평균 근무 횟수</h3>
         {/* PeriodToggle과 높이를 맞추기 위한 빈 공간 */}
         <div className="w-[72px] h-[32px]"></div>
@@ -22,14 +19,13 @@ const WorkHoursSection = ({ data }: WorkHoursSectionProps) => {
       {/* 근무 통계 그리드 */}
       <div
         className="border border-gray-200 rounded-xl p-4 flex-1"
-        style={{ backgroundColor: "#FFFAF2", height: "326px" }}
+        style={{ backgroundColor: "#FFFAF2" }}
       >
         <div className="flex flex-col gap-1 h-full justify-between">
           {data.workStatistics.map((stat, index) => (
             <div
               key={stat.position}
-              className="bg-white border border-gray-200 rounded-md px-2"
-              style={{ width: "240px", height: "36px" }}
+              className="bg-white border border-gray-200 rounded-md px-2 h-[36px] w-[240px]"
             >
               <div className="flex items-center h-full">
                 <div className="flex items-center gap-2">

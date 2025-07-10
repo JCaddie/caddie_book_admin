@@ -96,7 +96,7 @@ const DashboardPage: React.FC = () => {
         <div className="space-y-6">
           {/* 상단 영역: 근무 횟수 + 팀 수 차트 */}
           <div className="flex flex-row gap-6">
-            <div className="flex-1">
+            <div className="w-[272px] flex-shrink-0">
               <WorkHoursSection data={data.admin} />
             </div>
             <div className="flex-1">

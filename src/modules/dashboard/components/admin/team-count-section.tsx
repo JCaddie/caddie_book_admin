@@ -25,21 +25,20 @@ const TeamCountSection = () => {
   );
 
   return (
-    <div
-      className="bg-white rounded-xl flex flex-col gap-2"
-      style={{ width: "1208px", height: "366px" }}
-    >
-      <div className="flex justify-between items-center px-2">
+    <div className="bg-white rounded-xl flex flex-col gap-2 h-[366px]">
+      {/* 헤더 - WorkHoursSection과 동일한 높이 */}
+      <div className="flex justify-between items-center px-2 min-h-[40px]">
         <h3 className="text-lg font-bold text-gray-800">받은 팀 수</h3>
         <PeriodToggle value={viewType} onChange={setViewType} />
       </div>
 
+      {/* 차트 영역 */}
       <div className="flex-1 rounded-xl">
         <LineChartComponent
           chartData={mockAdminData.teamChart}
           legends={legendItems}
           type="team"
-          height={270}
+          height={252}
         />
       </div>
     </div>
