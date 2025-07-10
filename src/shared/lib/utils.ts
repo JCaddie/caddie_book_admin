@@ -1,8 +1,11 @@
-import {
-  AUTH_CONSTANTS,
-  ROLE_LEVELS,
-  TOKEN_FORMAT,
-} from "@/shared/constants/auth";
+import { AUTH_CONSTANTS } from "@/shared/constants/auth";
+
+// 토큰 형식 상수
+const TOKEN_FORMAT = {
+  SEPARATOR: "-",
+  MIN_PARTS: 4,
+  MOCK_PREFIX: "mock",
+};
 
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(" ");
@@ -122,7 +125,11 @@ export const authUtils = {
    * 권한 레벨 비교
    */
   getRoleLevel(role: string): number {
-    return ROLE_LEVELS[role as keyof typeof ROLE_LEVELS] || 0;
+    return (
+      AUTH_CONSTANTS.ROLE_LEVELS[
+        role as keyof typeof AUTH_CONSTANTS.ROLE_LEVELS
+      ] || 0
+    );
   },
 
   /**

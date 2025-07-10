@@ -6,23 +6,22 @@ import { useAuth } from "@/shared/hooks/use-auth";
 import { TextField } from "@/shared/components/ui";
 import { User } from "@/shared/types";
 import { tokenUtils } from "@/shared/lib/utils";
-import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
   {
     id: "1",
-    name: "개발사 관리자",
+    name: "마스터 관리자",
     email: "dev@example.com",
     password: "dev123",
-    role: "DEVELOPER" as const,
+    role: "MASTER" as const,
   },
   {
     id: "2",
     name: "골프장 관리자",
     email: "golf@example.com",
     password: "golf123",
-    role: "BRANCH" as const,
+    role: "ADMIN" as const,
     golfCourseId: "golf-course-1",
   },
 ];
@@ -41,7 +40,7 @@ export default function LoginPage() {
     if (!isLoading && isAuthenticated) {
       // 약간의 지연을 주어 상태 업데이트가 확실히 완료되도록 함
       setTimeout(() => {
-        router.push(AUTH_CONSTANTS.ROUTES.DASHBOARD);
+        router.push("/dashboard");
       }, 100);
     }
   }, [isAuthenticated, isLoading, router]);
@@ -207,7 +206,7 @@ export default function LoginPage() {
                   <p className="text-sm text-gray-600">{account.email}</p>
                   <p className="text-xs text-gray-500">
                     비밀번호: {account.password} | 권한:{" "}
-                    {account.role === "DEVELOPER" ? "개발사" : "골프장"}
+                    {account.role === "MASTER" ? "마스터" : "관리자"}
                   </p>
                 </div>
                 <button

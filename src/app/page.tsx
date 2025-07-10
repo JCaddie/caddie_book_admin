@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
-import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -13,10 +12,10 @@ export default function Home() {
     if (!isLoading) {
       if (isAuthenticated) {
         // 인증된 사용자는 대시보드로 리다이렉트
-        router.push(AUTH_CONSTANTS.ROUTES.DASHBOARD);
+        router.push("/dashboard");
       } else {
         // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
-        router.push(AUTH_CONSTANTS.ROUTES.LOGIN);
+        router.push("/login");
       }
     }
   }, [isAuthenticated, isLoading, router]);

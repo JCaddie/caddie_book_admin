@@ -51,7 +51,7 @@ const GolfCourseDetailPage: React.FC = () => {
   );
 
   return (
-    <RoleGuard requiredRole="DEVELOPER">
+    <RoleGuard requiredRole="MASTER">
       <div className="bg-white rounded-xl p-8 space-y-8">
         {/* 상단 헤더 - 뒤로가기 버튼 제거 */}
         <div className="pb-4">

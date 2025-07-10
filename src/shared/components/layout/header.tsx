@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { ConfirmationModal } from "@/shared/components/ui";
-import { AUTH_CONSTANTS } from "@/shared/constants/auth";
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -24,7 +23,7 @@ const Header: React.FC = () => {
     logout();
     setIsLogoutModalOpen(false);
     // 로그아웃 후 로그인 페이지로 리디렉션
-    router.push(AUTH_CONSTANTS.ROUTES.LOGIN);
+    router.push("/login");
   };
 
   const handleLogoutCancel = () => {
@@ -48,7 +47,7 @@ const Header: React.FC = () => {
             <div>
               <p className="text-gray-900 font-medium text-sm">{user?.name}</p>
               <p className="text-gray-500 text-xs">
-                {user?.role === "DEVELOPER" ? "개발사 관리자" : "골프장 관리자"}
+                {user?.role === "MASTER" ? "마스터 관리자" : "골프장 관리자"}
               </p>
             </div>
           </div>

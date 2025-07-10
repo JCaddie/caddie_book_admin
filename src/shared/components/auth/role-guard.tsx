@@ -68,7 +68,7 @@ const RoleGuard: React.FC<RoleGuardProps> = ({
             이 페이지에 접근할 권한이 없습니다.
           </p>
           <p className="text-sm text-gray-500">
-            현재 권한: {user.role === "DEVELOPER" ? "개발사" : "지점"}
+            현재 권한: {user.role === "MASTER" ? "마스터" : "관리자"}
           </p>
         </div>
       </div>

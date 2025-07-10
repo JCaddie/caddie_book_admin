@@ -12,7 +12,7 @@ import { NavigationConfig } from "@/shared/types";
 
 // 권한별 네비게이션 메뉴 설정
 export const NAVIGATION_CONFIG: NavigationConfig = {
-  DEVELOPER: [
+  MASTER: [
     {
       id: "dashboard",
       label: "대시보드",
@@ -84,7 +84,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       icon: Settings,
     },
   ],
-  BRANCH: [
+  ADMIN: [
     {
       id: "dashboard",
       label: "대시보드",

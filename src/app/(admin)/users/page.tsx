@@ -24,8 +24,8 @@ interface User extends Record<string, unknown> {
 
 // 역할 매핑
 const ROLE_LABELS: Record<UserRole, string> = {
-  DEVELOPER: "개발사",
-  BRANCH: "지점",
+  MASTER: "마스터",
+  ADMIN: "관리자",
 };
 
 // 테이블 컬럼 정의
@@ -91,107 +91,107 @@ const userColumns: Column<User>[] = [
 const mockUsers: User[] = [
   {
     id: "1",
-    username: "developer01",
-    name: "개발사1",
+    username: "master01",
+    name: "마스터1",
     phone: "010-1234-5678",
-    email: "dev1@company.com",
-    role: "DEVELOPER",
+    email: "master1@company.com",
+    role: "MASTER",
   },
   {
     id: "2",
-    username: "branch01",
-    name: "지점관리자1",
+    username: "admin01",
+    name: "관리자1",
     phone: "010-2345-6789",
-    email: "branch1@golf.com",
-    role: "BRANCH",
+    email: "admin1@golf.com",
+    role: "ADMIN",
   },
   {
     id: "3",
-    username: "branch02",
-    name: "지점관리자2",
+    username: "admin02",
+    name: "관리자2",
     phone: "010-3456-7890",
-    email: "branch2@golf.com",
-    role: "BRANCH",
+    email: "admin2@golf.com",
+    role: "ADMIN",
   },
   {
     id: "4",
-    username: "branch03",
-    name: "지점관리자3",
+    username: "admin03",
+    name: "관리자3",
     phone: "010-4567-8901",
-    email: "branch3@golf.com",
-    role: "BRANCH",
+    email: "admin3@golf.com",
+    role: "ADMIN",
   },
   {
     id: "5",
-    username: "branch04",
-    name: "지점관리자4",
+    username: "admin04",
+    name: "관리자4",
     phone: "010-5678-9012",
-    email: "branch4@golf.com",
-    role: "BRANCH",
+    email: "admin4@golf.com",
+    role: "ADMIN",
   },
   {
     id: "6",
-    username: "branch05",
-    name: "지점관리자5",
+    username: "admin05",
+    name: "관리자5",
     phone: "010-6789-0123",
-    email: "branch5@golf.com",
-    role: "BRANCH",
+    email: "admin5@golf.com",
+    role: "ADMIN",
   },
   {
     id: "7",
-    username: "branch06",
-    name: "지점관리자6",
+    username: "admin06",
+    name: "관리자6",
     phone: "010-7890-1234",
-    email: "branch6@golf.com",
-    role: "BRANCH",
+    email: "admin6@golf.com",
+    role: "ADMIN",
   },
   {
     id: "8",
-    username: "branch07",
-    name: "지점관리자7",
+    username: "admin07",
+    name: "관리자7",
     phone: "010-8901-2345",
-    email: "branch7@golf.com",
-    role: "BRANCH",
+    email: "admin7@golf.com",
+    role: "ADMIN",
   },
   {
     id: "9",
-    username: "branch08",
-    name: "지점관리자8",
+    username: "admin08",
+    name: "관리자8",
     phone: "010-9012-3456",
-    email: "branch8@golf.com",
-    role: "BRANCH",
+    email: "admin8@golf.com",
+    role: "ADMIN",
   },
   {
     id: "10",
-    username: "branch09",
-    name: "지점관리자9",
+    username: "admin09",
+    name: "관리자9",
     phone: "010-0123-4567",
-    email: "branch9@golf.com",
-    role: "BRANCH",
+    email: "admin9@golf.com",
+    role: "ADMIN",
   },
   {
     id: "11",
-    username: "branch10",
-    name: "지점관리자10",
+    username: "admin10",
+    name: "관리자10",
     phone: "010-1234-5679",
-    email: "branch10@golf.com",
-    role: "BRANCH",
+    email: "admin10@golf.com",
+    role: "ADMIN",
   },
   {
     id: "12",
-    username: "branch11",
-    name: "지점관리자11",
+    username: "admin11",
+    name: "관리자11",
     phone: "010-2345-6780",
-    email: "branch11@golf.com",
-    role: "BRANCH",
+    email: "admin11@golf.com",
+    role: "ADMIN",
   },
   {
     id: "13",
-    username: "branch12",
-    name: "지점관리자12",
+    username: "admin12",
+    name: "관리자12",
     phone: "010-3456-7891",
-    email: "branch12@golf.com",
-    role: "BRANCH",
+    email: "admin12@golf.com",
+    role: "ADMIN",
   },
   {
     id: "14",
@@ -199,7 +199,7 @@ const mockUsers: User[] = [
     name: "김철수",
     phone: "010-4567-8902",
     email: "kim123@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "15",
@@ -207,7 +207,7 @@ const mockUsers: User[] = [
     name: "이영희",
     phone: "010-5678-9013",
     email: "lee456@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "16",
@@ -215,7 +215,7 @@ const mockUsers: User[] = [
     name: "박민수",
     phone: "010-6789-0124",
     email: "park789@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "17",
@@ -223,7 +223,7 @@ const mockUsers: User[] = [
     name: "최서연",
     phone: "010-7890-1235",
     email: "choi012@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "18",
@@ -231,7 +231,7 @@ const mockUsers: User[] = [
     name: "정우진",
     phone: "010-8901-2346",
     email: "jung345@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "19",
@@ -239,7 +239,7 @@ const mockUsers: User[] = [
     name: "강민지",
     phone: "010-9012-3457",
     email: "kang678@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "20",
@@ -247,7 +247,7 @@ const mockUsers: User[] = [
     name: "윤성호",
     phone: "010-0123-4568",
     email: "yoon901@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "21",
@@ -255,7 +255,7 @@ const mockUsers: User[] = [
     name: "임하은",
     phone: "010-1234-5680",
     email: "lim234@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "22",
@@ -263,7 +263,7 @@ const mockUsers: User[] = [
     name: "한재훈",
     phone: "010-2345-6781",
     email: "han567@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "23",
@@ -271,15 +271,15 @@ const mockUsers: User[] = [
     name: "오수빈",
     phone: "010-3456-7892",
     email: "oh890@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
   {
     id: "24",
-    username: "developer02",
-    name: "개발사2",
+    username: "master02",
+    name: "마스터2",
     phone: "010-4567-8903",
-    email: "dev2@company.com",
-    role: "DEVELOPER",
+    email: "master2@company.com",
+    role: "MASTER",
   },
   {
     id: "25",
@@ -287,7 +287,7 @@ const mockUsers: User[] = [
     name: "문예린",
     phone: "010-5678-9014",
     email: "moon456@golf.com",
-    role: "BRANCH",
+    role: "ADMIN",
   },
 ];
 
@@ -345,8 +345,8 @@ const ActionBar: React.FC<ActionBarProps> = ({
           onChange={(e) => onRoleFilterChange(e.target.value)}
         >
           <option value="">권한</option>
-          <option value="DEVELOPER">개발사</option>
-          <option value="BRANCH">지점</option>
+          <option value="MASTER">마스터</option>
+          <option value="ADMIN">관리자</option>
         </select>
 
         {/* 검색 */}
@@ -444,7 +444,7 @@ const useUserManagement = () => {
         name: "",
         phone: "",
         email: "",
-        role: "BRANCH" as UserRole,
+        role: "ADMIN" as UserRole,
         no: 0, // 빈 행은 번호 0
       }));
     return [...paginatedData, ...emptyRows];

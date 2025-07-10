@@ -42,23 +42,19 @@ export function middleware(request: NextRequest) {
   );
 
   // 인증이 필요하지 않은 경로들
-  const publicRoutes = [AUTH_CONSTANTS.ROUTES.LOGIN, "/register"];
+  const publicRoutes = ["/login", "/register"];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // 관리자 페이지 접근 시 인증 체크
   if (isProtectedRoute) {
     if (!token) {
-      return NextResponse.redirect(
-        new URL(AUTH_CONSTANTS.ROUTES.LOGIN, request.url)
-      );
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
     // 토큰 유효성 검증
     if (!validateToken(token.value)) {
       // 유효하지 않은 토큰 쿠키 삭제
-      const response = NextResponse.redirect(
-        new URL(AUTH_CONSTANTS.ROUTES.LOGIN, request.url)
-      );
+      const response = NextResponse.redirect(new URL("/login", request.url));
       response.cookies.delete(AUTH_CONSTANTS.COOKIES.AUTH_TOKEN);
       response.cookies.delete(AUTH_CONSTANTS.COOKIES.USER_DATA);
       return response;
@@ -69,9 +65,7 @@ export function middleware(request: NextRequest) {
   if (isPublicRoute && token) {
     // 토큰이 있어도 유효성 검증
     if (validateToken(token.value)) {
-      return NextResponse.redirect(
-        new URL(AUTH_CONSTANTS.ROUTES.DASHBOARD, request.url)
-      );
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     } else {
       // 유효하지 않은 토큰 쿠키 삭제
       const response = NextResponse.next();
@@ -82,7 +76,7 @@ export function middleware(request: NextRequest) {
   }
 
   // 홈페이지(/) 접근 시 클라이언트 사이드에서 리다이렉트 처리
-  if (pathname === AUTH_CONSTANTS.ROUTES.HOME) {
+  if (pathname === "/") {
     // 유효하지 않은 토큰이 있다면 삭제
     if (token && !validateToken(token.value)) {
       const response = NextResponse.next();

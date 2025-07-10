@@ -33,9 +33,9 @@ const parseTokenToUser = (token: string): User | null => {
     const testUsers: Record<string, User> = {
       "1": {
         id: "1",
-        name: "개발사 관리자",
+        name: "마스터 관리자",
         email: "dev@example.com",
-        role: "DEVELOPER",
+        role: "MASTER",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -43,7 +43,7 @@ const parseTokenToUser = (token: string): User | null => {
         id: "2",
         name: "골프장 관리자",
         email: "golf@example.com",
-        role: "BRANCH",
+        role: "ADMIN",
         golfCourseId: "golf-course-1",
         createdAt: new Date(),
         updatedAt: new Date(),

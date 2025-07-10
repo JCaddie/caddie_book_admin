@@ -126,7 +126,7 @@ const GolfCoursesPage: React.FC = () => {
   const hasNoResults = filteredData.length === 0;
 
   return (
-    <RoleGuard requiredRole="DEVELOPER">
+    <RoleGuard requiredRole="MASTER">
       <div className="bg-white rounded-xl p-8 space-y-6">
         {/* 제목 */}
         <div>
