@@ -1,7 +1,7 @@
 // 대시보드 공통 스타일 상수
 export const DASHBOARD_STYLES = {
   // 카드 스타일
-  CARD: "bg-white rounded-xl border border-gray-200",
+  CARD: "bg-white rounded-xl",
   CARD_PADDING: "p-4",
   CARD_SECTION_PADDING: "p-8",
 

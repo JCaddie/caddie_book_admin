@@ -7,11 +7,11 @@ import { StatsSectionConfig } from "../../constants/stats-configs";
 import {
   PeriodToggle,
   StatBadge,
-  ChartPlaceholder,
+  LineChartComponent,
   SectionHeader,
   type PeriodType,
   type StatBadgeItem,
-  type LegendItem,
+  type LineChartLegendItem,
 } from "../common";
 
 interface StatsSectionProps {
@@ -46,7 +46,7 @@ const StatsSection = ({ data, config }: StatsSectionProps) => {
   }, [statsData, config.labels, config.colors]);
 
   // 범례 데이터
-  const legendItems: LegendItem[] = useMemo(
+  const legendItems: LineChartLegendItem[] = useMemo(
     () => [
       {
         label: config.legendLabels.legend1,
@@ -78,7 +78,15 @@ const StatsSection = ({ data, config }: StatsSectionProps) => {
         <StatBadge items={statBadgeItems} />
       </div>
 
-      <ChartPlaceholder legends={legendItems} />
+      <LineChartComponent
+        chartData={
+          config.dataKey === "contractStats"
+            ? data.contractChart
+            : data.userChart
+        }
+        legends={legendItems}
+        type={config.dataKey === "contractStats" ? "contract" : "user"}
+      />
     </div>
   );
 };
