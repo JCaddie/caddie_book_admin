@@ -36,18 +36,21 @@ const CATEGORIES: AnnouncementCategory[] = [
 // 우선순위 목록
 const PRIORITIES: AnnouncementPriority[] = ["low", "normal", "high", "urgent"];
 
-// 샘플 제목 템플릿
-const SAMPLE_TITLES = [
-  "시스템 점검 안내",
-  "새로운 기능 업데이트",
-  "중요한 공지사항",
-  "이벤트 안내",
-  "서비스 개선 사항",
-  "정기 점검 일정",
-  "보안 업데이트",
-  "사용자 가이드",
-  "FAQ 업데이트",
-  "서비스 약관 변경",
+// 타입별 제목 템플릿
+const JCADDIE_TITLES = [
+  "제이캐디 시스템 점검 안내",
+  "제이캐디 새로운 기능 업데이트",
+  "제이캐디 중요한 공지사항",
+  "제이캐디 이벤트 안내",
+  "제이캐디 서비스 개선 사항",
+];
+
+const GOLF_COURSE_TITLES = [
+  "골프장 운영 안내",
+  "골프장 시설 점검 일정",
+  "골프장 이벤트 공지",
+  "골프장 규정 변경 안내",
+  "골프장 예약 시스템 업데이트",
 ];
 
 // 샘플 내용 템플릿
@@ -86,8 +89,10 @@ function getRandomDate(daysAgo: number): Date {
  * 샘플 제목 생성
  */
 function generateSampleTitle(index: number): string {
-  const baseTitle = getRandomElement(SAMPLE_TITLES);
-  return `${baseTitle} ${String(index).padStart(2, "0")}`;
+  // 홀수/짝수로 타입 구분 (실제로는 DB에서 타입 필드로 구분)
+  const isJcaddie = index % 2 === 1;
+  const titleArray = isJcaddie ? JCADDIE_TITLES : GOLF_COURSE_TITLES;
+  return `${getRandomElement(titleArray)} ${String(index).padStart(2, "0")}`;
 }
 
 /**
@@ -258,6 +263,18 @@ export function filterAnnouncements(
       const endDate = new Date(filters.endDate);
       const createdAt = new Date(announcement.createdAt);
       if (createdAt > endDate) return false;
+    }
+
+    // 공지사항 타입 필터링 (대시보드 연동용)
+    if (filters.type) {
+      // Mock 데이터에서는 제목 기반으로 타입 구분 (실제로는 DB에서 타입 필드로 구분)
+      const announcementType = announcement.title.includes("제이캐디")
+        ? "JCADDIE"
+        : announcement.title.includes("골프장")
+        ? "GOLF_COURSE"
+        : "JCADDIE"; // 기본값
+
+      if (announcementType !== filters.type) return false;
     }
 
     return true;
