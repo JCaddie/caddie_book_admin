@@ -128,6 +128,13 @@ export const useUserManagement = (): UseUserManagementReturn => {
     []
   );
 
+  const handleRowClick = React.useCallback((user: User) => {
+    if (user.isEmpty) return;
+
+    // 사용자 상세 페이지로 이동
+    window.location.href = `/users/${user.id}`;
+  }, []);
+
   return {
     // 데이터
     paddedData,
@@ -155,6 +162,7 @@ export const useUserManagement = (): UseUserManagementReturn => {
     handleCreateUser,
     handleCloseModal,
     handleSubmitUser,
+    handleRowClick,
     setSearchTerm,
     setRoleFilter,
   };

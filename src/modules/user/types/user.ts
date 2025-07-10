@@ -59,6 +59,7 @@ export interface UseUserManagementReturn {
     phone: string;
     email: string;
   }) => Promise<void>;
+  handleRowClick: (user: User) => void;
   setSearchTerm: (term: string) => void;
   setRoleFilter: (role: string) => void;
 }

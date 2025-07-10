@@ -32,6 +32,7 @@ export default function UsersPage() {
     handleCreateUser,
     handleCloseModal,
     handleSubmitUser,
+    handleRowClick,
     setSearchTerm,
     setRoleFilter,
   } = useUserManagement();
@@ -59,6 +60,7 @@ export default function UsersPage() {
           selectable
           selectedRowKeys={selectedRowKeys}
           onSelectChange={handleUpdateSelection}
+          onRowClick={handleRowClick}
           realDataCount={filteredData.length}
           {...USER_TABLE_CONFIG}
         />
