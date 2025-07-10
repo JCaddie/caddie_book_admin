@@ -2,15 +2,15 @@
 
 import { AdminPageHeader } from "@/shared/components/layout";
 import {
-  Button,
   SelectableDataTable,
-  Search,
   Pagination,
-  Badge,
   ConfirmationModal,
 } from "@/shared/components/ui";
 import { useNewCaddieManagement } from "@/modules/caddie/hooks";
-import { createNewCaddieColumns } from "@/modules/caddie/components";
+import {
+  createNewCaddieColumns,
+  NewCaddieActionBar,
+} from "@/modules/caddie/components";
 import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
 
 export default function NewCaddiePage() {
@@ -58,63 +58,37 @@ export default function NewCaddiePage() {
     <div className="bg-white rounded-xl p-8 space-y-6">
       <AdminPageHeader title="신규 캐디" />
 
-      <div className="flex flex-col gap-2">
-        {/* 상단 영역 */}
-        <div className="flex justify-between items-center px-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold">신규</span>
-            <Badge variant="orange">{pendingCount}</Badge>
-          </div>
+      <NewCaddieActionBar
+        pendingCount={pendingCount}
+        selectedCount={selectedRowKeys.length}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onSearchClear={handleSearchClear}
+        onRejectSelected={() => openRejectModal("selected")}
+        onApproveAll={() => openApprovalModal("all")}
+      />
 
-          <div className="flex items-center gap-8">
-            {/* 검색 */}
-            <div className="w-[400px]">
-              <Search
-                placeholder={NEW_CADDIE_CONSTANTS.SEARCH_PLACEHOLDER}
-                value={searchTerm}
-                onChange={handleSearchChange}
-                onClear={handleSearchClear}
-              />
-            </div>
+      <div className="space-y-6">
+        <SelectableDataTable
+          columns={columns}
+          data={paddedData}
+          realDataCount={currentData.length}
+          selectable={true}
+          selectedRowKeys={selectedRowKeys}
+          onSelectChange={handleSelectChange}
+          onRowClick={handleRowClick}
+          rowKey="id"
+          layout="flexible"
+          emptyText={NEW_CADDIE_CONSTANTS.EMPTY_STATE_MESSAGE}
+        />
 
-            {/* 버튼 */}
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => openRejectModal("selected")}
-                disabled={selectedRowKeys.length === 0}
-              >
-                {NEW_CADDIE_CONSTANTS.REJECT_BUTTON_TEXT}
-              </Button>
-              <Button onClick={() => openApprovalModal("all")}>
-                {NEW_CADDIE_CONSTANTS.BULK_APPROVE_BUTTON_TEXT}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <SelectableDataTable
-            columns={columns}
-            data={paddedData}
-            realDataCount={currentData.length}
-            selectable={true}
-            selectedRowKeys={selectedRowKeys}
-            onSelectChange={handleSelectChange}
-            onRowClick={handleRowClick}
-            rowKey="id"
-            layout="flexible"
-            emptyText={NEW_CADDIE_CONSTANTS.EMPTY_STATE_MESSAGE}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
           />
-
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          )}
-        </div>
+        )}
       </div>
 
       {/* 모달 */}
