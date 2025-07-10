@@ -8,63 +8,76 @@ import {
   Pagination,
 } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
+import { Column } from "@/shared/types/table";
 
-// Mock data and components until user module is fully working
-const mockUserColumns = [
+// User 타입 정의 (Record<string, unknown>을 확장)
+interface User extends Record<string, unknown> {
+  id: string;
+  username: string;
+  name: string;
+  phone: string;
+  email: string;
+  role: "master" | "admin" | "user";
+}
+
+// 역할 매핑
+const ROLE_LABELS: Record<string, string> = {
+  master: "마스터",
+  admin: "관리자",
+  user: "사용자",
+};
+
+// 테이블 컬럼 정의
+const userColumns: Column<User>[] = [
   {
     key: "no",
     title: "No.",
     width: 80,
-    align: "center" as const,
-    render: (_value: unknown, _record: unknown, index: number) => (
-      <div>{index + 1}</div>
-    ),
+    align: "center",
+    render: (_value, _record, index) => <div>{index + 1}</div>,
   },
   {
     key: "username",
     title: "아이디",
     width: 160,
-    align: "center" as const,
-    render: (value: unknown) => <div>{value as string}</div>,
+    align: "center",
+    render: (value) => <div>{String(value || "")}</div>,
   },
   {
     key: "name",
     title: "이름",
     width: 160,
-    align: "center" as const,
-    render: (value: unknown) => <div>{value as string}</div>,
+    align: "center",
+    render: (value) => <div>{String(value || "")}</div>,
   },
   {
     key: "phone",
     title: "연락처",
     width: 160,
-    align: "center" as const,
-    render: (value: unknown) => <div>{value as string}</div>,
+    align: "center",
+    render: (value) => <div>{String(value || "")}</div>,
   },
   {
     key: "email",
     title: "이메일",
     width: 320,
-    align: "center" as const,
-    render: (value: unknown) => <div>{value as string}</div>,
+    align: "center",
+    render: (value) => <div>{String(value || "")}</div>,
   },
   {
     key: "role",
     title: "권한",
     width: 160,
-    align: "center" as const,
-    render: (value: unknown) => {
-      const roleMap: Record<string, string> = {
-        master: "마스터",
-        admin: "관리자",
-        user: "사용자",
-      };
-      return <div>{roleMap[value as string] || (value as string)}</div>;
+    align: "center",
+    render: (value) => {
+      const role = String(value || "");
+      return <div>{ROLE_LABELS[role] || role}</div>;
     },
   },
 ];
 
-const mockUsers = [
+// Mock 데이터
+const mockUsers: User[] = [
   {
     id: "1",
     username: "jcaddie",
@@ -91,21 +104,140 @@ const mockUsers = [
   },
 ];
 
-export default function UsersPage() {
-  useDocumentTitle({ title: "사용자 관리" });
+// ActionBar 컴포넌트
+interface ActionBarProps {
+  totalCount: number;
+  selectedCount: number;
+  searchTerm: string;
+  roleFilter: string;
+  onSearchChange: (term: string) => void;
+  onRoleFilterChange: (role: string) => void;
+  onDeleteClick: () => void;
+  onCreateClick: () => void;
+}
 
-  // Mock implementation
+const ActionBar: React.FC<ActionBarProps> = ({
+  totalCount,
+  selectedCount,
+  searchTerm,
+  roleFilter,
+  onSearchChange,
+  onRoleFilterChange,
+  onDeleteClick,
+  onCreateClick,
+}) => {
+  return (
+    <div className="flex items-center justify-between gap-6">
+      <div className="flex items-center gap-4">
+        <div className="font-bold text-base">총 {totalCount}건</div>
+      </div>
+
+      <div className="flex items-center gap-8">
+        {/* 삭제 버튼 */}
+        <button
+          onClick={onDeleteClick}
+          disabled={selectedCount === 0}
+          className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-60"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          삭제
+        </button>
+
+        {/* 권한 필터 */}
+        <select
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-[106px]"
+          value={roleFilter}
+          onChange={(e) => onRoleFilterChange(e.target.value)}
+        >
+          <option value="">권한</option>
+          <option value="master">마스터</option>
+          <option value="admin">관리자</option>
+          <option value="user">사용자</option>
+        </select>
+
+        {/* 검색 */}
+        <div className="relative w-[360px]">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="검색어 입력"
+            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg text-sm"
+          />
+          <svg
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+
+        {/* 생성 버튼 */}
+        <button
+          onClick={onCreateClick}
+          className="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-black rounded-lg text-sm font-medium"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 5v14m-7-7h14"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          생성
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// 사용자 관리 훅
+const useUserManagement = () => {
+  // 상태 관리
   const [selectedRowKeys, setSelectedRowKeys] = React.useState<string[]>([]);
-  const [selectedRows, setSelectedRows] = React.useState<unknown[]>([]);
+  const [selectedRows, setSelectedRows] = React.useState<User[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [roleFilter, setRoleFilter] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
+
+  // 필터링된 데이터
+  const filteredData = React.useMemo(() => {
+    return mockUsers.filter((user) => {
+      const matchesSearch =
+        !searchTerm ||
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesRole = !roleFilter || user.role === roleFilter;
+
+      return matchesSearch && matchesRole;
+    });
+  }, [searchTerm, roleFilter]);
 
   // 패딩된 데이터 생성 (빈 행 추가)
   const paddedData = React.useMemo(() => {
     const itemsPerPage = 20;
-    const emptyRowsCount = Math.max(0, itemsPerPage - mockUsers.length);
+    const emptyRowsCount = Math.max(0, itemsPerPage - filteredData.length);
     const emptyRows = Array(emptyRowsCount)
       .fill(null)
       .map((_, index) => ({
@@ -114,25 +246,29 @@ export default function UsersPage() {
         name: "",
         phone: "",
         email: "",
-        role: "user",
+        role: "user" as const,
       }));
-    return [...mockUsers, ...emptyRows];
+    return [...filteredData, ...emptyRows];
+  }, [filteredData]);
+
+  // 액션 핸들러들
+  const handleUpdateSelection = React.useCallback(
+    (keys: string[], rows: User[]) => {
+      setSelectedRowKeys(keys);
+      setSelectedRows(rows);
+    },
+    []
+  );
+
+  const handleDeleteClick = React.useCallback(() => {
+    setIsDeleteModalOpen(true);
   }, []);
 
-  const handleUpdateSelection = (keys: string[], rows: unknown[]) => {
-    setSelectedRowKeys(keys);
-    setSelectedRows(rows);
-  };
-
-  const handleDeleteClick = () => {
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleCloseDeleteModal = () => {
+  const handleCloseDeleteModal = React.useCallback(() => {
     setIsDeleteModalOpen(false);
-  };
+  }, []);
 
-  const handleDeleteUsers = async () => {
+  const handleDeleteUsers = React.useCallback(async () => {
     setIsDeleting(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -145,112 +281,83 @@ export default function UsersPage() {
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [selectedRowKeys]);
 
-  const handleCreateUser = () => {
+  const handleCreateUser = React.useCallback(() => {
     console.log("사용자 생성");
+  }, []);
+
+  return {
+    // 데이터
+    paddedData,
+    filteredData,
+
+    // 상태
+    selectedRowKeys,
+    selectedRows,
+    isDeleteModalOpen,
+    isDeleting,
+    searchTerm,
+    roleFilter,
+    currentPage,
+
+    // 액션
+    handleUpdateSelection,
+    handleDeleteClick,
+    handleCloseDeleteModal,
+    handleDeleteUsers,
+    handleCreateUser,
+    setSearchTerm,
+    setRoleFilter,
+    setCurrentPage,
   };
+};
+
+export default function UsersPage() {
+  useDocumentTitle({ title: "사용자 관리" });
+
+  const {
+    paddedData,
+    filteredData,
+    selectedRowKeys,
+    isDeleteModalOpen,
+    isDeleting,
+    searchTerm,
+    roleFilter,
+    currentPage,
+    handleUpdateSelection,
+    handleDeleteClick,
+    handleCloseDeleteModal,
+    handleDeleteUsers,
+    handleCreateUser,
+    setSearchTerm,
+    setRoleFilter,
+    setCurrentPage,
+  } = useUserManagement();
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
       <AdminPageHeader title="사용자 관리" />
 
-      {/* Action Bar */}
-      <div className="flex items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="font-bold text-base">총 {mockUsers.length}건</div>
-        </div>
-
-        <div className="flex items-center gap-8">
-          {/* 삭제 버튼 */}
-          <button
-            onClick={handleDeleteClick}
-            disabled={selectedRowKeys.length === 0}
-            className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-60"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            삭제
-          </button>
-
-          {/* 권한 필터 */}
-          <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-[106px]">
-            <option value="">권한</option>
-            <option value="master">마스터</option>
-            <option value="admin">관리자</option>
-            <option value="user">사용자</option>
-          </select>
-
-          {/* 검색 */}
-          <div className="relative w-[360px]">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="검색어 입력"
-              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg text-sm"
-            />
-            <svg
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-
-          {/* 생성 버튼 */}
-          <button
-            onClick={handleCreateUser}
-            className="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-black rounded-lg text-sm font-medium"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 5v14m-7-7h14"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            생성
-          </button>
-        </div>
-      </div>
+      <ActionBar
+        totalCount={filteredData.length}
+        selectedCount={selectedRowKeys.length}
+        searchTerm={searchTerm}
+        roleFilter={roleFilter}
+        onSearchChange={setSearchTerm}
+        onRoleFilterChange={setRoleFilter}
+        onDeleteClick={handleDeleteClick}
+        onCreateClick={handleCreateUser}
+      />
 
       <div className="space-y-6">
         <SelectableDataTable
-          columns={mockUserColumns}
+          columns={userColumns}
           data={paddedData}
           selectable
           selectedRowKeys={selectedRowKeys}
           onSelectChange={handleUpdateSelection}
-          realDataCount={mockUsers.length}
+          realDataCount={filteredData.length}
           containerWidth="auto"
           layout="flexible"
           className="border-gray-200"
@@ -258,7 +365,7 @@ export default function UsersPage() {
 
         <Pagination
           currentPage={currentPage}
-          totalPages={1}
+          totalPages={Math.max(1, Math.ceil(filteredData.length / 20))}
           onPageChange={setCurrentPage}
         />
       </div>
