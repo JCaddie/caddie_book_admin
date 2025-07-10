@@ -8,11 +8,12 @@ import {
   useDashboardData,
   DashboardHeader,
   AnnouncementSection,
-  ContractStatusSection,
-  UserStatusSection,
+  StatsSection,
   WorkHoursSection,
   TeamCountSection,
   WorkerRankingSection,
+  CONTRACT_STATS_CONFIG,
+  USER_STATS_CONFIG,
 } from "@/modules/dashboard";
 
 const DashboardPage: React.FC = () => {
@@ -78,8 +79,8 @@ const DashboardPage: React.FC = () => {
       {/* 역할별 섹션 */}
       {role === "MASTER" && data.master && (
         <div className="space-y-6">
-          <ContractStatusSection data={data.master} />
-          <UserStatusSection data={data.master} />
+          <StatsSection data={data.master} config={CONTRACT_STATS_CONFIG} />
+          <StatsSection data={data.master} config={USER_STATS_CONFIG} />
         </div>
       )}
 
