@@ -8,21 +8,65 @@ interface WorkerRankingSectionProps {
 }
 
 const WorkerRankingSection = ({ data }: WorkerRankingSectionProps) => {
-  const { topWorker, bottomWorker, workStatistics } = data;
+  const { topWorker, bottomWorker } = data;
+
+  // 직종별 데이터 (10개 항목씩)
+  const positions = [
+    {
+      name: "하우스",
+      workers: Array.from({ length: 10 }, (_, i) => ({
+        rank: i + 1,
+        name: "홍길동",
+        count: 6 - (i % 6),
+      })),
+    },
+    {
+      name: "마샬",
+      workers: Array.from({ length: 10 }, (_, i) => ({
+        rank: i + 1,
+        name: "홍길동",
+        count: 6 - (i % 6),
+      })),
+    },
+    {
+      name: "2·3부",
+      workers: Array.from({ length: 10 }, (_, i) => ({
+        rank: i + 1,
+        name: "홍길동",
+        count: 6 - (i % 6),
+      })),
+    },
+    {
+      name: "3부",
+      workers: Array.from({ length: 10 }, (_, i) => ({
+        rank: i + 1,
+        name: "홍길동",
+        count: 6 - (i % 6),
+      })),
+    },
+    {
+      name: "새싹",
+      workers: Array.from({ length: 10 }, (_, i) => ({
+        rank: i + 1,
+        name: "홍길동",
+        count: 6 - (i % 6),
+      })),
+    },
+  ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200">
+    <div className="bg-white rounded-xl flex flex-col gap-2">
       {/* 헤더 */}
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
+      <div className="flex justify-between items-center px-2">
         <h3 className="text-lg font-bold text-gray-800">
           이달의 최다/최소 근무자 현황
         </h3>
       </div>
 
-      <div className="flex gap-2.5 p-4">
+      <div className="flex gap-2.5 bg-gray-50 border border-gray-200 rounded-xl p-4">
         {/* 최다/최소 근무자 카드 */}
-        <div className="bg-white border border-gray-200 rounded-xl p-4 w-[300px]">
-          <div className="space-y-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-4">
+          <div className="flex flex-col space-y-4 w-[120px]">
             {/* 최다 근무자 */}
             <div className="text-center space-y-2.5">
               <div className="flex justify-center items-center gap-2.5">
@@ -32,7 +76,7 @@ const WorkerRankingSection = ({ data }: WorkerRankingSectionProps) => {
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <div className="w-25 h-25 bg-gray-300 rounded-full"></div>
+                <div className="w-[100px] h-[100px] bg-gray-300 rounded-full"></div>
                 <div className="text-center">
                   <div className="text-sm font-bold text-gray-800">
                     {topWorker.name}
@@ -56,7 +100,7 @@ const WorkerRankingSection = ({ data }: WorkerRankingSectionProps) => {
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <div className="w-25 h-25 bg-gray-300 rounded-full"></div>
+                <div className="w-[100px] h-[100px] bg-gray-300 rounded-full"></div>
                 <div className="text-center">
                   <div className="text-sm font-bold text-gray-800">
                     {bottomWorker.name}
@@ -70,29 +114,34 @@ const WorkerRankingSection = ({ data }: WorkerRankingSectionProps) => {
           </div>
         </div>
 
-        {/* 직종별 순위 그리드 */}
-        <div className="flex-1 grid grid-cols-2 gap-2.5">
-          {workStatistics.map((stat) => (
+        {/* 직종별 카드들 */}
+        <div className="flex gap-2.5 flex-1">
+          {positions.map((position) => (
             <div
-              key={stat.position}
-              className="bg-gray-50 border border-gray-200 rounded-xl p-4"
+              key={position.name}
+              className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-1"
             >
-              <div className="space-y-2.5">
-                <div className="text-center">
-                  <div className="text-sm font-bold text-black">
-                    {stat.position}
-                  </div>
+              <div className="flex flex-col gap-1 h-full">
+                {/* 직종 제목 */}
+                <div className="text-center mb-1">
+                  <h4 className="text-sm font-bold text-black">
+                    {position.name}
+                  </h4>
                 </div>
 
-                <div className="space-y-1">
-                  {stat.ranking.slice(0, 9).map((worker) => (
+                {/* 근무자 목록 */}
+                <div className="space-y-1 flex-1">
+                  {position.workers.map((worker) => (
                     <div
                       key={worker.rank}
-                      className="bg-white border border-gray-200 rounded-md p-2"
+                      className="bg-white border border-gray-200 rounded-md px-2 py-1.5"
                     >
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="bg-gray-100 border border-gray-200 w-6 h-6 rounded-full flex items-center justify-center">
+                          <div
+                            className="w-6 h-6 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "#F5F7FF" }}
+                          >
                             <span className="text-xs font-bold text-yellow-600">
                               {worker.rank}
                             </span>
@@ -103,53 +152,6 @@ const WorkerRankingSection = ({ data }: WorkerRankingSectionProps) => {
                         </div>
                         <span className="text-sm font-medium text-black">
                           {worker.count}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* 빈 공간 채우기 */}
-          {Array.from({ length: 6 - workStatistics.length }, (_, index) => (
-            <div
-              key={`empty-${index}`}
-              className="bg-gray-50 border border-gray-200 rounded-xl p-4"
-            >
-              <div className="space-y-2.5">
-                <div className="text-center">
-                  <div className="text-sm font-bold text-black">
-                    {index === 0
-                      ? "실버"
-                      : index === 1
-                      ? "새싹"
-                      : index === 2
-                      ? "주말"
-                      : `직종${index + 4}`}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((rank) => (
-                    <div
-                      key={rank}
-                      className="bg-white border border-gray-200 rounded-md p-2"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <div className="bg-gray-100 border border-gray-200 w-6 h-6 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-bold text-yellow-600">
-                              {rank}
-                            </span>
-                          </div>
-                          <span className="text-sm font-medium text-black">
-                            홍길동
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium text-black">
-                          2
                         </span>
                       </div>
                     </div>
