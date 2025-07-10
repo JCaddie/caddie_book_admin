@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { Column } from "@/shared/types/table";
-import { Announcement } from "../types";
+import { AnnouncementWithNo } from "../types";
 import { ANNOUNCEMENT_COLUMN_WIDTHS } from "../constants";
 
 // 날짜 포맷팅 함수
@@ -42,64 +42,82 @@ const TitleCell: React.FC<{ title: string; isPublished: boolean }> = ({
 };
 
 // 공지사항 테이블 컬럼 정의
-export const useAnnouncementColumns = (): Column<Announcement>[] => {
+export const useAnnouncementColumns = (): Column<AnnouncementWithNo>[] => {
   return useMemo(
     () => [
       {
         key: "no",
         title: "No.",
         width: ANNOUNCEMENT_COLUMN_WIDTHS.no,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {value as number}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: AnnouncementWithNo) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {value as number}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: "title",
         title: "제목",
         width: ANNOUNCEMENT_COLUMN_WIDTHS.title,
-        render: (value: unknown, record: Announcement) => (
-          <TitleCell title={value as string} isPublished={record.isPublished} />
-        ),
+        render: (value: unknown, record: AnnouncementWithNo) => {
+          if (record.isEmpty) return null;
+          return (
+            <TitleCell
+              title={value as string}
+              isPublished={record.isPublished}
+            />
+          );
+        },
       },
       {
         key: "views",
         title: "조회수",
         width: ANNOUNCEMENT_COLUMN_WIDTHS.views,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {formatViews(value as number)}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: AnnouncementWithNo) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {formatViews(value as number)}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: "createdAt",
         title: "등록일자",
         width: ANNOUNCEMENT_COLUMN_WIDTHS.createdAt,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {formatDate(value as string)}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: AnnouncementWithNo) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {formatDate(value as string)}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: "updatedAt",
         title: "수정일자",
         width: ANNOUNCEMENT_COLUMN_WIDTHS.updatedAt,
-        render: (value: unknown) => (
-          <div className="text-center">
-            <span className="text-sm font-medium text-gray-800">
-              {formatDate(value as string)}
-            </span>
-          </div>
-        ),
+        render: (value: unknown, record: AnnouncementWithNo) => {
+          if (record.isEmpty) return null;
+          return (
+            <div className="text-center">
+              <span className="text-sm font-medium text-gray-800">
+                {formatDate(value as string)}
+              </span>
+            </div>
+          );
+        },
       },
     ],
     []
