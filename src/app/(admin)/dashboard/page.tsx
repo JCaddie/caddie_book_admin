@@ -1,133 +1,85 @@
 "use client";
 
 import React from "react";
-import { Badge } from "@/shared/components/ui";
 import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
+
+import {
+  useDashboardData,
+  DashboardHeader,
+  AnnouncementSection,
+  ContractStatusSection,
+  UserStatusSection,
+  WorkHoursSection,
+  TeamCountSection,
+  WorkerRankingSection,
+} from "@/modules/dashboard";
 
 const DashboardPage: React.FC = () => {
   // 페이지 타이틀 설정
   useDocumentTitle({ title: PAGE_TITLES.DASHBOARD });
 
+  // 대시보드 데이터
+  const { data, isLoading, role } = useDashboardData();
+
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">대시보드 데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900">대시보드</h2>
-        <p className="text-gray-600 mt-2">
-          골프장 관리 시스템의 전체 현황을 확인할 수 있습니다.
-        </p>
+    <div className="bg-white rounded-xl p-8 space-y-6">
+      {/* 헤더 */}
+      <DashboardHeader />
+
+      {/* 공통 공지사항 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AnnouncementSection
+          type="JCADDIE"
+          announcements={data.announcements.jcaddie}
+          onNavigate={() => console.log("Navigate to announcements")}
+        />
+
+        {/* Admin인 경우 골프장 공지사항 추가 */}
+        {role === "ADMIN" && data.announcements.golfCourse && (
+          <AnnouncementSection
+            type="GOLF_COURSE"
+            announcements={data.announcements.golfCourse}
+            onNavigate={() =>
+              console.log("Navigate to golf course announcements")
+            }
+          />
+        )}
       </div>
 
-      {/* 상태 카드들 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* 카트 상태 */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            카트 상태
-          </h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">사용 중</span>
-              <Badge variant="green">사용 중</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">대기</span>
-              <Badge variant="yellow">대기</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">충전 중</span>
-              <Badge variant="red">충전 중</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">정비 중</span>
-              <Badge variant="orange">정비 중</Badge>
-            </div>
-          </div>
+      {/* 역할별 섹션 */}
+      {role === "MASTER" && data.master && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ContractStatusSection data={data.master} />
+          <UserStatusSection data={data.master} />
         </div>
+      )}
 
-        {/* 캐디 상태 */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            캐디 상태
-          </h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">근무 중</span>
-              <Badge variant="green">근무 중</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">휴식</span>
-              <Badge variant="yellow">휴식</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">대기</span>
-              <Badge variant="gray">대기</Badge>
+      {role === "ADMIN" && data.admin && (
+        <div className="space-y-6">
+          {/* 상단 영역: 근무 횟수 + 팀 수 차트 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <WorkHoursSection data={data.admin} />
+            <div className="lg:col-span-2">
+              <TeamCountSection />
             </div>
           </div>
-        </div>
 
-        {/* 골프장 상태 */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            골프장 상태
-          </h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">운영 중</span>
-              <Badge variant="green">운영 중</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">점검 중</span>
-              <Badge variant="orange">점검 중</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">휴장</span>
-              <Badge variant="red">휴장</Badge>
-            </div>
-          </div>
+          {/* 하단 영역: 근무자 현황 */}
+          <WorkerRankingSection data={data.admin} />
         </div>
-
-        {/* 시스템 상태 */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            시스템 상태
-          </h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">온라인</span>
-              <Badge variant="green">온라인</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">활성</span>
-              <Badge variant="primary">활성</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">정상</span>
-              <Badge variant="secondary">정상</Badge>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 추가 정보 */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          오늘의 현황
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">45</div>
-            <div className="text-sm text-gray-600">총 예약</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">38</div>
-            <div className="text-sm text-gray-600">진행 중</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">7</div>
-            <div className="text-sm text-gray-600">완료</div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
