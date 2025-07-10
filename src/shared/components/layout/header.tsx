@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { ConfirmationModal } from "@/shared/components/ui";
+import { UserRole } from "@/shared/types";
 
 const Header: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, switchRole } = useAuth();
   const router = useRouter();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
@@ -28,6 +29,14 @@ const Header: React.FC = () => {
 
   const handleLogoutCancel = () => {
     setIsLogoutModalOpen(false);
+  };
+
+  const handleRoleSwitch = (targetRole: UserRole) => {
+    switchRole(targetRole);
+    // 권한 전환 시 페이지 전체 리프레시
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   return (
@@ -53,8 +62,34 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* 우측 - 내 정보, 로그아웃 */}
+        {/* 우측 - 권한 전환, 내 정보, 로그아웃 */}
         <div className="flex items-center" style={{ gap: "24px" }}>
+          {/* 권한 전환 버튼 */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleRoleSwitch("MASTER")}
+              disabled={user?.role === "MASTER"}
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                user?.role === "MASTER"
+                  ? "bg-[#FEB912] text-white cursor-default"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              개발사
+            </button>
+            <button
+              onClick={() => handleRoleSwitch("ADMIN")}
+              disabled={user?.role === "ADMIN"}
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                user?.role === "ADMIN"
+                  ? "bg-[#FEB912] text-white cursor-default"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              관리자
+            </button>
+          </div>
+
           <button
             onClick={handleMyInfo}
             className="text-black font-medium text-lg hover:text-gray-600 transition-colors cursor-pointer"
