@@ -10,7 +10,10 @@ import {
   AnnouncementActionBar,
 } from "@/modules/announcement/components";
 import { AnnouncementWithNo } from "@/modules/announcement/types";
-import { isValidAnnouncement } from "@/modules/announcement/utils";
+import {
+  isValidAnnouncement,
+  getUserErrorMessage,
+} from "@/modules/announcement/utils";
 
 const AnnouncementsPage: React.FC = () => {
   const router = useRouter();
@@ -84,7 +87,7 @@ const AnnouncementsPage: React.FC = () => {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md relative">
           <div className="flex justify-between items-start">
-            <p className="text-sm font-medium">{error}</p>
+            <p className="text-sm font-medium">{getUserErrorMessage(error)}</p>
             <button
               onClick={handleErrorClose}
               className="text-red-500 hover:text-red-700 ml-4"
