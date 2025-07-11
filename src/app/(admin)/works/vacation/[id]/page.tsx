@@ -1,9 +1,9 @@
 "use client";
 
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { Button } from "@/shared/components/ui";
+import { Button, ConfirmationModal } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { getVacationRequestById } from "@/modules/vacation/utils";
 import { VACATION_UI_TEXT } from "@/modules/vacation/constants";
@@ -17,6 +17,11 @@ interface VacationDetailPageProps {
 const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
   const router = useRouter();
   const resolvedParams = use(params);
+
+  // 모달 상태 관리
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무 신청 상세" });
@@ -37,7 +42,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
               </p>
               <Button
                 variant="primary"
-                onClick={() => router.push("/works/vacation-management")}
+                onClick={() => router.push("/works/vacation")}
               >
                 목록으로 돌아가기
               </Button>
@@ -48,20 +53,52 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
     );
   }
 
+  // 승인 모달 열기
+  const handleApproveClick = () => {
+    setIsApproveModalOpen(true);
+  };
+
+  // 반려 모달 열기
+  const handleRejectClick = () => {
+    setIsRejectModalOpen(true);
+  };
+
   // 승인 처리
-  const handleApprove = async () => {
-    // 실제 환경에서는 API 호출
-    console.log("승인 처리:", vacationRequest.id);
-    // 처리 후 목록으로 이동
-    router.push("/works/vacation-management");
+  const handleApproveConfirm = async () => {
+    setIsProcessing(true);
+    try {
+      // 실제 환경에서는 API 호출
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 시뮬레이션
+      console.log("승인 처리:", vacationRequest.id);
+
+      setIsApproveModalOpen(false);
+      // 처리 후 목록으로 이동
+      router.push("/works/vacation");
+    } catch (error) {
+      console.error("승인 처리 중 오류:", error);
+      // 실제 환경에서는 에러 토스트 표시
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // 반려 처리
-  const handleReject = async () => {
-    // 실제 환경에서는 API 호출
-    console.log("반려 처리:", vacationRequest.id);
-    // 처리 후 목록으로 이동
-    router.push("/works/vacation-management");
+  const handleRejectConfirm = async () => {
+    setIsProcessing(true);
+    try {
+      // 실제 환경에서는 API 호출
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 시뮬레이션
+      console.log("반려 처리:", vacationRequest.id);
+
+      setIsRejectModalOpen(false);
+      // 처리 후 목록으로 이동
+      router.push("/works/vacation");
+    } catch (error) {
+      console.error("반려 처리 중 오류:", error);
+      // 실제 환경에서는 에러 토스트 표시
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // 상태별 뱃지 스타일
@@ -293,7 +330,8 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={handleReject}
+                onClick={handleRejectClick}
+                disabled={isProcessing}
                 className="w-[120px] border-primary text-primary hover:bg-primary hover:text-white"
               >
                 {VACATION_UI_TEXT.REJECT_BUTTON}
@@ -301,7 +339,9 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
               <Button
                 variant="primary"
                 size="lg"
-                onClick={handleApprove}
+                onClick={handleApproveClick}
+                disabled={isProcessing}
+                loading={isProcessing}
                 className="w-[120px]"
               >
                 {VACATION_UI_TEXT.APPROVE_BUTTON}
@@ -310,6 +350,28 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
           )}
         </div>
       </div>
+
+      {/* 승인 모달 */}
+      <ConfirmationModal
+        isOpen={isApproveModalOpen}
+        onClose={() => setIsApproveModalOpen(false)}
+        onConfirm={handleApproveConfirm}
+        title="휴무 신청 승인"
+        message="해당 휴무 신청을 승인하시겠습니까?"
+        confirmText="승인"
+        isLoading={isProcessing}
+      />
+
+      {/* 반려 모달 */}
+      <ConfirmationModal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onConfirm={handleRejectConfirm}
+        title="휴무 신청 반려"
+        message="해당 휴무 신청을 반려하시겠습니까?"
+        confirmText="반려"
+        isLoading={isProcessing}
+      />
     </div>
   );
 };

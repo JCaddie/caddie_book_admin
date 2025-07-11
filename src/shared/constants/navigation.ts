@@ -111,9 +111,9 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           href: "/works",
         },
         {
-          id: "vacation-management",
+          id: "vacation",
           label: "휴무관리",
-          href: "/works/vacation-management",
+          href: "/works/vacation",
         },
       ],
     },

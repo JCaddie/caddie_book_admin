@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   VacationActionBar,
   VacationActionsCell,
@@ -39,6 +39,14 @@ export default function VacationManagementPage() {
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무관리" });
 
+  // 페이지네이션을 고려한 번호가 포함된 데이터
+  const dataWithNumbers = useMemo(() => {
+    return data.map((item, index) => ({
+      ...item,
+      no: (currentPage - 1) * 20 + index + 1,
+    }));
+  }, [data, currentPage]);
+
   // 행 클릭 핸들러
   const handleRowClick = useCallback(
     (record: VacationRequest) => {
@@ -46,7 +54,7 @@ export default function VacationManagementPage() {
       if (record.isEmpty) return;
 
       // 상세 페이지로 이동
-      router.push(`/works/vacation-management/${record.id}`);
+      router.push(`/works/vacation/${record.id}`);
     },
     [router]
   );
@@ -132,7 +140,7 @@ export default function VacationManagementPage() {
           <div className="rounded-md overflow-hidden">
             <DataTable
               columns={columns}
-              data={data}
+              data={dataWithNumbers}
               onRowClick={handleRowClick}
               layout="flexible"
               containerWidth="auto"
