@@ -43,7 +43,7 @@ export const useVacationColumns = (): Column<VacationRequest>[] => {
         key: "status",
         title: "상태",
         width: 100,
-        render: basicRenderers.status, // 🎉 상태 배지!
+        render: basicRenderers.text, // 🎉 일반 텍스트로 변경!
       },
       {
         key: "approver",

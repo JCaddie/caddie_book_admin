@@ -255,7 +255,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
             </div>
 
             {/* 신청 정보 내용 */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               {/* 휴무희망일자 */}
               <div className="flex items-center gap-2">
                 <div className="w-[88px] flex items-center">
