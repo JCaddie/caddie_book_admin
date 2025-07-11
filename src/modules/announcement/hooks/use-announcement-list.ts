@@ -13,7 +13,6 @@ import {
   generateSampleAnnouncements,
   filterAnnouncements,
   addNumberToAnnouncements,
-  createEmptyRows,
   isValidAnnouncement,
 } from "../utils";
 import { useAnnouncementError } from "./use-announcement-error";
@@ -114,15 +113,6 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
     );
   }, [currentData, currentPage]);
 
-  // 빈 행이 추가된 데이터 (메모이제이션)
-  const paddedData = useMemo(() => {
-    const emptyRows = createEmptyRows(
-      currentDataWithNo.length,
-      ANNOUNCEMENT_CONSTANTS.PAGE_SIZE
-    );
-    return [...currentDataWithNo, ...emptyRows];
-  }, [currentDataWithNo]);
-
   // 필터 업데이트 함수들
   const updateSearchTerm = useCallback(
     (searchTerm: string) => {
@@ -198,7 +188,7 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
 
   return {
     // 데이터
-    data: paddedData,
+    data: currentDataWithNo,
     totalCount: filteredAnnouncements.length,
     realDataCount: currentData.length,
 
