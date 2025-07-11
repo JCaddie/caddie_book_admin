@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { Announcement } from "../types";
-import { ANNOUNCEMENT_CRUD_ERRORS } from "../constants";
 
 /**
  * 공지사항 상세 조회 훅
@@ -51,8 +50,11 @@ export const useAnnouncementDetail = (id: string) => {
 
       setAnnouncement(mockAnnouncement);
     } catch (err) {
-      setError(ANNOUNCEMENT_CRUD_ERRORS.FETCH_DETAIL_FAILED);
-      console.error("공지사항 조회 오류:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "공지사항 상세 정보를 불러오는 중 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
