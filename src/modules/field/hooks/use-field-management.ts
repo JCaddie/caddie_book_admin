@@ -1,11 +1,10 @@
 import { useState, useMemo } from "react";
 import { FieldTableRow, FieldFilters, FieldSelection } from "../types";
-import { usePagination, useTableData } from "@/shared/hooks";
+import { usePagination } from "@/shared/hooks";
 import { FIELD_CONSTANTS } from "../constants";
 import {
   generateSampleFieldData,
   filterFields,
-  createEmptyRowTemplate,
   createNewField,
   simulateApiDelay,
 } from "../utils";
@@ -43,13 +42,6 @@ export const useFieldManagement = () => {
       data: filteredFields,
       itemsPerPage: FIELD_CONSTANTS.ITEMS_PER_PAGE,
     });
-
-  // 빈 행이 추가된 데이터 (고정 개수)
-  const { paddedData } = useTableData({
-    data: currentData,
-    itemsPerPage: FIELD_CONSTANTS.ITEMS_PER_PAGE,
-    emptyRowTemplate: createEmptyRowTemplate(),
-  });
 
   // 필터 업데이트 함수
   const updateSearchTerm = (searchTerm: string) => {
@@ -106,7 +98,7 @@ export const useFieldManagement = () => {
   return {
     // 데이터
     filteredFields,
-    paddedData,
+    currentData,
     realDataCount,
     totalCount,
 
