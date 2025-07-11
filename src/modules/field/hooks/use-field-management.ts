@@ -60,8 +60,10 @@ export const useFieldManagement = () => {
   const addField = () => {
     const newField = createNewField(allFields.length);
 
-    // 실제 구현에서는 API 호출
-    console.log("새 필드 추가:", newField);
+    // TODO: 실제 구현에서는 API 호출
+    if (process.env.NODE_ENV === "development") {
+      console.log("새 필드 추가:", newField);
+    }
   };
 
   // 삭제 확인 모달 관리
@@ -75,8 +77,10 @@ export const useFieldManagement = () => {
     try {
       await simulateApiDelay();
 
-      // 실제 구현에서는 API 호출
-      console.log("삭제할 필드들:", selection.selectedRows);
+      // TODO: 실제 구현에서는 API 호출
+      if (process.env.NODE_ENV === "development") {
+        console.log("삭제할 필드들:", selection.selectedRows);
+      }
 
       // 선택 상태 초기화
       setSelection({ selectedRowKeys: [], selectedRows: [] });

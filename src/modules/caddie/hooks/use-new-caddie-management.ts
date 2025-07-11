@@ -115,7 +115,10 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
           app.status === "pending" ? { ...app, status: "approved" } : app
         )
       );
-      console.log("모든 대기 중인 신청 승인:", pendingApplications);
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("모든 대기 중인 신청 승인:", pendingApplications);
+      }
     } else {
       const selectedApplications = applications.filter((app) =>
         selectedRowKeys.includes(app.id)
@@ -127,7 +130,10 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
             : app
         )
       );
-      console.log("선택된 신청 승인:", selectedApplications);
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("선택된 신청 승인:", selectedApplications);
+      }
     }
     setIsApprovalModalOpen(false);
     setSelectedRowKeys([]);
@@ -144,7 +150,10 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
           app.status === "pending" ? { ...app, status: "rejected" } : app
         )
       );
-      console.log("모든 대기 중인 신청 반려:", pendingApplications);
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("모든 대기 중인 신청 반려:", pendingApplications);
+      }
     } else {
       const selectedApplications = applications.filter((app) =>
         selectedRowKeys.includes(app.id)
@@ -156,7 +165,10 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
             : app
         )
       );
-      console.log("선택된 신청 반려:", selectedApplications);
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("선택된 신청 반려:", selectedApplications);
+      }
     }
     setIsRejectModalOpen(false);
     setSelectedRowKeys([]);
@@ -169,7 +181,11 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
         app.id === selectedCaddieId ? { ...app, status: "approved" } : app
       )
     );
-    console.log("개별 승인:", selectedCaddieId, selectedCaddieName);
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("개별 승인:", selectedCaddieId, selectedCaddieName);
+    }
+
     setIsIndividualApprovalModalOpen(false);
     setSelectedCaddieId("");
     setSelectedCaddieName("");
@@ -182,7 +198,11 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
         app.id === selectedCaddieId ? { ...app, status: "rejected" } : app
       )
     );
-    console.log("개별 반려:", selectedCaddieId, selectedCaddieName);
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("개별 반려:", selectedCaddieId, selectedCaddieName);
+    }
+
     setIsIndividualRejectModalOpen(false);
     setSelectedCaddieId("");
     setSelectedCaddieName("");
@@ -205,7 +225,9 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
 
   // 행 클릭 핸들러
   const handleRowClick = (application: NewCaddieApplication) => {
-    console.log("행 클릭:", application);
+    if (process.env.NODE_ENV === "development") {
+      console.log("행 클릭:", application);
+    }
     // 필요시 상세 페이지로 이동
     // router.push(`/caddies/new/${application.id}`);
   };
