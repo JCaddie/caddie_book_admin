@@ -1,43 +1,99 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/shared/components/ui";
+import {
+  ConfirmationModal,
+  Pagination,
+  SelectableDataTable,
+} from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
+import {
+  GroupStatusActionBar,
+  useGroupStatusColumns,
+} from "@/modules/caddie/components";
+import { useGroupStatusManagement } from "@/modules/caddie/hooks";
+import { CaddieGroup } from "@/modules/caddie/types";
 
-interface GroupDetailPageProps {
+interface GroupManagementPageProps {
   params: {
     id: string;
   };
 }
 
-const GroupDetailPage: React.FC<GroupDetailPageProps> = ({ params }) => {
+const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
+  params,
+}) => {
   const router = useRouter();
+  // const { user } = useAuth(); // TODO: 실제 API 연동 시 사용
   const { id } = params;
 
-  // 페이지 타이틀 설정
-  useDocumentTitle({ title: `그룹 상세 - ${id}조` });
+  // "me"인 경우 현재 사용자의 골프장 ID 사용, 아니면 전달받은 ID 사용
+  // const golfCourseId = id === "me" ? user?.golfCourseId : id; // TODO: 실제 API 연동 시 사용
+  const isOwnGolfCourse = id === "me";
 
-  // 모크 데이터 (실제 구현에서는 API로 그룹 정보 가져오기)
-  const groupData = {
-    id,
-    groupName: `${id}조`,
-    leaderName: "김철수",
-    memberCount: 12,
-    activeCount: 10,
-    inactiveCount: 2,
-    golfCourse: "송도골프클럽",
-    members: [
-      { name: "김철수", role: "그룹장", status: "활동", score: 88 },
-      { name: "이영희", role: "부그룹장", status: "활동", score: 85 },
-      { name: "박민수", role: "일반", status: "활동", score: 82 },
-      { name: "최수정", role: "일반", status: "활동", score: 87 },
-      { name: "정태영", role: "일반", status: "비활동", score: 80 },
-      { name: "이미영", role: "일반", status: "활동", score: 89 },
-    ],
+  // 페이지 타이틀 설정
+  const pageTitle = isOwnGolfCourse ? "내 골프장 그룹현황" : `그룹현황`;
+  useDocumentTitle({ title: pageTitle });
+
+  // 삭제 모달 상태 관리
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // 그룹현황 관리 훅
+  const {
+    filteredGroups,
+    currentData,
+    realDataCount,
+    filters,
+    updateSearchTerm,
+    updateSelectedGroup,
+    selection,
+    updateSelection,
+    deleteSelectedItems,
+    canDelete,
+    selectedCount,
+    currentPage,
+    totalPages,
+    handlePageChange,
+  } = useGroupStatusManagement();
+
+  // 그룹 테이블 컬럼
+  const columns = useGroupStatusColumns();
+
+  // 행 클릭 핸들러 (그룹 상세 페이지로 이동)
+  const handleRowClick = (group: CaddieGroup) => {
+    // 그룹 상세 페이지는 추후 구현
+    console.log("그룹 상세:", group);
   };
 
+  // 삭제 버튼 클릭 핸들러
+  const handleDeleteClick = () => {
+    if (canDelete) {
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  // 삭제 확인 핸들러
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteSelectedItems();
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error("삭제 중 오류 발생:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 삭제 취소 핸들러
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  // 뒤로 가기 핸들러
   const handleBackClick = () => {
     router.back();
   };
@@ -45,107 +101,57 @@ const GroupDetailPage: React.FC<GroupDetailPageProps> = ({ params }) => {
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleBackClick}
-          className="flex items-center gap-2"
-        >
-          ← 뒤로
-        </Button>
-        <AdminPageHeader title={`그룹 상세 - ${groupData.groupName}`} />
+        {!isOwnGolfCourse && (
+          <button
+            onClick={handleBackClick}
+            className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+          >
+            ← 뒤로
+          </button>
+        )}
+        <AdminPageHeader title={pageTitle} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 그룹 기본 정보 */}
-        <div className="space-y-6">
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">그룹 기본 정보</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">그룹명:</span>
-                <span className="font-medium">{groupData.groupName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">그룹장:</span>
-                <span className="font-medium">{groupData.leaderName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">골프장:</span>
-                <span className="font-medium">{groupData.golfCourse}</span>
-              </div>
-            </div>
-          </div>
+      <GroupStatusActionBar
+        totalCount={filteredGroups.length}
+        selectedCount={selectedCount}
+        filters={filters}
+        onSearchChange={updateSearchTerm}
+        onGroupChange={updateSelectedGroup}
+        onDeleteSelected={handleDeleteClick}
+      />
 
-          {/* 그룹 통계 */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">그룹 통계</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {groupData.memberCount}
-                </div>
-                <div className="text-sm text-gray-600">총원</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {groupData.activeCount}
-                </div>
-                <div className="text-sm text-gray-600">활동인원</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">
-                  {groupData.inactiveCount}
-                </div>
-                <div className="text-sm text-gray-600">비활동인원</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="space-y-6">
+        <SelectableDataTable
+          columns={columns}
+          data={currentData}
+          realDataCount={realDataCount}
+          selectable={true}
+          selectedRowKeys={selection.selectedRowKeys}
+          onSelectChange={updateSelection}
+          onRowClick={handleRowClick}
+          rowKey="id"
+          layout="flexible"
+        />
 
-        {/* 그룹 멤버 목록 */}
-        <div className="space-y-6">
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">그룹 멤버</h3>
-            <div className="space-y-3">
-              {groupData.members.map((member, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg border"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-blue-600">
-                        {member.name.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium">{member.name}</div>
-                      <div className="text-sm text-gray-600">{member.role}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">
-                      {member.score}점
-                    </span>
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        member.status === "활동"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {member.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
+
+      {/* 삭제 확인 모달 */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="삭제할까요?"
+        message={`선택한 ${selectedCount}개의 그룹을 삭제합니다. 삭제 시 복원이 불가합니다.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
 
-export default GroupDetailPage;
+export default GroupManagementPage;

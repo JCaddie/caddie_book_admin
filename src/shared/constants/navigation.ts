@@ -110,7 +110,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
         {
           id: "group-status",
           label: "그룹현황",
-          href: "/caddies/groups",
+          href: "/caddies/groups/me",
         },
         {
           id: "special-team",
