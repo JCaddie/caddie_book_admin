@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Caddie, CaddieFilters, CaddieSelection } from "@/shared/types/caddie";
 import { usePagination } from "@/shared/hooks";
 import {
-  generateSampleCaddies,
   filterCaddies,
+  generateSampleCaddies,
 } from "@/shared/lib/caddie-utils";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 

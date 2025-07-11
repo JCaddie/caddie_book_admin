@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import { Search as SearchIcon, X } from "lucide-react";
 
 interface SearchProps

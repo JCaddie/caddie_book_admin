@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, use } from "react";
-import { DataTable, Pagination, Dropdown } from "@/shared/components/ui";
+import { use, useMemo, useState } from "react";
+import { DataTable, Dropdown, Pagination } from "@/shared/components/ui";
 
 interface CaddieDetailPageProps {
   params: Promise<{

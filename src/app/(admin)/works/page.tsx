@@ -4,12 +4,12 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { ConfirmationModal, Pagination } from "@/shared/components/ui";
-import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
+import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
 import { Work } from "@/modules/work/types";
 import {
   useWorksData,
-  useWorksSelection,
   useWorksDelete,
+  useWorksSelection,
 } from "@/modules/work/hooks";
 import { WorksActionBar, WorksTable } from "@/modules/work/components";
 

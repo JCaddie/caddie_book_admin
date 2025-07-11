@@ -2,9 +2,9 @@
 
 import { AdminPageHeader } from "@/shared/components/layout";
 import {
-  SelectableDataTable,
-  Pagination,
   ConfirmationModal,
+  Pagination,
+  SelectableDataTable,
 } from "@/shared/components/ui";
 import { useNewCaddieManagement } from "@/modules/caddie/hooks";
 import {

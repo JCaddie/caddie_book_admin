@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 
 interface DropdownOption {

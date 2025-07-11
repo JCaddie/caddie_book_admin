@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  SelectableDataTable,
-  Pagination,
   ConfirmationModal,
+  Pagination,
+  SelectableDataTable,
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useCaddieList, useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
+import { PAGE_TITLES, useCaddieList, useDocumentTitle } from "@/shared/hooks";
 import { CADDIE_COLUMNS } from "@/shared/constants/caddie";
 import { Caddie } from "@/shared/types/caddie";
 import CaddieFilterBar from "../../../modules/caddie/components/caddie-filter-bar";

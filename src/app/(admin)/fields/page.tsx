@@ -3,15 +3,15 @@
 import React from "react";
 import { AdminPageHeader } from "@/shared/components/layout";
 import {
-  SelectableDataTable,
   ConfirmationModal,
   Pagination,
+  SelectableDataTable,
 } from "@/shared/components/ui";
 import {
+  FIELD_CONSTANTS,
   FieldActionBar,
   fieldColumns,
   useFieldManagement,
-  FIELD_CONSTANTS,
 } from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
 import { FieldTableRow } from "@/modules/field/types";

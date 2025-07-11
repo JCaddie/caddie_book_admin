@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { User, UserRole } from "@/shared/types";
 import { cookieUtils } from "@/shared/lib/utils";
 import { AUTH_CONSTANTS } from "@/shared/constants/auth";

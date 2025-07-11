@@ -6,11 +6,11 @@ import { useWorkDetail } from "@/modules/work/hooks/use-work-detail";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import { WorkDetailPageProps, CaddieData } from "@/modules/work/types";
+import { CaddieData, WorkDetailPageProps } from "@/modules/work/types";
 import {
   FIELDS,
-  PERSONNEL_STATS,
   generateTimeSlots,
+  PERSONNEL_STATS,
 } from "@/modules/work/constants/work-detail";
 import DateNavigation from "@/modules/work/components/date-navigation";
 import WorkSchedule from "@/modules/work/components/work-schedule";

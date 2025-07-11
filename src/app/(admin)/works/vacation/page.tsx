@@ -11,7 +11,7 @@ import {
   VACATION_UI_TEXT,
 } from "@/modules/vacation/constants";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { DataTable, Pagination, EmptyState } from "@/shared/components/ui";
+import { DataTable, EmptyState, Pagination } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { VacationRequest } from "@/modules/vacation/types";
 import { useRouter } from "next/navigation";
