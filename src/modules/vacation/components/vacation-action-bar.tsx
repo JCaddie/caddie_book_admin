@@ -6,23 +6,25 @@ import { VacationRequestFilter } from "../types";
 import {
   VACATION_REQUEST_TYPE_OPTIONS,
   VACATION_STATUS_OPTIONS,
-  VACATION_SEARCH_PLACEHOLDER,
+  VACATION_UI_TEXT,
 } from "../constants";
 
 export interface VacationActionBarProps {
   totalCount: number;
-  selectedCount: number;
+  selectedCount?: number;
   filters: VacationRequestFilter;
   onFilterChange: (filters: VacationRequestFilter) => void;
   onDelete?: () => void;
+  loading?: boolean;
 }
 
 const VacationActionBar: React.FC<VacationActionBarProps> = ({
   totalCount,
-  selectedCount,
+  selectedCount = 0,
   filters,
   onFilterChange,
   onDelete,
+  loading = false,
 }) => {
   const handleRequestTypeChange = (value: string) => {
     onFilterChange({
@@ -43,6 +45,12 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
       ...filters,
       searchTerm: event.target.value,
     });
+  };
+
+  const handleDeleteClick = () => {
+    if (onDelete && selectedCount > 0 && !loading) {
+      onDelete();
+    }
   };
 
   return (
@@ -66,21 +74,24 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
             value={filters.requestType || ""}
             onChange={handleRequestTypeChange}
             className="w-[106px]"
+            aria-label="신청구분 필터"
           />
           <Dropdown
             options={VACATION_STATUS_OPTIONS}
             value={filters.status || ""}
             onChange={handleStatusChange}
             className="w-[106px]"
+            aria-label="상태 필터"
           />
         </div>
 
         {/* 검색 필드 */}
         <Search
-          placeholder={VACATION_SEARCH_PLACEHOLDER}
+          placeholder={VACATION_UI_TEXT.SEARCH_PLACEHOLDER}
           containerClassName="w-[360px]"
           onChange={handleSearchChange}
           value={filters.searchTerm || ""}
+          aria-label="캐디 검색"
         />
 
         {/* 버튼 그룹 */}
@@ -89,11 +100,12 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
             <Button
               variant="secondary"
               size="md"
-              onClick={onDelete}
-              disabled={selectedCount === 0}
+              onClick={handleDeleteClick}
+              disabled={selectedCount === 0 || loading}
               className="w-24"
+              aria-label={`선택된 ${selectedCount}개 항목 삭제`}
             >
-              삭제
+              {VACATION_UI_TEXT.DELETE_BUTTON}
             </Button>
           </div>
         )}
