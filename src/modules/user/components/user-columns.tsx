@@ -1,32 +1,21 @@
 import React from "react";
 import { Column } from "@/shared/types/table";
 import { UserRole } from "@/shared/types/user";
+import { basicRenderers, textRenderer } from "@/shared/components/ui";
 import { User } from "../types";
 import { ROLE_LABELS } from "../constants";
 
 /**
- * 기본 셀 렌더러 (빈 행 체크 포함)
+ * 권한 렌더러 (커스텀 라벨 매핑)
  */
-const renderBasicCell = (value: unknown, record: User): React.ReactNode => {
-  if (record.isEmpty) return null;
-  return <div>{String(value || "")}</div>;
-};
+const roleRenderer = textRenderer<User>({ align: "center" });
 
-/**
- * 번호 셀 렌더러 (빈 행 체크 포함)
- */
-const renderNumberCell = (value: unknown, record: User): React.ReactNode => {
-  if (record.isEmpty) return null;
-  return <div>{record.no}</div>;
-};
-
-/**
- * 권한 셀 렌더러 (빈 행 체크 포함)
- */
-const renderRoleCell = (value: unknown, record: User): React.ReactNode => {
+// 커스텀 렌더러로 권한 표시
+const renderRole = (value: unknown, record: User): React.ReactNode => {
   if (record.isEmpty) return null;
   const role = value as UserRole;
-  return <div>{ROLE_LABELS[role] || String(role)}</div>;
+  const label = ROLE_LABELS[role] || String(role);
+  return roleRenderer(label, record);
 };
 
 // 테이블 컬럼 정의
@@ -36,41 +25,41 @@ export const userColumns: Column<User>[] = [
     title: "No.",
     width: 80,
     align: "center",
-    render: renderNumberCell,
+    render: basicRenderers.index, // 🎉 중복 제거!
   },
   {
     key: "username",
     title: "아이디",
     width: 160,
     align: "center",
-    render: renderBasicCell,
+    render: basicRenderers.text, // 🎉 중복 제거!
   },
   {
     key: "name",
     title: "이름",
     width: 160,
     align: "center",
-    render: renderBasicCell,
+    render: basicRenderers.text, // 🎉 중복 제거!
   },
   {
     key: "phone",
     title: "연락처",
     width: 160,
     align: "center",
-    render: renderBasicCell,
+    render: basicRenderers.phone, // 🎉 전화번호 포맷팅까지!
   },
   {
     key: "email",
     title: "이메일",
     width: 320,
     align: "center",
-    render: renderBasicCell,
+    render: basicRenderers.email, // 🎉 이메일 스타일링까지!
   },
   {
     key: "role",
     title: "권한",
     width: 160,
     align: "center",
-    render: renderRoleCell,
+    render: renderRole, // 커스텀 라벨 매핑
   },
 ];
