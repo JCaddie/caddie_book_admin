@@ -1,31 +1,20 @@
 "use client";
 
 import { useMemo } from "react";
-import { usePagination, useTableData } from "@/shared/hooks";
+import { usePagination } from "@/shared/hooks";
 import { CartDetail, CartHistoryItem } from "../types";
-import {
-  generateCartDetail,
-  generateCartHistory,
-  createEmptyCartHistoryTemplate,
-} from "../utils";
-
-// 페이지당 아이템 수
-const ITEMS_PER_PAGE = 20;
+import { generateCartDetail, generateCartHistory } from "../utils";
+import { CART_ITEMS_PER_PAGE } from "../constants";
 
 interface UseCartDetailProps {
   cartId: string;
 }
 
 interface UseCartDetailReturn {
-  // 카트 상세 정보
   cartDetail: CartDetail;
-
-  // 이력 데이터
   historyData: CartHistoryItem[];
-  paddedHistoryData: CartHistoryItem[];
+  currentHistoryData: CartHistoryItem[];
   realDataCount: number;
-
-  // 페이지네이션
   currentPage: number;
   totalPages: number;
   handlePageChange: (page: number) => void;
@@ -48,23 +37,13 @@ export const useCartDetail = ({
   const { currentPage, totalPages, currentData, handlePageChange } =
     usePagination<CartHistoryItem>({
       data: historyData,
-      itemsPerPage: ITEMS_PER_PAGE,
+      itemsPerPage: CART_ITEMS_PER_PAGE,
     });
-
-  // 빈 행 템플릿
-  const emptyRowTemplate = useMemo(() => createEmptyCartHistoryTemplate(), []);
-
-  // 테이블 데이터 패딩 (20개 행으로 고정)
-  const { paddedData } = useTableData({
-    data: currentData,
-    itemsPerPage: ITEMS_PER_PAGE,
-    emptyRowTemplate,
-  });
 
   return {
     cartDetail,
     historyData,
-    paddedHistoryData: paddedData,
+    currentHistoryData: currentData,
     realDataCount: currentData.length,
     currentPage,
     totalPages,

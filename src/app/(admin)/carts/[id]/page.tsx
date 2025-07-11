@@ -29,16 +29,15 @@ const StatusBadge: React.FC<{ status: CartStatus }> = ({ status }) => {
 
 const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
   const resolvedParams = use(params);
-  const cartId = resolvedParams.id;
 
-  // 카트 상세 데이터 관리
+  // 커스텀 훅으로 카트 상세 데이터 가져오기
   const {
     cartDetail,
-    paddedHistoryData,
+    currentHistoryData,
     currentPage,
     totalPages,
     handlePageChange,
-  } = useCartDetail({ cartId });
+  } = useCartDetail({ cartId: resolvedParams.id });
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-10">
@@ -99,8 +98,8 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
         <div className="space-y-6">
           {/* 테이블 */}
           <DataTable
+            data={currentHistoryData}
             columns={cartHistoryColumns}
-            data={paddedHistoryData}
             onRowClick={() => {}}
             layout="flexible"
             containerWidth="auto"

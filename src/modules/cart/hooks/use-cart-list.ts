@@ -1,20 +1,18 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useMemo, useCallback } from "react";
 import { Cart, CartFilters, CartSelection, CartStatus } from "../types";
-import { usePagination, useTableData } from "@/shared/hooks";
+import { generateSampleCarts } from "../utils";
+import { CART_ITEMS_PER_PAGE } from "../constants";
+import { usePagination } from "@/shared/hooks";
 import { simulateApiDelay } from "@/shared/lib/data-utils";
-import { DEFAULT_CART_FILTERS, CART_ITEMS_PER_PAGE } from "../constants";
-import {
-  generateSampleCarts,
-  filterCarts,
-  createEmptyCartTemplate,
-} from "../utils";
 
 export const useCartList = () => {
-  const searchParams = useSearchParams();
-
   // 필터 상태
-  const [filters, setFilters] = useState<CartFilters>(DEFAULT_CART_FILTERS);
+  const [filters, setFilters] = useState<CartFilters>({
+    searchTerm: "",
+    status: undefined,
+    golfCourseId: undefined,
+    fieldId: undefined,
+  });
 
   // 선택 상태
   const [selection, setSelection] = useState<CartSelection>({
@@ -22,30 +20,36 @@ export const useCartList = () => {
     selectedRows: [],
   });
 
-  // 로딩 및 에러 상태
+  // 로딩 상태
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // URL 검색 파라미터로부터 초기 검색어 설정
-  useEffect(() => {
-    const searchParam = searchParams.get("search");
-    if (searchParam) {
-      setFilters((prev) => ({
-        ...prev,
-        searchTerm: decodeURIComponent(searchParam),
-      }));
-    }
-  }, [searchParams]);
+  // 전체 카트 데이터 생성 (메모이제이션)
+  const allCarts = useMemo(() => generateSampleCarts(), []);
 
-  // 샘플 데이터 생성 (메모이제이션)
-  const allCarts = useMemo(() => generateSampleCarts(26), []);
-
-  // 필터링된 데이터 (메모이제이션)
+  // 필터링된 카트 데이터 (메모이제이션)
   const filteredCarts = useMemo(() => {
-    return filterCarts(allCarts, filters);
+    return allCarts.filter((cart) => {
+      const matchesSearch =
+        !filters.searchTerm ||
+        cart.name.includes(filters.searchTerm) ||
+        cart.golfCourseName
+          .toLowerCase()
+          .includes(filters.searchTerm.toLowerCase());
+
+      const matchesStatus = !filters.status || cart.status === filters.status;
+      const matchesGolfCourse =
+        !filters.golfCourseId || cart.golfCourseName === filters.golfCourseId;
+      const matchesField =
+        !filters.fieldId || cart.fieldName === filters.fieldId;
+
+      return (
+        matchesSearch && matchesStatus && matchesGolfCourse && matchesField
+      );
+    });
   }, [allCarts, filters]);
 
-  // 페이지네이션
+  // 페이지네이션 처리
   const { currentPage, totalPages, currentData, handlePageChange } =
     usePagination({
       data: filteredCarts,
@@ -60,16 +64,6 @@ export const useCartList = () => {
       no: startIndex + index + 1,
     }));
   }, [currentData, currentPage]);
-
-  // 빈 행 템플릿
-  const emptyRowTemplate = useMemo(() => createEmptyCartTemplate(), []);
-
-  // 빈 행이 추가된 데이터 (메모이제이션)
-  const { paddedData } = useTableData({
-    data: paginatedData,
-    itemsPerPage: CART_ITEMS_PER_PAGE,
-    emptyRowTemplate,
-  });
 
   // 필터 업데이트 함수들 (useCallback으로 최적화)
   const updateSearchTerm = useCallback((searchTerm: string) => {
@@ -148,7 +142,7 @@ export const useCartList = () => {
 
   return {
     // 데이터
-    data: paddedData,
+    data: paginatedData,
     totalCount: filteredCarts.length,
     realDataCount: currentData.length,
 
