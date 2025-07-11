@@ -2,14 +2,11 @@
 
 import React, { useCallback, useMemo } from "react";
 import {
+  useVacationColumns,
   VacationActionBar,
-  VacationActionsCell,
 } from "@/modules/vacation/components";
 import { useVacationManagement } from "@/modules/vacation/hooks";
-import {
-  VACATION_TABLE_COLUMNS,
-  VACATION_UI_TEXT,
-} from "@/modules/vacation/constants";
+import { VACATION_UI_TEXT } from "@/modules/vacation/constants";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { DataTable, EmptyState, Pagination } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
@@ -27,17 +24,20 @@ export default function VacationManagementPage() {
     handlePageChange,
     filters,
     handleFilterChange,
-    handleApprove,
-    handleReject,
+    // handleApprove, // 사용되지 않음
+    // handleReject, // 사용되지 않음
     loading,
     error,
-    actionLoading,
+    // actionLoading, // 사용되지 않음
     clearError,
     refreshData,
   } = useVacationManagement();
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무관리" });
+
+  // 테이블 컬럼 생성 (새로운 렌더러 시스템 사용)
+  const columns = useVacationColumns();
 
   // 페이지네이션을 고려한 번호가 포함된 데이터
   const dataWithNumbers = useMemo(() => {
@@ -58,28 +58,6 @@ export default function VacationManagementPage() {
     },
     [router]
   );
-
-  // 액션 셀 렌더러
-  const renderActionsCell = (_: unknown, record: VacationRequest) => (
-    <VacationActionsCell
-      request={record}
-      onApprove={handleApprove}
-      onReject={handleReject}
-      loading={actionLoading === record.id}
-    />
-  );
-
-  // 액션 컬럼을 포함한 컬럼 정의
-  const columns = [
-    ...VACATION_TABLE_COLUMNS,
-    {
-      key: "actions",
-      title: "",
-      width: 120,
-      align: "center" as const,
-      render: renderActionsCell,
-    },
-  ];
 
   // 에러 상태 처리
   if (error) {

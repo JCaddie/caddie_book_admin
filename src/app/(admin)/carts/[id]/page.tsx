@@ -39,6 +39,10 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
     handlePageChange,
   } = useCartDetail({ cartId: resolvedParams.id });
 
+  // 테이블 컬럼 생성
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const historyColumns = cartHistoryColumns() as any;
+
   return (
     <div className="bg-white rounded-xl p-8 space-y-10">
       {/* 페이지 헤더 */}
@@ -99,7 +103,7 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
           {/* 테이블 */}
           <DataTable
             data={currentHistoryData}
-            columns={cartHistoryColumns}
+            columns={historyColumns}
             onRowClick={() => {}}
             layout="flexible"
             containerWidth="auto"

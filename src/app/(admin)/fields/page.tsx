@@ -49,6 +49,9 @@ export default function FieldsPage() {
     isDeleting,
   } = useFieldManagement();
 
+  // 테이블 컬럼 생성
+  const columns = fieldColumns();
+
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
       <AdminPageHeader title="필드 관리" />
@@ -64,7 +67,7 @@ export default function FieldsPage() {
 
       <div className="space-y-6">
         <SelectableDataTable<FieldTableRow>
-          columns={fieldColumns}
+          columns={columns}
           data={currentData}
           selectable
           selectedRowKeys={selection.selectedRowKeys}
