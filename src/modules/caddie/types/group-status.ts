@@ -29,3 +29,26 @@ export interface GroupFilterOption {
   value: string;
   label: string;
 }
+
+// 그룹 관리 페이지용 캐디 그룹 인터페이스
+export interface CaddieGroupManagement {
+  id: string;
+  name: string;
+  memberCount: number;
+  caddies: Array<{
+    id: number;
+    name: string;
+    group: number;
+    badge: string;
+    status: string;
+    specialBadge?: string;
+  }>;
+}
+
+// 그룹 관리 필터 상태 타입
+export interface GroupManagementFilters {
+  selectedGroup: string;
+  selectedSpecialTeam: string;
+  selectedStatus: string;
+  searchTerm: string;
+}
