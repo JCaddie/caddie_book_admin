@@ -1,1 +1,1 @@
-export * from "./use-vacation-management";
+export { useVacationManagement } from "./use-vacation-management";
