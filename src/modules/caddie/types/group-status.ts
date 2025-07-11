@@ -1,0 +1,31 @@
+// 캐디 그룹 정보 인터페이스
+export interface CaddieGroup extends Record<string, unknown> {
+  id: string;
+  no: number;
+  groupName: string;
+  leaderName: string;
+  memberCount: number;
+  activeCount: number;
+  inactiveCount: number;
+  golfCourse: string;
+  members: string[];
+  isEmpty?: boolean;
+}
+
+// 그룹현황 필터 상태 타입
+export interface GroupStatusFilters {
+  searchTerm: string;
+  selectedGroup: string;
+}
+
+// 그룹현황 선택 상태 타입
+export interface GroupStatusSelection {
+  selectedRowKeys: string[];
+  selectedRows: CaddieGroup[];
+}
+
+// 그룹 필터 옵션 타입
+export interface GroupFilterOption {
+  value: string;
+  label: string;
+}
