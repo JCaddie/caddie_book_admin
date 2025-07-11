@@ -1,4 +1,3 @@
-import React from "react";
 import { VacationRequestType, VacationStatus, VacationRequest } from "../types";
 import { Column } from "@/shared/types/table";
 
@@ -65,6 +64,12 @@ export const VACATION_UI_TEXT = {
 // 테이블 컬럼 정의
 // ================================
 
+// 번호 셀 렌더러
+const renderNumberCell = (value: unknown, record: VacationRequest) => {
+  if (record.isEmpty) return null;
+  return String(value || "-");
+};
+
 // 기본 셀 렌더러
 const renderCell = (value: unknown, record: VacationRequest) => {
   if (record.isEmpty) return null;
@@ -74,41 +79,17 @@ const renderCell = (value: unknown, record: VacationRequest) => {
 // 상태 셀 렌더러
 const renderStatusCell = (value: unknown, record: VacationRequest) => {
   if (record.isEmpty) return null;
-
-  const status = value as VacationStatus;
-
-  // 상태별 색상 정의
-  const getStatusStyle = (status: VacationStatus) => {
-    switch (status) {
-      case "검토 중":
-        return { backgroundColor: "#E3E3E3", color: "#4B5563" }; // 회색 배경, 진한 회색 텍스트
-      case "승인":
-        return { backgroundColor: "#FEB912", color: "#FFFFFF" }; // 노란색 배경, 흰색 텍스트
-      case "반려":
-        return { backgroundColor: "#D44947", color: "#FFFFFF" }; // 빨간색 배경, 흰색 텍스트
-      default:
-        return { backgroundColor: "#E3E3E3", color: "#4B5563" };
-    }
-  };
-
-  const statusStyle = getStatusStyle(status);
-
-  return React.createElement(
-    "div",
-    { className: "flex justify-center" },
-    React.createElement(
-      "span",
-      {
-        className:
-          "inline-flex items-center justify-center min-w-[64px] px-3 py-1 rounded-full text-sm font-medium",
-        style: statusStyle,
-      },
-      status
-    )
-  );
+  return String(value || "-");
 };
 
 export const VACATION_TABLE_COLUMNS: Column<VacationRequest>[] = [
+  {
+    key: "no",
+    title: "No.",
+    width: 60,
+    align: "center",
+    render: renderNumberCell,
+  },
   {
     key: "requestType",
     title: "신청구분",
