@@ -25,7 +25,7 @@ const WorksPage: React.FC = () => {
     setWorksList,
     searchTerm,
     filteredWorks,
-    paddedData,
+    currentData,
     currentPage,
     totalPages,
     handleSearchChange,
@@ -84,10 +84,10 @@ const WorksPage: React.FC = () => {
 
       {/* 테이블 */}
       <WorksTable
-        data={paddedData}
+        data={currentData}
+        onRowClick={handleRowClick}
         selectedRowKeys={selectedRowKeys}
         onSelectChange={handleSelectChange}
-        onRowClick={handleRowClick}
         totalCount={filteredWorks.length}
       />
 

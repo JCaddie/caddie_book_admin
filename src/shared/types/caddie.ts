@@ -1,7 +1,6 @@
-import { TableItem } from "@/shared/hooks";
-
 // 캐디 기본 정보 인터페이스
-export interface Caddie extends TableItem {
+export interface Caddie extends Record<string, unknown> {
+  id: string;
   no: number;
   name: string;
   golfCourse: string;
@@ -12,6 +11,7 @@ export interface Caddie extends TableItem {
   specialTeam: string;
   phone: string;
   workScore: string;
+  isEmpty?: boolean;
 }
 
 // 필터 옵션 타입

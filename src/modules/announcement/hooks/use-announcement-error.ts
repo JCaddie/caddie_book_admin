@@ -77,9 +77,31 @@ export const useAnnouncementError = () => {
    * 사용자 친화적인 에러 메시지 가져오기
    */
   const getUserFriendlyMessage = useCallback(
-    (error: ExtendedError | null = null): string => {
-      const currentError = error || error;
-      return currentError ? getUserErrorMessage(currentError) : "";
+    (currentError: ExtendedError | null = null): string => {
+      const targetError = currentError || error;
+      return targetError ? getUserErrorMessage(targetError) : "";
+    },
+    [error]
+  );
+
+  /**
+   * 에러가 특정 타입인지 확인
+   */
+  const isErrorType = useCallback(
+    (code: ErrorCode, currentError: ExtendedError | null = null): boolean => {
+      const targetError = currentError || error;
+      return targetError?.code === code;
+    },
+    [error]
+  );
+
+  /**
+   * 에러가 중요한지 확인 (사용자에게 즉시 알려야 하는지)
+   */
+  const isCriticalError = useCallback(
+    (currentError: ExtendedError | null = null): boolean => {
+      const targetError = currentError || error;
+      return targetError?.severity === "critical";
     },
     [error]
   );
@@ -105,16 +127,6 @@ export const useAnnouncementError = () => {
         currentError?.severity === "high" ||
         currentError?.severity === "critical"
       );
-    },
-    [error]
-  );
-
-  /**
-   * 특정 에러 코드 확인
-   */
-  const hasErrorCode = useCallback(
-    (code: ErrorCode): boolean => {
-      return error?.code === code;
     },
     [error]
   );
@@ -162,7 +174,8 @@ export const useAnnouncementError = () => {
     getUserFriendlyMessage,
     isRetryable,
     isHighSeverity,
-    hasErrorCode,
+    isErrorType,
+    isCriticalError,
     getErrorStats,
   };
 };

@@ -12,6 +12,7 @@ import {
   NewCaddieActionBar,
 } from "@/modules/caddie/components";
 import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
+import { NewCaddieApplication } from "@/modules/caddie/types";
 
 export default function NewCaddiePage() {
   // 커스텀 훅으로 상태 관리 및 로직 위임
@@ -26,7 +27,6 @@ export default function NewCaddiePage() {
     selectedCaddieName,
     currentPage,
     totalPages,
-    paddedData,
     currentData,
     pendingCount,
     openApprovalModal,
@@ -69,9 +69,9 @@ export default function NewCaddiePage() {
       />
 
       <div className="space-y-6">
-        <SelectableDataTable
+        <SelectableDataTable<NewCaddieApplication>
           columns={columns}
-          data={paddedData}
+          data={currentData}
           realDataCount={currentData.length}
           selectable={true}
           selectedRowKeys={selectedRowKeys}

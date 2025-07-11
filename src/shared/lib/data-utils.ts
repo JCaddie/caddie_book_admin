@@ -12,65 +12,54 @@ export const getRandomInRange = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-// 랜덤 날짜 생성 (과거 날짜)
-export const getRandomPastDate = (daysAgo: number = 365): string => {
-  const now = Date.now();
-  const randomTime = Math.random() * daysAgo * 24 * 60 * 60 * 1000;
-  return new Date(now - randomTime).toISOString();
-};
-
 // 문자열 검색 매칭 함수
 export const isMatchingSearch = (text: string, searchTerm: string): boolean => {
   if (!searchTerm.trim()) return true;
   return text.toLowerCase().includes(searchTerm.toLowerCase());
 };
 
-// 여러 필드에서 검색어 매칭
+// 필터링 헬퍼 함수
 export const isMatchingAnyField = <T extends Record<string, unknown>>(
-  item: T,
+  record: T,
   searchTerm: string,
   searchFields: (keyof T)[]
 ): boolean => {
-  if (!searchTerm.trim()) return true;
+  if (!searchTerm) return true;
 
+  const lowerSearchTerm = searchTerm.toLowerCase();
   return searchFields.some((field) => {
-    const value = item[field];
-    if (typeof value === "string") {
-      return isMatchingSearch(value, searchTerm);
-    }
-    return false;
+    const value = record[field];
+    return (
+      typeof value === "string" && value.toLowerCase().includes(lowerSearchTerm)
+    );
   });
 };
 
-// 빈 행 생성 유틸리티
-export const createPaddedData = <
-  T extends Record<string, unknown> & { id: string }
->(
-  data: T[],
-  targetCount: number,
-  emptyRowTemplate: Omit<T, "id">
-): T[] => {
-  const paddingCount = Math.max(0, targetCount - data.length);
-  const emptyRows = Array.from(
-    { length: paddingCount },
-    (_, index) =>
-      ({
-        ...emptyRowTemplate,
-        id: `empty-${index}`,
-      } as unknown)
-  ) as T[];
+// 날짜 관련 헬퍼 함수
+export const getRandomDate = (maxDaysAgo: number): Date => {
+  const now = new Date();
+  const daysAgo = Math.floor(Math.random() * maxDaysAgo);
+  const randomDate = new Date(now);
+  randomDate.setDate(now.getDate() - daysAgo);
+  return randomDate;
+};
 
-  return [...data, ...emptyRows];
+export const getRandomPastDate = (maxDaysAgo: number): string => {
+  return getRandomDate(maxDaysAgo).toISOString();
+};
+
+// 배열 관련 헬퍼 함수
+export const getCyclicItem = <T>(array: T[], index: number): T => {
+  return array[index % array.length];
+};
+
+export const getRandomInt = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 // API 호출 시뮬레이션 지연
 export const simulateApiDelay = (ms: number = 1000): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
-
-// 배열 요소 순환 선택 (인덱스 기반)
-export const getCyclicItem = <T>(array: T[], index: number): T => {
-  return array[index % array.length];
-};
 
 // 고유 ID 생성
 export const generateId = (prefix: string = "item"): string => {

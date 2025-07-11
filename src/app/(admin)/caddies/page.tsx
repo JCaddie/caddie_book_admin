@@ -26,7 +26,7 @@ const CaddieListPage: React.FC = () => {
   // 캐디 리스트 상태 관리
   const {
     filteredCaddies,
-    paddedData,
+    currentData,
     realDataCount,
     filters,
     updateSearchTerm,
@@ -89,7 +89,7 @@ const CaddieListPage: React.FC = () => {
       <div className="space-y-6">
         <SelectableDataTable
           columns={CADDIE_COLUMNS}
-          data={paddedData}
+          data={currentData}
           realDataCount={realDataCount}
           selectable={true}
           selectedRowKeys={selection.selectedRowKeys}

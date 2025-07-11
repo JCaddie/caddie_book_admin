@@ -12,21 +12,16 @@ import {
   ConfirmationModal,
   Pagination,
 } from "@/shared/components/ui";
-import {
-  usePagination,
-  useTableData,
-  useUrlSearchParams,
-} from "@/shared/hooks";
-import { GolfCourse, GolfCourseFilters } from "@/shared/types/golf-course";
+import { usePagination, useUrlSearchParams } from "@/shared/hooks";
+import { GolfCourse } from "@/shared/types/golf-course";
 import {
   GOLF_COURSE_FILTER_OPTIONS,
   GOLF_COURSE_TABLE_COLUMNS,
-  GOLF_COURSE_EMPTY_ROW_TEMPLATE,
 } from "@/shared/constants/golf-course";
 
 const GolfCoursesPage: React.FC = () => {
   // 필터 상태
-  const [filters, setFilters] = useState<GolfCourseFilters>({
+  const [filters, setFilters] = useState({
     contract: "",
     holes: "",
     membershipType: "",
@@ -105,12 +100,14 @@ const GolfCoursesPage: React.FC = () => {
       itemsPerPage: 20,
     });
 
-  // 테이블 데이터 패딩 훅 사용
-  const { paddedData } = useTableData({
-    data: currentData,
-    itemsPerPage: 20,
-    emptyRowTemplate: GOLF_COURSE_EMPTY_ROW_TEMPLATE,
-  });
+  // 페이지네이션된 데이터에 번호 추가
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * 20;
+    return currentData.map((course, index) => ({
+      ...course,
+      no: startIndex + index + 1,
+    }));
+  }, [currentData, currentPage]);
 
   // 행 클릭 핸들러
   const handleRowClick = (record: GolfCourse) => {
@@ -127,12 +124,12 @@ const GolfCoursesPage: React.FC = () => {
     (keys: string[]) => {
       // 빈 행 제외한 선택만 허용
       const filteredKeys = keys.filter((key) => {
-        const record = paddedData.find((item) => item.id === key);
+        const record = paginatedData.find((item) => item.id === key);
         return record && !record.isEmpty;
       });
       setSelectedRowKeys(filteredKeys);
     },
-    [paddedData]
+    [paginatedData]
   );
 
   // 삭제 핸들러
@@ -324,13 +321,13 @@ const GolfCoursesPage: React.FC = () => {
           <div className="space-y-6">
             <SelectableDataTable
               columns={GOLF_COURSE_TABLE_COLUMNS}
-              data={paddedData}
-              selectable
+              data={paginatedData}
+              onRowClick={handleRowClick}
               selectedRowKeys={selectedRowKeys}
               onSelectChange={handleUpdateSelection}
-              onRowClick={handleRowClick}
-              realDataCount={filteredData.length}
+              selectable
               layout="flexible"
+              className="w-full"
             />
 
             <Pagination

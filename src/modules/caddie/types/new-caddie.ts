@@ -1,5 +1,3 @@
-import { TableItem } from "@/shared/hooks";
-
 // ================================
 // 신규 캐디 도메인 타입
 // ================================
@@ -8,12 +6,14 @@ import { TableItem } from "@/shared/hooks";
 export type NewCaddieStatus = "pending" | "approved" | "rejected";
 
 // 신규 캐디 신청 데이터 타입
-export interface NewCaddieApplication extends TableItem {
+export interface NewCaddieApplication extends Record<string, unknown> {
+  id: string;
   name: string;
   phone: string;
   email: string;
   requestDate: string;
   status: NewCaddieStatus;
+  isEmpty?: boolean;
 }
 
 // ================================

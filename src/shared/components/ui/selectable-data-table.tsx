@@ -2,8 +2,16 @@
 
 import React from "react";
 import BaseTable from "./base-table";
-import { SelectableTableProps } from "@/shared/types/table";
-import { useTableSelection } from "@/shared/hooks";
+import { BaseTableProps } from "@/shared/types/table";
+import { useTableSelection } from "@/shared/hooks/use-table-selection";
+
+// 선택 가능한 테이블 Props 인터페이스
+interface SelectableTableProps<T> extends BaseTableProps<T> {
+  selectable?: boolean;
+  selectedRowKeys?: string[];
+  onSelectChange?: (selectedRowKeys: string[], selectedRows: T[]) => void;
+  realDataCount?: number; // 실제 데이터 개수 (빈 행 제외)
+}
 
 function SelectableDataTable<T extends Record<string, unknown>>({
   columns,
@@ -21,19 +29,12 @@ function SelectableDataTable<T extends Record<string, unknown>>({
   selectedRowKeys = [],
   onSelectChange,
   realDataCount,
+  itemsPerPage = 20,
 }: SelectableTableProps<T>) {
-  // 선택 기능 Hook 사용 (컴포넌트 최상위에서 호출)
+  // 테이블 선택 로직
   const selection = useTableSelection({
     data,
-    extractRowKey: (record: T) => {
-      if (getRowKey) {
-        return getRowKey(record);
-      }
-      if (typeof rowKey === "function") {
-        return rowKey(record);
-      }
-      return String(record[rowKey]);
-    },
+    extractRowKey: getRowKey || ((record) => String(record[rowKey as keyof T])),
     selectedRowKeys,
     onSelectChange,
   });
@@ -51,6 +52,7 @@ function SelectableDataTable<T extends Record<string, unknown>>({
       containerWidth={containerWidth}
       rowKey={rowKey}
       getRowKey={getRowKey}
+      itemsPerPage={itemsPerPage}
     >
       {({
         utils,

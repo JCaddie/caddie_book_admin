@@ -31,6 +31,7 @@ export interface BaseTableProps<T> {
   containerWidth?: number | "auto"; // 컨테이너 너비
   rowKey?: keyof T | ((record: T) => string); // 각 행의 고유 키
   getRowKey?: (record: T) => string; // 행 키 추출 함수
+  itemsPerPage?: number; // 한 페이지당 행 수 (패딩용)
 }
 
 // 선택 가능한 테이블 Props 인터페이스

@@ -28,7 +28,7 @@ export interface UserActionBarProps {
 // 사용자 관리 훅 반환 타입
 export interface UseUserManagementReturn {
   // 데이터
-  paddedData: User[];
+  currentData: User[];
   filteredData: User[];
 
   // 상태
@@ -49,7 +49,7 @@ export interface UseUserManagementReturn {
 
   // 액션
   handleUpdateSelection: (keys: string[], rows: User[]) => void;
-  handleDeleteUsers: () => Promise<void>;
+  handleDeleteUsers: () => void;
   handleCreateUser: () => void;
   handleCloseModal: () => void;
   handleSubmitUser: (userData: {
@@ -58,7 +58,7 @@ export interface UseUserManagementReturn {
     name: string;
     phone: string;
     email: string;
-  }) => Promise<void>;
+  }) => void;
   handleRowClick: (user: User) => void;
   setSearchTerm: (term: string) => void;
   setRoleFilter: (role: string) => void;

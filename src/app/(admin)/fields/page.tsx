@@ -14,13 +14,14 @@ import {
   FIELD_CONSTANTS,
 } from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
+import { FieldTableRow } from "@/modules/field/types";
 
 export default function FieldsPage() {
   useDocumentTitle({ title: "필드 관리" });
 
   const {
     // 데이터
-    paddedData,
+    currentData,
     realDataCount,
     totalCount,
 
@@ -62,9 +63,9 @@ export default function FieldsPage() {
       />
 
       <div className="space-y-6">
-        <SelectableDataTable
+        <SelectableDataTable<FieldTableRow>
           columns={fieldColumns}
-          data={paddedData}
+          data={currentData}
           selectable
           selectedRowKeys={selection.selectedRowKeys}
           onSelectChange={updateSelection}

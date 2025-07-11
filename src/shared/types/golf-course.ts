@@ -1,7 +1,6 @@
-import { TableItem } from "@/shared/hooks";
-
 // 기본 골프장 정보 타입
-export interface GolfCourse extends TableItem {
+export interface GolfCourse extends Record<string, unknown> {
+  id: string;
   no: number;
   name: string;
   region: string;
@@ -10,6 +9,7 @@ export interface GolfCourse extends TableItem {
   membershipType: string;
   caddies: number;
   fields: number;
+  isEmpty?: boolean;
 }
 
 // 연락처 정보 타입
