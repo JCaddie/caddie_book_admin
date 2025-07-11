@@ -1,18 +1,18 @@
 "use client";
 
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
 import { ChartData } from "../../types";
 import {
-  transformChartData,
   addWaitingDataToContract,
+  transformChartData,
 } from "../../utils/chart-utils";
 
 export interface LegendItem {

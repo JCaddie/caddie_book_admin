@@ -3,17 +3,14 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { SelectableDataTable, Pagination } from "@/shared/components/ui";
+import { Pagination, SelectableDataTable } from "@/shared/components/ui";
 import { useAnnouncementList } from "@/modules/announcement/hooks";
 import {
-  useAnnouncementColumns,
   AnnouncementActionBar,
+  useAnnouncementColumns,
 } from "@/modules/announcement/components";
 import { AnnouncementWithNo } from "@/modules/announcement/types";
-import {
-  isValidAnnouncement,
-  getUserErrorMessage,
-} from "@/modules/announcement/utils";
+import { isValidAnnouncement } from "@/modules/announcement/utils";
 
 const AnnouncementsPage: React.FC = () => {
   const router = useRouter();
@@ -87,7 +84,7 @@ const AnnouncementsPage: React.FC = () => {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md relative">
           <div className="flex justify-between items-start">
-            <p className="text-sm font-medium">{getUserErrorMessage(error)}</p>
+            <p className="text-sm font-medium">{error}</p>
             <button
               onClick={handleErrorClose}
               className="text-red-500 hover:text-red-700 ml-4"

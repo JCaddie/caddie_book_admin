@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PersonnelFilter, CaddieData } from "../types";
+import { CaddieData, PersonnelFilter } from "../types";
 import { FILTER_OPTIONS } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
 import HolidaySettingsModal from "./holiday-settings-modal";

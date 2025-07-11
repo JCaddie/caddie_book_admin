@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Cart, CartFilters, CartSelection, CartStatus } from "../types";
 import { generateSampleCarts } from "../utils";
 import { CART_ITEMS_PER_PAGE } from "../constants";
@@ -115,7 +115,9 @@ export const useCartList = () => {
       await simulateApiDelay(1000);
 
       // TODO: 실제 삭제 API 호출
-      console.log("삭제할 카트들:", selection.selectedRows);
+      if (process.env.NODE_ENV === "development") {
+        console.log("삭제할 카트들:", selection.selectedRows);
+      }
 
       // 성공 후 선택 상태 초기화
       clearSelection();
@@ -135,7 +137,9 @@ export const useCartList = () => {
   const createNewCart = useCallback(
     (cartData: Omit<Cart, "id" | "no" | "createdAt" | "updatedAt">) => {
       // TODO: 실제 생성 API 호출
-      console.log("새 카트 생성:", cartData);
+      if (process.env.NODE_ENV === "development") {
+        console.log("새 카트 생성:", cartData);
+      }
     },
     []
   );

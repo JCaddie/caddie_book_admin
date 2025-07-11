@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Dropdown, Button } from "@/shared/components/ui";
+import { Button, Dropdown, Search } from "@/shared/components/ui";
 import { CaddieFilters } from "@/shared/types/caddie";
 import { GROUP_OPTIONS, SPECIAL_TEAM_OPTIONS } from "@/shared/constants/caddie";
 

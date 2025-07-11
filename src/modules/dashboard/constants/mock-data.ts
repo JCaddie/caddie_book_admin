@@ -1,7 +1,7 @@
 import {
-  MasterDashboardData,
   AdminDashboardData,
   Announcement,
+  MasterDashboardData,
 } from "../types";
 
 // Master 대시보드 Mock 데이터

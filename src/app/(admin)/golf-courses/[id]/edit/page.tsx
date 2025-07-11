@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import { Button } from "@/shared/components/ui";
 import { GolfCourseEditForm } from "@/shared/components/golf-course";
 import { EditableGolfCourse } from "@/shared/types/golf-course";
-import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
+import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
 
 const GolfCourseEditPage: React.FC = () => {
   const router = useRouter();

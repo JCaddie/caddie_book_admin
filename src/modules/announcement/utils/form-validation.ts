@@ -1,7 +1,7 @@
 import { AnnouncementFormData, AnnouncementFormErrors } from "../types";
 import {
-  ANNOUNCEMENT_FORM_RULES,
   ANNOUNCEMENT_FORM_ERRORS,
+  ANNOUNCEMENT_FORM_RULES,
 } from "../constants";
 
 /**

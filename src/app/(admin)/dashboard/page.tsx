@@ -2,18 +2,18 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useDocumentTitle, PAGE_TITLES } from "@/shared/hooks";
+import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
 
 import {
-  useDashboardData,
-  DashboardHeader,
   AnnouncementSection,
-  StatsSection,
-  WorkHoursSection,
-  TeamCountSection,
-  WorkerRankingSection,
   CONTRACT_STATS_CONFIG,
+  DashboardHeader,
+  StatsSection,
+  TeamCountSection,
+  useDashboardData,
   USER_STATS_CONFIG,
+  WorkerRankingSection,
+  WorkHoursSection,
 } from "@/modules/dashboard";
 
 const DashboardPage: React.FC = () => {

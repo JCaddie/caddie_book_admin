@@ -2,14 +2,14 @@
 
 import { AdminPageHeader } from "@/shared/components/layout";
 import {
-  SelectableDataTable,
-  Pagination,
   ConfirmationModal,
+  Pagination,
+  SelectableDataTable,
 } from "@/shared/components/ui";
 import { useNewCaddieManagement } from "@/modules/caddie/hooks";
 import {
-  createNewCaddieColumns,
   NewCaddieActionBar,
+  useNewCaddieColumns,
 } from "@/modules/caddie/components";
 import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
 import { NewCaddieApplication } from "@/modules/caddie/types";
@@ -31,8 +31,8 @@ export default function NewCaddiePage() {
     pendingCount,
     openApprovalModal,
     openRejectModal,
-    openIndividualApprovalModal,
-    openIndividualRejectModal,
+    // openIndividualApprovalModal, // 사용되지 않음
+    // openIndividualRejectModal, // 사용되지 않음
     handleBulkApprove,
     handleBulkReject,
     handleIndividualApprove,
@@ -48,11 +48,8 @@ export default function NewCaddiePage() {
     setIsIndividualRejectModalOpen,
   } = useNewCaddieManagement();
 
-  // 테이블 컬럼 생성
-  const columns = createNewCaddieColumns({
-    onApprove: openIndividualApprovalModal,
-    onReject: openIndividualRejectModal,
-  });
+  // 테이블 컬럼 생성 (이제 매개변수 없음)
+  const columns = useNewCaddieColumns();
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">

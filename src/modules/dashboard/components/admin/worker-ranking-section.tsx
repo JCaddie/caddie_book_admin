@@ -1,6 +1,6 @@
 "use client";
 
-import { ThumbsUpIcon, ThumbsDownIcon } from "lucide-react";
+import { ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
 import { AdminDashboardData } from "../../types";
 
 interface WorkerRankingSectionProps {

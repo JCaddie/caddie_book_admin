@@ -1,62 +1,63 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/shared/components/ui";
-import { VacationActionsProps } from "../types";
-import { VACATION_UI_TEXT } from "../constants";
+import { useMemo } from "react";
+import { basicRenderers } from "@/shared/components/ui";
+import { Column } from "@/shared/types/table";
+import { VacationRequest } from "../types";
 
-const VacationActionsCell: React.FC<VacationActionsProps> = ({
-  request,
-  onApprove,
-  onReject,
-  loading = false,
-}) => {
-  // 빈 행인 경우 렌더링하지 않음
-  if (request.isEmpty) {
-    return null;
-  }
-
-  const handleApprove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onApprove(request.id);
-  };
-
-  const handleReject = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onReject(request.id);
-  };
-
-  return (
-    <div className="flex gap-2 justify-center">
-      {request.status === "검토 중" && (
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={handleApprove}
-          disabled={loading}
-          className="px-4 py-2 text-sm"
-          aria-label={`${request.caddieName} 휴무 신청 승인`}
-        >
-          {VACATION_UI_TEXT.APPROVE_BUTTON}
-        </Button>
-      )}
-      {request.status === "승인" && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReject}
-          disabled={loading}
-          className="px-4 py-2 text-sm border-primary text-primary"
-          aria-label={`${request.caddieName} 휴무 신청 취소`}
-        >
-          {VACATION_UI_TEXT.CANCEL_BUTTON}
-        </Button>
-      )}
-      {request.status === "반려" && (
-        <span className="text-sm text-gray-500">처리완료</span>
-      )}
-    </div>
+// 휴가 관리 테이블 컬럼 정의
+export const useVacationColumns = (): Column<VacationRequest>[] => {
+  return useMemo(
+    () => [
+      {
+        key: "no",
+        title: "No.",
+        width: 60,
+        render: basicRenderers.index, // 🎉 중복 제거!
+      },
+      {
+        key: "requestType",
+        title: "신청구분",
+        width: 100,
+        render: basicRenderers.text, // 🎉 중복 제거!
+      },
+      {
+        key: "caddieName",
+        title: "이름",
+        width: 120,
+        render: basicRenderers.text, // 🎉 중복 제거!
+      },
+      {
+        key: "reason",
+        title: "사유",
+        width: 360,
+        render: basicRenderers.textLeft, // 🎉 좌측 정렬!
+      },
+      {
+        key: "phone",
+        title: "연락처",
+        width: 140,
+        render: basicRenderers.phone, // 🎉 전화번호 포맷팅!
+      },
+      {
+        key: "status",
+        title: "상태",
+        width: 100,
+        render: basicRenderers.text, // 🎉 일반 텍스트로 변경!
+      },
+      {
+        key: "approver",
+        title: "승인자",
+        width: 120,
+        render: basicRenderers.text, // 🎉 중복 제거!
+      },
+      {
+        key: "requestDate",
+        title: "요청일자",
+        width: 200,
+        render: basicRenderers.date, // 🎉 날짜 포맷팅!
+      },
+    ],
+    []
   );
 };
-
-export default VacationActionsCell;

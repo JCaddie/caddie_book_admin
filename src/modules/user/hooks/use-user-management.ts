@@ -63,15 +63,26 @@ export const useUserManagement = (): UseUserManagementReturn => {
     []
   );
 
+  // 사용자 삭제 처리
   const handleDeleteUsers = React.useCallback(async () => {
+    if (selectedRowKeys.length === 0) return;
+
     setIsDeleting(true);
+
     try {
+      // 실제로는 API 호출
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("사용자 삭제:", selectedRowKeys);
+
+      // TODO: 실제 삭제 API 호출
+      if (process.env.NODE_ENV === "development") {
+        console.log("사용자 삭제:", selectedRowKeys);
+      }
+
+      // 선택 상태 초기화
       setSelectedRowKeys([]);
       setSelectedRows([]);
     } catch (error) {
-      console.error("사용자 삭제 오류:", error);
+      console.error("사용자 삭제 중 오류:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -94,12 +105,20 @@ export const useUserManagement = (): UseUserManagementReturn => {
       email: string;
     }) => {
       setIsCreating(true);
+
       try {
+        // 실제로는 API 호출
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("사용자 생성:", userData);
+
+        // TODO: 실제 생성 API 호출
+        if (process.env.NODE_ENV === "development") {
+          console.log("사용자 생성:", userData);
+        }
+
+        // 모달 닫기
         setIsCreateModalOpen(false);
       } catch (error) {
-        console.error("사용자 생성 오류:", error);
+        console.error("사용자 생성 중 오류:", error);
       } finally {
         setIsCreating(false);
       }

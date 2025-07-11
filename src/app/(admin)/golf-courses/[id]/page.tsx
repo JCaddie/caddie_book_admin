@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import { Button } from "@/shared/components/ui";
 import {

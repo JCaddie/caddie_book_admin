@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useCallback, memo } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { Plus } from "lucide-react";
-import { Button, Search, ConfirmationModal } from "@/shared/components/ui";
+import { Button, ConfirmationModal, Search } from "@/shared/components/ui";
 
 interface CartActionBarProps {
   totalCount: number;

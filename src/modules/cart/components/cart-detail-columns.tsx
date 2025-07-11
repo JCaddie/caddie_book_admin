@@ -1,91 +1,54 @@
 "use client";
 
-import { Column } from "@/shared/types";
-import { CartHistoryItem } from "../types";
+import { useMemo } from "react";
+import { Column } from "@/shared/types/table";
+import { basicRenderers } from "@/shared/components/ui";
+import { CartDetail } from "../types";
+import { CART_COLUMN_WIDTHS } from "../constants";
 
-/**
- * 카트 이력 테이블 컬럼 정의
- * Figma 디자인에 맞춘 고정 폭 컬럼들
- */
-export const cartHistoryColumns: Column<CartHistoryItem>[] = [
-  {
-    key: "no",
-    title: "No.",
-    width: 48,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as number}</span>;
-    },
-  },
-  {
-    key: "date",
-    title: "일자",
-    width: 160,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as string}</span>;
-    },
-  },
-  {
-    key: "time",
-    title: "시간",
-    width: 160,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as string}</span>;
-    },
-  },
-  {
-    key: "cartName",
-    title: "카트명",
-    width: 160,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as string}</span>;
-    },
-  },
-  {
-    key: "group",
-    title: "그룹",
-    width: 160,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as string}</span>;
-    },
-  },
-  {
-    key: "personInCharge",
-    title: "담당자",
-    width: 160,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as string}</span>;
-    },
-  },
-  {
-    key: "fieldName",
-    title: "필드명",
-    width: 160,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as string}</span>;
-    },
-  },
-  {
-    key: "managerName",
-    title: "관리자",
-    width: 120,
-    align: "center",
-    render: (value, record) => {
-      if (record.isEmpty) return null;
-      return <span className="text-sm text-gray-800">{value as string}</span>;
-    },
-  },
-];
+// 카트 상세 테이블 컬럼 정의 (메모이제이션)
+export const useCartDetailColumns = (): Column<CartDetail>[] => {
+  return useMemo(
+    () => [
+      {
+        key: "no",
+        title: "No.",
+        width: CART_COLUMN_WIDTHS.no,
+        render: basicRenderers.index as unknown as Column<CartDetail>["render"], // 안전한 타입 캐스팅
+      },
+      {
+        key: "caddieName",
+        title: "캐디명",
+        width: CART_COLUMN_WIDTHS.name,
+        render: basicRenderers.text as unknown as Column<CartDetail>["render"], // 안전한 타입 캐스팅
+      },
+      {
+        key: "usageDate",
+        title: "사용일자",
+        width: CART_COLUMN_WIDTHS.golfCourseName,
+        render:
+          basicRenderers.dateOnly as unknown as Column<CartDetail>["render"], // 안전한 타입 캐스팅
+      },
+      {
+        key: "startTime",
+        title: "시작시간",
+        width: CART_COLUMN_WIDTHS.fieldName,
+        render: basicRenderers.text as unknown as Column<CartDetail>["render"], // 안전한 타입 캐스팅
+      },
+      {
+        key: "endTime",
+        title: "종료시간",
+        width: CART_COLUMN_WIDTHS.fieldName,
+        render: basicRenderers.text as unknown as Column<CartDetail>["render"], // 안전한 타입 캐스팅
+      },
+      {
+        key: "notes",
+        title: "비고",
+        width: CART_COLUMN_WIDTHS.golfCourseName,
+        render:
+          basicRenderers.textLeft as unknown as Column<CartDetail>["render"], // 안전한 타입 캐스팅
+      },
+    ],
+    []
+  );
+};

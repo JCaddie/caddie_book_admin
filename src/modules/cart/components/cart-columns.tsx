@@ -1,22 +1,10 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Column } from "@/shared/types/table";
-import { Cart, CartStatus } from "../types";
-import { CART_COLUMN_WIDTHS, CART_STATUS_STYLES } from "../constants";
-
-// 상태 뱃지 컴포넌트
-const StatusBadge: React.FC<{ status: CartStatus }> = ({ status }) => {
-  const styleClass = CART_STATUS_STYLES[status];
-
-  return (
-    <span
-      className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${styleClass}`}
-    >
-      {status}
-    </span>
-  );
-};
+import { basicRenderers } from "@/shared/components/ui";
+import { Cart } from "../types";
+import { CART_COLUMN_WIDTHS } from "../constants";
 
 // 카트 테이블 컬럼 정의 (메모이제이션)
 export const useCartColumns = (): Column<Cart>[] => {
@@ -26,89 +14,37 @@ export const useCartColumns = (): Column<Cart>[] => {
         key: "no",
         title: "No.",
         width: CART_COLUMN_WIDTHS.no,
-        render: (value: unknown, record: Cart) => {
-          if (record.isEmpty) return null;
-          return (
-            <div className="text-center">
-              <span className="text-sm font-medium text-gray-800">
-                {value as number}
-              </span>
-            </div>
-          );
-        },
+        render: basicRenderers.index, // 🎉 중복 제거!
       },
       {
         key: "name",
         title: "카트명",
         width: CART_COLUMN_WIDTHS.name,
-        render: (value: unknown, record: Cart) => {
-          if (record.isEmpty) return null;
-          return (
-            <div className="text-center">
-              <span className="text-sm font-medium text-gray-800">
-                {value as string}
-              </span>
-            </div>
-          );
-        },
+        render: basicRenderers.text, // 🎉 중복 제거!
       },
       {
         key: "status",
         title: "상태",
         width: CART_COLUMN_WIDTHS.status,
-        render: (value: unknown, record: Cart) => {
-          if (record.isEmpty) return null;
-          return (
-            <div className="flex justify-center">
-              <StatusBadge status={value as CartStatus} />
-            </div>
-          );
-        },
+        render: basicRenderers.text, // 🎉 일반 텍스트로 변경!
       },
       {
         key: "fieldName",
         title: "필드명",
         width: CART_COLUMN_WIDTHS.fieldName,
-        render: (value: unknown, record: Cart) => {
-          if (record.isEmpty) return null;
-          return (
-            <div className="text-center">
-              <span className="text-sm font-medium text-gray-800">
-                {value as string}
-              </span>
-            </div>
-          );
-        },
+        render: basicRenderers.text, // 🎉 중복 제거!
       },
       {
         key: "golfCourseName",
         title: "골프장",
         width: CART_COLUMN_WIDTHS.golfCourseName,
-        render: (value: unknown, record: Cart) => {
-          if (record.isEmpty) return null;
-          return (
-            <div className="text-center">
-              <span className="text-sm font-medium text-gray-800">
-                {value as string}
-              </span>
-            </div>
-          );
-        },
+        render: basicRenderers.text, // 🎉 중복 제거!
       },
       {
         key: "managerName",
         title: "담당자",
         width: CART_COLUMN_WIDTHS.managerName,
-        render: (value: unknown, record: Cart) => {
-          if (record.isEmpty) return null;
-          return (
-            <div className="text-center">
-              <span className="text-sm font-medium text-gray-800">
-                {value as string}
-              </span>
-            </div>
-          );
-        },
+        render: basicRenderers.text, // 🎉 중복 제거!
       },
     ],
     []

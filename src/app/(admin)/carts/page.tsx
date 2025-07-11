@@ -3,9 +3,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { SelectableDataTable, Pagination } from "@/shared/components/ui";
+import { Pagination, SelectableDataTable } from "@/shared/components/ui";
 import { useCartList } from "@/modules/cart/hooks";
-import { useCartColumns, CartActionBar } from "@/modules/cart/components";
+import { CartActionBar, useCartColumns } from "@/modules/cart/components";
 import { Cart } from "@/modules/cart/types";
 
 const CartsPage: React.FC = () => {

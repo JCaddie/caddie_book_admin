@@ -4,11 +4,11 @@
 
 import {
   Announcement,
-  AnnouncementFilters,
-  AnnouncementWithNo,
   AnnouncementCategory,
+  AnnouncementFilters,
   AnnouncementPriority,
   AnnouncementSort,
+  AnnouncementWithNo,
 } from "../types";
 
 // 상수 정의

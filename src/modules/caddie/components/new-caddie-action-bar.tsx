@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Button } from "@/shared/components/ui";
+import { Button, Search } from "@/shared/components/ui";
 import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
 
 interface NewCaddieActionBarProps {

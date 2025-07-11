@@ -1,6 +1,5 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ANNOUNCEMENT_CRUD_ERRORS } from "../constants";
 
 /**
  * 공지사항 삭제 훅
@@ -24,14 +23,19 @@ export const useDeleteAnnouncement = () => {
         // const result = await response.json();
         // if (!response.ok) throw new Error(result.message);
 
-        // 임시 처리
-        console.log("공지사항 삭제:", id);
+        // 개발 중에는 데이터 확인용
+        if (process.env.NODE_ENV === "development") {
+          console.log("공지사항 삭제:", id);
+        }
 
         // 성공 시 목록 페이지로 이동
         router.push("/announcements");
       } catch (err) {
-        setError(ANNOUNCEMENT_CRUD_ERRORS.DELETE_FAILED);
-        console.error("공지사항 삭제 오류:", err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "공지사항 삭제 중 오류가 발생했습니다.";
+        setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);

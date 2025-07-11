@@ -2,12 +2,12 @@
 
 import React from "react";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { SelectableDataTable, Pagination } from "@/shared/components/ui";
+import { Pagination, SelectableDataTable } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { useUserManagement } from "@/modules/user/hooks";
 import {
-  userColumns,
   UserActionBar,
+  userColumns,
   UserCreateModal,
 } from "@/modules/user/components";
 import { USER_TABLE_CONFIG } from "@/modules/user/constants";

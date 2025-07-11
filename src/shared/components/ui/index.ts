@@ -13,6 +13,9 @@ export { default as Search } from "./search";
 export { default as SelectableDataTable } from "./selectable-data-table";
 export { default as TextField } from "./text-field";
 
+// 새로운 테이블 렌더러 (named export)
+export * from "./table-renderers";
+
 // 타입 export
 export type { ButtonProps } from "./button";
 export type { UploadedFile, ExistingFile } from "./file-upload";

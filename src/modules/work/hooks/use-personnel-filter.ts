@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PersonnelFilter } from "../types";
 import { SAMPLE_CADDIES } from "../constants/work-detail";
 import { filterCaddies } from "../utils/work-detail-utils";

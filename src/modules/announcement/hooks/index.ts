@@ -1,4 +1,4 @@
-export { useAnnouncementError } from "./use-announcement-error";
+// 리스트 관리 훅
 export { useAnnouncementList } from "./use-announcement-list";
 export { useAnnouncementUrlParams } from "./use-announcement-url-params";
 

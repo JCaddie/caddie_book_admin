@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Announcement,
   AnnouncementFilters,
@@ -10,14 +10,12 @@ import { usePagination } from "@/shared/hooks";
 import { simulateApiDelay } from "@/shared/lib/data-utils";
 import { ANNOUNCEMENT_CONSTANTS } from "../constants";
 import {
-  generateSampleAnnouncements,
-  filterAnnouncements,
   addNumberToAnnouncements,
+  filterAnnouncements,
+  generateSampleAnnouncements,
   isValidAnnouncement,
 } from "../utils";
-import { useAnnouncementError } from "./use-announcement-error";
 import { useAnnouncementUrlParams } from "./use-announcement-url-params";
-import { ExtendedError } from "../utils/error-handler";
 
 interface UseAnnouncementListReturn {
   // 데이터
@@ -50,7 +48,7 @@ interface UseAnnouncementListReturn {
 
   // 상태
   isDeleting: boolean;
-  error: ExtendedError | null;
+  error: string | null;
   clearError: () => void;
 }
 
@@ -73,8 +71,8 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
   // 로딩 상태
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // 에러 관리
-  const { error, handleApiError, clearError } = useAnnouncementError();
+  // 에러 관리 (간소화)
+  const [error, setError] = useState<string | null>(null);
 
   // 필터 업데이트 함수
   const updateFilters = useCallback(
@@ -153,38 +151,59 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
     if (selection.selectedRows.length === 0) return;
 
     setIsDeleting(true);
+    setError(null);
 
     try {
       // API 호출 시뮬레이션
       await simulateApiDelay(1000);
 
       // TODO: 실제 삭제 API 호출
-      console.log("삭제할 공지사항들:", selection.selectedRows);
 
       // 성공 후 선택 상태 초기화
       clearSelection();
     } catch (err) {
-      handleApiError(err, "DELETE_FAILED");
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "공지사항 삭제 중 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setIsDeleting(false);
     }
-  }, [selection.selectedRows, clearSelection, handleApiError]);
+  }, [selection.selectedRows, clearSelection]);
 
   // 새 공지사항 생성
   const createNewAnnouncement = useCallback(
     async (announcementData: CreateAnnouncementData) => {
+      setError(null);
+
       try {
         // API 호출 시뮬레이션
         await simulateApiDelay(1000);
 
         // TODO: 실제 생성 API 호출
-        console.log("새 공지사항 생성:", announcementData);
+        // await createAnnouncementAPI(announcementData);
+
+        // 개발 중에는 데이터 확인용
+        if (process.env.NODE_ENV === "development") {
+          console.log("공지사항 생성 데이터:", announcementData);
+        }
       } catch (err) {
-        handleApiError(err, "CREATE_FAILED");
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "공지사항 생성 중 오류가 발생했습니다.";
+        setError(errorMessage);
+        throw err;
       }
     },
-    [handleApiError]
+    []
   );
+
+  // 에러 초기화
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return {
     // 데이터

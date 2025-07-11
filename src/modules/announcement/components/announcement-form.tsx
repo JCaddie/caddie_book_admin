@@ -1,22 +1,26 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
-
-import { Button, FileUpload, ConfirmationModal } from "@/shared/components/ui";
-import type { UploadedFile, ExistingFile } from "@/shared/components/ui";
+import {
+  Button,
+  ConfirmationModal,
+  type ExistingFile,
+  FileUpload,
+  type UploadedFile,
+} from "@/shared/components/ui";
 import {
   Announcement,
-  AnnouncementFormMode,
   AnnouncementFormData,
   AnnouncementFormErrors,
+  AnnouncementFormMode,
 } from "../types";
 import { ANNOUNCEMENT_FORM_RULES, FILE_UPLOAD_CONFIG } from "../constants";
 import {
   validateAnnouncementForm,
-  validateTitle,
   validateContent,
+  validateTitle,
 } from "../utils";
 
 interface AnnouncementFormProps {

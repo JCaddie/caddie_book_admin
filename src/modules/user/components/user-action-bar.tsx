@@ -1,6 +1,6 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { Plus } from "lucide-react";
-import { Button, Search, ConfirmationModal } from "@/shared/components/ui";
+import { Button, ConfirmationModal, Search } from "@/shared/components/ui";
 import { UserActionBarProps } from "../types";
 import { ROLE_FILTER_OPTIONS } from "../constants";
 

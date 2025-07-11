@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Input, Dropdown } from "@/shared/components/ui";
+import { Dropdown, Input } from "@/shared/components/ui";
 import { EditableGolfCourse } from "@/shared/types/golf-course";
 import { CONTRACT_STATUS_OPTIONS } from "@/shared/constants/golf-course";
 

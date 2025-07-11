@@ -1,7 +1,6 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreateAnnouncementData } from "../types";
-import { ANNOUNCEMENT_CRUD_ERRORS } from "../constants";
 
 /**
  * 공지사항 생성 훅
@@ -32,14 +31,19 @@ export const useCreateAnnouncement = () => {
         // const result = await response.json();
         // if (!response.ok) throw new Error(result.message);
 
-        // 임시 처리
-        console.log("공지사항 생성:", data);
+        // 개발 중에는 데이터 확인용
+        if (process.env.NODE_ENV === "development") {
+          console.log("공지사항 생성:", data);
+        }
 
         // 성공 시 목록 페이지로 이동
         router.push("/announcements");
       } catch (err) {
-        setError(ANNOUNCEMENT_CRUD_ERRORS.CREATE_FAILED);
-        console.error("공지사항 생성 오류:", err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "공지사항 생성 중 오류가 발생했습니다.";
+        setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);

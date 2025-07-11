@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DASHBOARD_COLORS } from "../../constants/styles";
 import { mockAdminData } from "../../constants/mock-data";
 import {
-  PeriodToggle,
   LineChartComponent,
-  type PeriodType,
   type LineChartLegendItem,
+  PeriodToggle,
+  type PeriodType,
 } from "../common";
 
 const TeamCountSection = () => {

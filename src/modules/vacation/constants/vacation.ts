@@ -1,4 +1,4 @@
-import { VacationRequestType, VacationStatus, VacationRequest } from "../types";
+import { VacationRequest, VacationRequestType, VacationStatus } from "../types";
 import { Column } from "@/shared/types/table";
 
 // ================================
