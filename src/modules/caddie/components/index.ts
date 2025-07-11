@@ -10,3 +10,4 @@ export { default as NewCaddieActionBar } from "./new-caddie-action-bar";
 export { default as GroupStatusActionBar } from "./group-status-action-bar";
 export { useNewCaddieColumns } from "./new-caddie-columns";
 export { useGroupStatusColumns } from "./group-status-columns";
+export { default as GroupSection } from "./group-section";
