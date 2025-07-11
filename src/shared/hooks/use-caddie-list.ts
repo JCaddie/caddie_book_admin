@@ -7,7 +7,6 @@ import { usePagination } from "@/shared/hooks";
 import {
   generateSampleCaddies,
   filterCaddies,
-  createPaddedData,
 } from "@/shared/lib/caddie-utils";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 
@@ -48,11 +47,6 @@ export const useCaddieList = () => {
       data: filteredCaddies,
       itemsPerPage: ITEMS_PER_PAGE,
     });
-
-  // 빈 행이 추가된 데이터 (일정한 테이블 높이 유지)
-  const paddedData = useMemo(() => {
-    return createPaddedData(currentData);
-  }, [currentData]);
 
   // 필터 업데이트 함수들
   const updateSearchTerm = (searchTerm: string) => {
@@ -95,7 +89,7 @@ export const useCaddieList = () => {
   return {
     // 데이터
     filteredCaddies,
-    paddedData,
+    currentData,
     realDataCount: currentData.length, // 실제 데이터 개수 (빈 행 제외)
 
     // 필터 상태

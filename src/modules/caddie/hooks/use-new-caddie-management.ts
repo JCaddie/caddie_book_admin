@@ -1,25 +1,39 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { usePagination } from "@/shared/hooks";
-import { useTableData } from "@/shared/hooks/use-table-data";
-import { ITEMS_PER_PAGE } from "@/shared/constants/caddie";
-import {
-  NewCaddieApplication,
-  ModalType,
-  NewCaddieActions,
-  NewCaddieState,
-} from "../types/new-caddie";
+import { NewCaddieApplication } from "../types";
 import { MOCK_NEW_CADDIE_APPLICATIONS } from "../constants/new-caddie";
+import { usePagination } from "@/shared/hooks";
+import { ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 
-interface UseNewCaddieManagementReturn
-  extends NewCaddieState,
-    NewCaddieActions {
-  filteredApplications: NewCaddieApplication[];
+export type ModalType = "all" | "selected";
+
+export interface UseNewCaddieManagementReturn {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  selectedRowKeys: string[];
+  applications: NewCaddieApplication[];
+  isApprovalModalOpen: boolean;
+  isRejectModalOpen: boolean;
+  modalType: ModalType;
+  isIndividualApprovalModalOpen: boolean;
+  isIndividualRejectModalOpen: boolean;
+  selectedCaddieId: string;
+  selectedCaddieName: string;
   currentPage: number;
   totalPages: number;
   currentData: NewCaddieApplication[];
-  paddedData: NewCaddieApplication[];
   pendingCount: number;
+  openApprovalModal: (type: ModalType) => void;
+  openRejectModal: (type: ModalType) => void;
+  openIndividualApprovalModal: (caddieId: string, caddieName: string) => void;
+  openIndividualRejectModal: (caddieId: string, caddieName: string) => void;
+  handleBulkApprove: () => void;
+  handleBulkReject: () => void;
+  handleIndividualApprove: () => void;
+  handleIndividualReject: () => void;
+  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSearchClear: () => void;
+  handleSelectChange: (selectedRowKeys: string[]) => void;
+  handleRowClick: (application: NewCaddieApplication) => void;
   handlePageChange: (page: number) => void;
   setIsApprovalModalOpen: (open: boolean) => void;
   setIsRejectModalOpen: (open: boolean) => void;
@@ -28,8 +42,6 @@ interface UseNewCaddieManagementReturn
 }
 
 export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
-  const router = useRouter();
-
   // 상태 관리
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -61,22 +73,6 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
       itemsPerPage: ITEMS_PER_PAGE,
     });
 
-  // 빈 행 템플릿
-  const emptyRowTemplate: Omit<NewCaddieApplication, "id" | "isEmpty"> = {
-    name: "",
-    phone: "",
-    email: "",
-    requestDate: "",
-    status: "pending",
-  };
-
-  // 테이블 데이터 패딩
-  const { paddedData } = useTableData({
-    data: currentData,
-    itemsPerPage: ITEMS_PER_PAGE,
-    emptyRowTemplate,
-  });
-
   // 대기 중인 신청 수
   const pendingCount = applications.filter(
     (app) => app.status === "pending"
@@ -93,101 +89,130 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     setIsRejectModalOpen(true);
   };
 
-  const openIndividualApprovalModal = (id: string, name: string) => {
-    setSelectedCaddieId(id);
-    setSelectedCaddieName(name);
+  const openIndividualApprovalModal = (
+    caddieId: string,
+    caddieName: string
+  ) => {
+    setSelectedCaddieId(caddieId);
+    setSelectedCaddieName(caddieName);
     setIsIndividualApprovalModalOpen(true);
   };
 
-  const openIndividualRejectModal = (id: string, name: string) => {
-    setSelectedCaddieId(id);
-    setSelectedCaddieName(name);
+  const openIndividualRejectModal = (caddieId: string, caddieName: string) => {
+    setSelectedCaddieId(caddieId);
+    setSelectedCaddieName(caddieName);
     setIsIndividualRejectModalOpen(true);
   };
 
-  // 승인/거절 핸들러들
+  // 일괄 승인 핸들러
   const handleBulkApprove = () => {
-    if (modalType === "selected") {
-      setApplications((apps) =>
-        apps.map((app) =>
+    if (modalType === "all") {
+      const pendingApplications = applications.filter(
+        (app) => app.status === "pending"
+      );
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.status === "pending" ? { ...app, status: "approved" } : app
+        )
+      );
+      console.log("모든 대기 중인 신청 승인:", pendingApplications);
+    } else {
+      const selectedApplications = applications.filter((app) =>
+        selectedRowKeys.includes(app.id)
+      );
+      setApplications((prev) =>
+        prev.map((app) =>
           selectedRowKeys.includes(app.id)
-            ? { ...app, status: "approved" as const }
+            ? { ...app, status: "approved" }
             : app
         )
       );
-    } else {
-      setApplications((apps) =>
-        apps.map((app) => ({ ...app, status: "approved" as const }))
-      );
+      console.log("선택된 신청 승인:", selectedApplications);
     }
     setIsApprovalModalOpen(false);
     setSelectedRowKeys([]);
   };
 
+  // 일괄 반려 핸들러
   const handleBulkReject = () => {
-    const idsToReject =
-      modalType === "selected"
-        ? selectedRowKeys
-        : applications.map((app) => app.id);
-    setApplications((apps) =>
-      apps.map((app) =>
-        idsToReject.includes(app.id)
-          ? { ...app, status: "rejected" as const }
-          : app
-      )
-    );
+    if (modalType === "all") {
+      const pendingApplications = applications.filter(
+        (app) => app.status === "pending"
+      );
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.status === "pending" ? { ...app, status: "rejected" } : app
+        )
+      );
+      console.log("모든 대기 중인 신청 반려:", pendingApplications);
+    } else {
+      const selectedApplications = applications.filter((app) =>
+        selectedRowKeys.includes(app.id)
+      );
+      setApplications((prev) =>
+        prev.map((app) =>
+          selectedRowKeys.includes(app.id)
+            ? { ...app, status: "rejected" }
+            : app
+        )
+      );
+      console.log("선택된 신청 반려:", selectedApplications);
+    }
     setIsRejectModalOpen(false);
     setSelectedRowKeys([]);
   };
 
+  // 개별 승인 핸들러
   const handleIndividualApprove = () => {
-    setApplications((apps) =>
-      apps.map((app) =>
-        app.id === selectedCaddieId
-          ? { ...app, status: "approved" as const }
-          : app
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === selectedCaddieId ? { ...app, status: "approved" } : app
       )
     );
+    console.log("개별 승인:", selectedCaddieId, selectedCaddieName);
     setIsIndividualApprovalModalOpen(false);
     setSelectedCaddieId("");
     setSelectedCaddieName("");
   };
 
+  // 개별 반려 핸들러
   const handleIndividualReject = () => {
-    setApplications((apps) =>
-      apps.map((app) =>
-        app.id === selectedCaddieId
-          ? { ...app, status: "rejected" as const }
-          : app
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === selectedCaddieId ? { ...app, status: "rejected" } : app
       )
     );
+    console.log("개별 반려:", selectedCaddieId, selectedCaddieName);
     setIsIndividualRejectModalOpen(false);
     setSelectedCaddieId("");
     setSelectedCaddieName("");
   };
 
-  // 이벤트 핸들러들
+  // 검색 변경 핸들러
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    handlePageChange(1);
   };
 
+  // 검색 초기화 핸들러
   const handleSearchClear = () => {
     setSearchTerm("");
-    handlePageChange(1);
   };
 
-  const handleSelectChange = (keys: string[]) => {
-    setSelectedRowKeys(keys);
+  // 선택 변경 핸들러
+  const handleSelectChange = (selectedRowKeys: string[]) => {
+    setSelectedRowKeys(selectedRowKeys);
   };
 
-  const handleRowClick = (record: NewCaddieApplication) => {
-    router.push(`/caddies/${record.id}`);
+  // 행 클릭 핸들러
+  const handleRowClick = (application: NewCaddieApplication) => {
+    console.log("행 클릭:", application);
+    // 필요시 상세 페이지로 이동
+    // router.push(`/caddies/new/${application.id}`);
   };
 
   return {
-    // 상태
     searchTerm,
+    setSearchTerm,
     selectedRowKeys,
     applications,
     isApprovalModalOpen,
@@ -197,19 +222,10 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     isIndividualRejectModalOpen,
     selectedCaddieId,
     selectedCaddieName,
-
-    // 계산된 값들
-    filteredApplications,
     currentPage,
     totalPages,
     currentData,
-    paddedData,
     pendingCount,
-
-    // 액션들
-    setSearchTerm,
-    setSelectedRowKeys,
-    setApplications,
     openApprovalModal,
     openRejectModal,
     openIndividualApprovalModal,
