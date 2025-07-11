@@ -2,6 +2,8 @@
  * 테이블 렌더러 유틸리티
  */
 
+/* eslint-disable react/display-name */
+
 import React from "react";
 import {
   formatDate,
@@ -92,13 +94,10 @@ function BaseText({
 BaseText.displayName = "BaseText";
 
 // 배지 컴포넌트
-function Badge({
-  children,
-  style,
-}: {
+const Badge: React.FC<{
   children: React.ReactNode;
   style: BadgeStyle;
-}) {
+}> = ({ children, style }) => {
   return (
     <span
       className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
@@ -108,7 +107,7 @@ function Badge({
       {children}
     </span>
   );
-}
+};
 
 Badge.displayName = "Badge";
 
