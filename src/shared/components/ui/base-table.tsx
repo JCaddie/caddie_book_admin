@@ -157,7 +157,7 @@ export const TableHeader = <T extends Record<string, unknown>>({
   <div style={{ backgroundColor: "#F7F7F7" }}>
     <div
       className={[
-        "flex items-stretch max-h-[40px] px-4 py-2",
+        "flex items-stretch h-[40px] px-4 py-2",
         layout === "flexible" ? "justify-between gap-8" : "gap-4",
       ].join(" ")}
     >
@@ -232,7 +232,7 @@ export const TableRow = <T extends Record<string, unknown>>({
     <div
       key={rowKey}
       className={[
-        "flex items-stretch max-h-[40px] px-4 py-2 transition-colors",
+        "flex items-stretch h-[40px] px-4 py-2 transition-colors",
         layout === "flexible" ? "justify-between gap-8" : "gap-4",
         !isEmpty && onRowClick ? "hover:bg-primary-50 cursor-pointer" : "",
         isSelected ? "bg-blue-50" : "",

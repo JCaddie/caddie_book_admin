@@ -26,7 +26,7 @@ export const useCartColumns = (): Column<Cart>[] => {
         key: "status",
         title: "상태",
         width: CART_COLUMN_WIDTHS.status,
-        render: basicRenderers.status, // 🎉 상태 배지 통합!
+        render: basicRenderers.text, // 🎉 일반 텍스트로 변경!
       },
       {
         key: "fieldName",
