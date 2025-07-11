@@ -18,13 +18,13 @@ export const useVacationColumns = (): Column<VacationRequest>[] => {
       {
         key: "requestType",
         title: "신청구분",
-        width: 120,
+        width: 100,
         render: basicRenderers.text, // 🎉 중복 제거!
       },
       {
         key: "caddieName",
         title: "이름",
-        width: 160,
+        width: 120,
         render: basicRenderers.text, // 🎉 중복 제거!
       },
       {
@@ -54,7 +54,7 @@ export const useVacationColumns = (): Column<VacationRequest>[] => {
       {
         key: "requestDate",
         title: "요청일자",
-        width: 140,
+        width: 200,
         render: basicRenderers.date, // 🎉 날짜 포맷팅!
       },
     ],
