@@ -19,6 +19,7 @@ function DataTable<T extends Record<string, unknown>>({
   containerWidth = "auto",
   rowKey = "id",
   getRowKey,
+  itemsPerPage = 20,
 }: DataTableProps<T>) {
   return (
     <BaseTable
@@ -33,6 +34,7 @@ function DataTable<T extends Record<string, unknown>>({
       containerWidth={containerWidth}
       rowKey={rowKey}
       getRowKey={getRowKey}
+      itemsPerPage={itemsPerPage}
     >
       {({
         utils,
@@ -52,7 +54,9 @@ function DataTable<T extends Record<string, unknown>>({
 
           {/* 데이터 영역 */}
           <div className="w-full">
-            {tableData.length === 0 ? (
+            {tableData.filter(
+              (record) => !(record as { isEmpty?: boolean })?.isEmpty
+            ).length === 0 ? (
               <div className="flex items-center justify-center py-20">
                 <span className="text-gray-500">{tableEmptyText}</span>
               </div>

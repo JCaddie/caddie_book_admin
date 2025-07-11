@@ -1,11 +1,33 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { BaseTableProps, Column } from "@/shared/types/table";
 
 // 빈 행 체크 함수
 export const isEmptyRow = (record: unknown): boolean => {
   return (record as { isEmpty?: boolean })?.isEmpty === true;
+};
+
+// 데이터 패딩 함수 (빈 행 추가)
+const createPaddedData = <T extends Record<string, unknown>>(
+  data: T[],
+  itemsPerPage: number = 20
+): T[] => {
+  if (data.length >= itemsPerPage) {
+    return data;
+  }
+
+  const emptyRowsCount = itemsPerPage - data.length;
+  const emptyRows = Array.from(
+    { length: emptyRowsCount },
+    (_, index) =>
+      ({
+        id: `empty-${index}`,
+        isEmpty: true,
+      } as unknown as T)
+  );
+
+  return [...data, ...emptyRows];
 };
 
 // 테이블 유틸리티 함수들
@@ -292,6 +314,7 @@ function BaseTable<T extends Record<string, unknown>>({
   containerWidth = "auto",
   rowKey = "id",
   getRowKey,
+  itemsPerPage = 20,
   children,
 }: BaseTableProps<T> & {
   children: (props: {
@@ -337,6 +360,11 @@ function BaseTable<T extends Record<string, unknown>>({
     false
   );
 
+  // 데이터 패딩 처리
+  const paddedData = useMemo(() => {
+    return createPaddedData(data, itemsPerPage);
+  }, [data, itemsPerPage]);
+
   // 로딩 상태
   if (loading) {
     return (
@@ -378,7 +406,7 @@ function BaseTable<T extends Record<string, unknown>>({
         utils,
         TableHeader,
         TableRow,
-        data,
+        data: paddedData,
         emptyText,
       })}
     </div>
