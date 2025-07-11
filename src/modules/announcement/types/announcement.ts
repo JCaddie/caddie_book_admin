@@ -1,11 +1,11 @@
 import {
+  ApiResponse,
+  BaseFilters,
+  PaginatedData,
+  SelectionState,
+  WithAuthor,
   WithId,
   WithTimestamps,
-  WithAuthor,
-  BaseFilters,
-  SelectionState,
-  ApiResponse,
-  PaginatedData,
 } from "@/shared/types";
 
 // 파일 업로드 상태 타입

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Announcement,
   AnnouncementFilters,
@@ -10,9 +10,9 @@ import { usePagination } from "@/shared/hooks";
 import { simulateApiDelay } from "@/shared/lib/data-utils";
 import { ANNOUNCEMENT_CONSTANTS } from "../constants";
 import {
-  generateSampleAnnouncements,
-  filterAnnouncements,
   addNumberToAnnouncements,
+  filterAnnouncements,
+  generateSampleAnnouncements,
   isValidAnnouncement,
 } from "../utils";
 import { useAnnouncementUrlParams } from "./use-announcement-url-params";

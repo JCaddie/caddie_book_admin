@@ -3,11 +3,11 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { SelectableDataTable, Pagination } from "@/shared/components/ui";
+import { Pagination, SelectableDataTable } from "@/shared/components/ui";
 import { useAnnouncementList } from "@/modules/announcement/hooks";
 import {
-  useAnnouncementColumns,
   AnnouncementActionBar,
+  useAnnouncementColumns,
 } from "@/modules/announcement/components";
 import { AnnouncementWithNo } from "@/modules/announcement/types";
 import { isValidAnnouncement } from "@/modules/announcement/utils";
