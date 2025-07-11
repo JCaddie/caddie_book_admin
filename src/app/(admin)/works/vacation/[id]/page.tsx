@@ -101,34 +101,6 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
     }
   };
 
-  // 상태별 뱃지 스타일
-  const getStatusBadgeStyle = (status: string) => {
-    switch (status) {
-      case "검토 중":
-        return "bg-gray-300 text-gray-800";
-      case "승인":
-        return "text-white";
-      case "반려":
-        return "text-white";
-      default:
-        return "bg-gray-300 text-gray-800";
-    }
-  };
-
-  // 상태별 뱃지 배경색 (인라인 스타일로 적용)
-  const getStatusBadgeBackground = (status: string) => {
-    switch (status) {
-      case "검토 중":
-        return "#E3E3E3";
-      case "승인":
-        return "#FEB912";
-      case "반려":
-        return "#D44947";
-      default:
-        return "#E3E3E3";
-    }
-  };
-
   // 날짜 포맷팅 (ISO → 한국 형식)
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
@@ -264,26 +236,26 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
           </div>
 
           {/* 신청 정보 섹션 */}
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {/* 제목과 뱃지 */}
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-gray-600">신청 정보</h2>
+              <h2 className="text-xl font-bold text-black opacity-60">
+                신청 정보
+              </h2>
               <span
-                className={`inline-flex items-center justify-center min-w-[56px] px-2 py-1 rounded-md text-sm font-medium ${getStatusBadgeStyle(
-                  vacationRequest.status
-                )}`}
+                className="inline-flex items-center justify-center px-2 py-1 rounded-md text-white text-xs font-medium"
                 style={{
-                  backgroundColor: getStatusBadgeBackground(
-                    vacationRequest.status
-                  ),
+                  backgroundColor: "#FEB912",
+                  width: "56px",
+                  height: "24px",
                 }}
               >
-                {vacationRequest.status}
+                승인
               </span>
             </div>
 
             {/* 신청 정보 내용 */}
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               {/* 휴무희망일자 */}
               <div className="flex items-center gap-2">
                 <div className="w-[88px] flex items-center">
@@ -291,11 +263,9 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                     휴무희망일자
                   </span>
                 </div>
-                <div className="flex-1">
-                  <span className="text-sm text-gray-600">
-                    {formatDate(vacationRequest.requestDate)}
-                  </span>
-                </div>
+                <span className="text-sm text-black">
+                  {formatDate(vacationRequest.requestDate)}
+                </span>
               </div>
 
               {/* 배정근무 */}
@@ -305,18 +275,16 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                     배정근무
                   </span>
                 </div>
-                <div className="flex-1">
-                  <span className="text-sm text-gray-600">없음</span>
-                </div>
+                <span className="text-sm text-black">없음</span>
               </div>
 
               {/* 사유 */}
               <div className="flex gap-2">
-                <div className="w-[88px] flex items-start pt-1">
+                <div className="w-[88px] flex items-start">
                   <span className="text-sm font-semibold text-black">사유</span>
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm text-gray-600 leading-relaxed">
+                  <div className="text-sm text-black leading-relaxed">
                     {vacationRequest.reason}
                   </div>
                 </div>
