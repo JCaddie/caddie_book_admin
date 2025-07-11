@@ -15,18 +15,28 @@ import { USER_TABLE_CONFIG } from "@/modules/user/constants";
 export default function UsersPage() {
   useDocumentTitle({ title: "사용자 관리" });
 
+  // 사용자 관리 훅 사용
   const {
-    paddedData,
+    // 데이터
+    currentData,
     filteredData,
+
+    // 상태
     selectedRowKeys,
     isDeleting,
     searchTerm,
     roleFilter,
     currentPage,
-    totalPages,
+
+    // 모달 상태
     isCreateModalOpen,
     isCreating,
+
+    // 페이지네이션
+    totalPages,
     handlePageChange,
+
+    // 액션
     handleUpdateSelection,
     handleDeleteUsers,
     handleCreateUser,
@@ -56,7 +66,7 @@ export default function UsersPage() {
       <div className="space-y-6">
         <SelectableDataTable
           columns={userColumns}
-          data={paddedData}
+          data={currentData}
           selectable
           selectedRowKeys={selectedRowKeys}
           onSelectChange={handleUpdateSelection}

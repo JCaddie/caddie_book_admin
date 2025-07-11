@@ -2,8 +2,7 @@ import React from "react";
 import { User, UseUserManagementReturn } from "../types";
 import { mockUsers } from "../utils";
 import { ITEMS_PER_PAGE } from "../constants";
-import { UserRole } from "@/shared/types/user";
-import { usePagination, useTableData } from "@/shared/hooks";
+import { usePagination } from "@/shared/hooks";
 
 // 사용자 관리 훅
 export const useUserManagement = (): UseUserManagementReturn => {
@@ -50,26 +49,6 @@ export const useUserManagement = (): UseUserManagementReturn => {
       no: startIndex + index + 1, // 페이지네이션을 고려한 번호 계산
     }));
   }, [currentData, paginationPage]);
-
-  // 빈 행 템플릿
-  const emptyRowTemplate = React.useMemo(
-    () => ({
-      username: "",
-      name: "",
-      phone: "",
-      email: "",
-      role: "ADMIN" as UserRole,
-      no: 0,
-    }),
-    []
-  );
-
-  // 패딩된 데이터 생성 (빈 행 추가)
-  const { paddedData } = useTableData({
-    data: paginatedData,
-    itemsPerPage: ITEMS_PER_PAGE,
-    emptyRowTemplate,
-  });
 
   // 액션 핸들러들
   const handleUpdateSelection = React.useCallback(
@@ -137,7 +116,7 @@ export const useUserManagement = (): UseUserManagementReturn => {
 
   return {
     // 데이터
-    paddedData,
+    currentData: paginatedData,
     filteredData,
 
     // 상태
