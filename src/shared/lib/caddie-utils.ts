@@ -1,5 +1,5 @@
 import { Caddie, CaddieFilters } from "@/shared/types/caddie";
-import { SAMPLE_DATA_COUNT, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
+import { SAMPLE_DATA_COUNT } from "@/shared/constants/caddie";
 
 // 샘플 캐디 데이터 생성
 export const generateSampleCaddies = (
@@ -22,52 +22,35 @@ export const generateSampleCaddies = (
   }));
 };
 
-// 캐디 데이터 필터링
+// 캐디 필터링
 export const filterCaddies = (
   caddies: Caddie[],
   filters: CaddieFilters
 ): Caddie[] => {
-  const { searchTerm, selectedGroup, selectedSpecialTeam } = filters;
-
   return caddies.filter((caddie) => {
+    // 검색어 필터링
     const matchesSearch =
-      searchTerm === "" ||
-      caddie.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      caddie.golfCourse.toLowerCase().includes(searchTerm.toLowerCase());
+      !filters.searchTerm ||
+      caddie.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      caddie.golfCourse
+        .toLowerCase()
+        .includes(filters.searchTerm.toLowerCase()) ||
+      caddie.phone.includes(filters.searchTerm);
 
+    // 그룹 필터링
     const matchesGroup =
-      selectedGroup === "그룹" || caddie.group === selectedGroup;
+      !filters.selectedGroup ||
+      filters.selectedGroup === "그룹" ||
+      caddie.group === filters.selectedGroup;
 
+    // 특수반 필터링
     const matchesSpecialTeam =
-      selectedSpecialTeam === "특수반" ||
-      caddie.specialTeam === selectedSpecialTeam;
+      !filters.selectedSpecialTeam ||
+      filters.selectedSpecialTeam === "특수반" ||
+      caddie.specialTeam === filters.selectedSpecialTeam;
 
     return matchesSearch && matchesGroup && matchesSpecialTeam;
   });
-};
-
-// 빈 행 생성하여 일정한 테이블 높이 유지
-export const createPaddedData = (
-  data: Caddie[],
-  targetCount: number = ITEMS_PER_PAGE
-): Caddie[] => {
-  const emptyRowsCount = Math.max(0, targetCount - data.length);
-  const emptyRows = Array.from({ length: emptyRowsCount }, (_, index) => ({
-    id: `empty-${index}`,
-    isEmpty: true,
-    no: 0,
-    name: "",
-    golfCourse: "",
-    gender: "",
-    workStatus: "",
-    group: "",
-    groupOrder: "",
-    specialTeam: "",
-    phone: "",
-    workScore: "",
-  })) as Caddie[];
-
-  return [...data, ...emptyRows];
 };
 
 // 선택된 캐디들 삭제 확인 메시지 생성
