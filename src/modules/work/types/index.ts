@@ -1,11 +1,10 @@
-import { TableItem } from "@/shared/hooks";
-
 // ================================
 // 핵심 근무 관련 타입
 // ================================
 
 // 근무 스케줄 데이터 타입
-export interface Work extends TableItem {
+export interface Work extends Record<string, unknown> {
+  id: string;
   no: number;
   date: string; // 일자 (YYYY.MM.DD 형식)
   golfCourse: string; // 골프장명
@@ -14,6 +13,7 @@ export interface Work extends TableItem {
   status: "planning" | "confirmed" | "completed" | "cancelled"; // 상태
   createdAt?: string;
   updatedAt?: string;
+  isEmpty?: boolean;
 }
 
 // 근무 스케줄 필터 타입

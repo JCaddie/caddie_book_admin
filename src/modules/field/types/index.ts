@@ -1,4 +1,3 @@
-import { TableItem } from "@/shared/hooks";
 import { FIELD_CONSTANTS } from "../constants";
 
 // ================================
@@ -29,7 +28,8 @@ export interface FieldData {
 /**
  * 테이블 표시용 필드 데이터
  */
-export interface FieldTableRow extends TableItem {
+export interface FieldTableRow extends Record<string, unknown> {
+  id: string;
   no: number;
   fieldName: string;
   golfCourse: string;
