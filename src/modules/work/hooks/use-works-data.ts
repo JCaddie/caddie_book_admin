@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Work } from "@/modules/work/types";
 import { SAMPLE_GOLF_COURSES, WORKS_PAGE_SIZE } from "@/modules/work/constants";

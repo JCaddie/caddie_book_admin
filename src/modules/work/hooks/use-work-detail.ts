@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Work } from "@/modules/work/types";
 import { SAMPLE_GOLF_COURSES } from "@/modules/work/constants";
 

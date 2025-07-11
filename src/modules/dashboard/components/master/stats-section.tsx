@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { MasterDashboardData } from "../../types";
 import { StatsSectionConfig } from "../../constants/stats-configs";
 import {
-  PeriodToggle,
-  StatBadge,
   LineChartComponent,
-  type PeriodType,
-  type StatBadgeItem,
   type LineChartLegendItem,
+  PeriodToggle,
+  type PeriodType,
+  StatBadge,
+  type StatBadgeItem,
 } from "../common";
 
 interface StatsSectionProps {

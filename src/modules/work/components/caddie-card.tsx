@@ -3,8 +3,8 @@
 import { MoreVertical } from "lucide-react";
 import { CaddieCardProps } from "../types";
 import {
-  getSpecialBadgeStyle,
   getCaddieCardStyle,
+  getSpecialBadgeStyle,
 } from "../utils/work-detail-utils";
 
 export default function CaddieCard({

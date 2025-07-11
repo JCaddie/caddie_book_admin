@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { DashboardData } from "../types";
 import {
-  fetchMasterDashboard,
   fetchAdminDashboard,
   fetchAnnouncements,
+  fetchMasterDashboard,
 } from "../constants/mock-data";
 
 // 메인 대시보드 데이터 hook
