@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import {
   VacationActionBar,
   VacationActionsCell,
@@ -14,8 +14,10 @@ import { AdminPageHeader } from "@/shared/components/layout";
 import { DataTable, Pagination, EmptyState } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { VacationRequest } from "@/modules/vacation/types";
+import { useRouter } from "next/navigation";
 
 export default function VacationManagementPage() {
+  const router = useRouter();
   const {
     data,
     totalCount,
@@ -27,7 +29,6 @@ export default function VacationManagementPage() {
     handleFilterChange,
     handleApprove,
     handleReject,
-    handleRowClick,
     loading,
     error,
     actionLoading,
@@ -37,6 +38,18 @@ export default function VacationManagementPage() {
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무관리" });
+
+  // 행 클릭 핸들러
+  const handleRowClick = useCallback(
+    (record: VacationRequest) => {
+      // 빈 행인 경우 무시
+      if (record.isEmpty) return;
+
+      // 상세 페이지로 이동
+      router.push(`/works/vacation-management/${record.id}`);
+    },
+    [router]
+  );
 
   // 액션 셀 렌더러
   const renderActionsCell = (_: unknown, record: VacationRequest) => (

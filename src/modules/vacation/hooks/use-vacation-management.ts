@@ -154,15 +154,6 @@ export const useVacationManagement = () => {
     [handlePageChange]
   );
 
-  // 행 클릭 핸들러
-  const handleRowClick = useCallback((record: VacationRequest) => {
-    // 빈 행인 경우 무시
-    if (record.isEmpty) return;
-
-    // 필요시 디테일 페이지로 이동 등의 로직 추가
-    console.log("Row clicked:", record);
-  }, []);
-
   // 에러 초기화
   const clearError = useCallback(() => {
     setError(null);
@@ -192,7 +183,6 @@ export const useVacationManagement = () => {
     // 액션
     handleApprove,
     handleReject,
-    handleRowClick,
 
     // 상태
     loading,
