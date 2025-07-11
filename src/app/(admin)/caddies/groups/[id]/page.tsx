@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { Button, ConfirmationModal, Search } from "@/shared/components/ui";
+import {
+  Button,
+  CaddieAssignmentModal,
+  GroupSettingModal,
+  Search,
+} from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
 import { Plus } from "lucide-react";
@@ -38,6 +43,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     filteredGroups,
     totalCaddieCount,
     isGroupSettingModalOpen,
+    isCaddieAssignmentModalOpen,
     draggedCaddie,
     updateFilter,
     handleSearchChange,
@@ -45,6 +51,9 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     openGroupSettingModal,
     closeGroupSettingModal,
     handleGroupSettingConfirm,
+    openCaddieAssignmentModal,
+    closeCaddieAssignmentModal,
+    handleCaddieAssignmentConfirm,
     handleDragStart,
     handleDragEnd,
     handleDrop,
@@ -128,7 +137,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             >
               그룹 설정
             </Button>
-            <Button className="bg-yellow-400 hover:bg-yellow-500 text-white flex items-center gap-1">
+            <Button
+              className="bg-yellow-400 hover:bg-yellow-500 text-white flex items-center gap-1"
+              onClick={openCaddieAssignmentModal}
+            >
               <Plus className="w-4 h-4" />
               캐디 배정
             </Button>
@@ -153,14 +165,26 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       </div>
 
       {/* 그룹 설정 모달 */}
-      <ConfirmationModal
+      <GroupSettingModal
         isOpen={isGroupSettingModalOpen}
         onClose={closeGroupSettingModal}
-        onConfirm={handleGroupSettingConfirm}
-        title="그룹 설정"
-        message="그룹 설정 화면으로 이동하시겠습니까?"
-        confirmText="확인"
-        cancelText="취소"
+        onSave={handleGroupSettingConfirm}
+        initialGroups={[
+          { id: "1", name: "1조", order: 1 },
+          { id: "2", name: "2조", order: 2 },
+          { id: "3", name: "3조", order: 3 },
+          { id: "4", name: "4조", order: 4 },
+          { id: "5", name: "5조", order: 5 },
+          { id: "6", name: "6조", order: 6 },
+          { id: "7", name: "7조", order: 7 },
+        ]}
+      />
+
+      {/* 캐디 배정 모달 */}
+      <CaddieAssignmentModal
+        isOpen={isCaddieAssignmentModalOpen}
+        onClose={closeCaddieAssignmentModal}
+        onConfirm={handleCaddieAssignmentConfirm}
       />
     </div>
   );
