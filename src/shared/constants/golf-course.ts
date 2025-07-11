@@ -1,4 +1,3 @@
-import { defaultCellRenderer } from "@/shared/hooks";
 import { GolfCourse } from "@/shared/types/golf-course";
 
 // 골프장 필터 옵션
@@ -36,6 +35,12 @@ export const CONTRACT_STATUS_OPTIONS = [
   { value: "해지", label: "해지" },
 ];
 
+// 기본 셀 렌더러
+const renderCell = (value: unknown, record: GolfCourse) => {
+  if ("isEmpty" in record && record.isEmpty) return null;
+  return String(value || "");
+};
+
 // 골프장 테이블 컬럼 정의
 export const GOLF_COURSE_TABLE_COLUMNS = [
   {
@@ -43,53 +48,53 @@ export const GOLF_COURSE_TABLE_COLUMNS = [
     title: "No.",
     width: 80,
     align: "center" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
   {
     key: "name",
     title: "골프장명",
     width: 200,
     align: "left" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
   {
     key: "region",
     title: "시/구",
     align: "center" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
   {
     key: "contractStatus",
     title: "계약 현황",
     align: "center" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
   {
     key: "phone",
     title: "대표 번호",
     width: 150,
     align: "center" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
   {
     key: "membershipType",
     title: "회원제/퍼블릭",
     align: "center" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
   {
     key: "caddies",
     title: "캐디",
     width: 80,
     align: "center" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
   {
     key: "fields",
     title: "필드",
     width: 80,
     align: "center" as const,
-    render: defaultCellRenderer<GolfCourse>,
+    render: renderCell,
   },
 ];
 
