@@ -41,16 +41,6 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           label: "신규 캐디",
           href: "/caddies/new",
         },
-        {
-          id: "group-status",
-          label: "그룹 현황",
-          href: "/caddies/groups",
-        },
-        {
-          id: "special-team",
-          label: "특수반 관리",
-          href: "/caddies/special-teams",
-        },
       ],
     },
     {
@@ -107,16 +97,6 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           label: "신규 캐디",
           href: "/caddies/new",
         },
-        {
-          id: "group-status",
-          label: "그룹 현황",
-          href: "/caddies/groups",
-        },
-        {
-          id: "special-team",
-          label: "특수반 관리",
-          href: "/caddies/special-teams",
-        },
       ],
     },
     {
@@ -126,14 +106,14 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       icon: Clock,
       subItems: [
         {
-          id: "rounding-schedule",
-          label: "라운딩 일정",
-          href: "/works/rounding",
+          id: "work-schedule",
+          label: "근무 일정",
+          href: "/works",
         },
         {
-          id: "work-change-request",
-          label: "근무변경요청",
-          href: "/works/change-requests",
+          id: "vacation-management",
+          label: "휴무관리",
+          href: "/works/vacation-management",
         },
       ],
     },
