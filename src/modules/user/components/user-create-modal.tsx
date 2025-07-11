@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import { Button, Input, Dropdown } from "@/shared/components/ui";
+import { Button, Dropdown, Input } from "@/shared/components/ui";
 
 interface UserCreateModalProps {
   isOpen: boolean;

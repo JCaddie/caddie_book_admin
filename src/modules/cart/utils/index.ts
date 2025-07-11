@@ -1,9 +1,9 @@
 import {
   Cart,
-  CartStatus,
-  CartFilters,
   CartDetail,
+  CartFilters,
   CartHistoryItem,
+  CartStatus,
 } from "../types";
 import {
   getCyclicItem,

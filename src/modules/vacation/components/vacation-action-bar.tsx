@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button, Search, Dropdown } from "@/shared/components/ui";
+import { Button, Dropdown, Search } from "@/shared/components/ui";
 import { VacationRequestFilter } from "../types";
 import {
   VACATION_REQUEST_TYPE_OPTIONS,
