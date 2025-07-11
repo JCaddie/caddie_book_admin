@@ -76,11 +76,22 @@ const renderStatusCell = (value: unknown, record: VacationRequest) => {
   if (record.isEmpty) return null;
 
   const status = value as VacationStatus;
-  const statusStyles = {
-    "검토 중": "bg-yellow-100 text-yellow-800",
-    승인: "bg-green-100 text-green-800",
-    반려: "bg-red-100 text-red-800",
+
+  // 상태별 색상 정의
+  const getStatusStyle = (status: VacationStatus) => {
+    switch (status) {
+      case "검토 중":
+        return { backgroundColor: "#E3E3E3", color: "#4B5563" }; // 회색 배경, 진한 회색 텍스트
+      case "승인":
+        return { backgroundColor: "#FEB912", color: "#FFFFFF" }; // 노란색 배경, 흰색 텍스트
+      case "반려":
+        return { backgroundColor: "#D44947", color: "#FFFFFF" }; // 빨간색 배경, 흰색 텍스트
+      default:
+        return { backgroundColor: "#E3E3E3", color: "#4B5563" };
+    }
   };
+
+  const statusStyle = getStatusStyle(status);
 
   return React.createElement(
     "div",
@@ -88,9 +99,9 @@ const renderStatusCell = (value: unknown, record: VacationRequest) => {
     React.createElement(
       "span",
       {
-        className: `inline-flex items-center justify-center min-w-[64px] px-3 py-1 rounded-full text-sm font-medium ${
-          statusStyles[status] || ""
-        }`,
+        className:
+          "inline-flex items-center justify-center min-w-[64px] px-3 py-1 rounded-full text-sm font-medium",
+        style: statusStyle,
       },
       status
     )
