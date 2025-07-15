@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { Button, Input } from "@/shared/components/ui";
 import { GroupData, GroupSettingModalProps } from "../types";
 
@@ -50,6 +50,13 @@ const GroupSettingModal: React.FC<GroupSettingModalProps> = ({
     setSelectedGroupId(newGroup.id);
   };
 
+  const handleDeleteGroup = (groupId: string) => {
+    setGroups((prev) => prev.filter((group) => group.id !== groupId));
+    if (selectedGroupId === groupId) {
+      setSelectedGroupId(null);
+    }
+  };
+
   const hasGroups = groups.length > 0;
 
   // 모달 높이 계산 - 안전한 최대 높이 제한
@@ -75,35 +82,30 @@ const GroupSettingModal: React.FC<GroupSettingModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-opacity-25 backdrop-blur-sm flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-white rounded-md border border-gray-300 shadow-lg flex flex-col"
+        className="bg-white rounded-xl shadow-xl flex flex-col"
         style={{
-          width: "320px",
-          maxHeight: "90vh",
+          width: "400px",
           height: getModalHeight(),
-          boxShadow: "0px 1px 8px 0px rgba(99, 108, 132, 0.1)",
         }}
       >
         {/* 헤더 */}
-        <div className="flex flex-col items-center py-4 flex-shrink-0">
-          <div className="flex items-center justify-between w-72">
-            <h2 className="text-base font-bold text-black text-opacity-80">
-              그룹 설정
-            </h2>
-            <button
-              onClick={onClose}
-              className="w-6 h-6 flex items-center justify-center rounded-md border border-gray-300 hover:bg-gray-50 transition-colors p-1"
-            >
-              <X size={16} className="text-black text-opacity-30" />
-            </button>
-          </div>
-          <div className="w-full h-px bg-gray-300 mt-4"></div>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-lg font-semibold text-black">그룹 설정</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-4 h-4" />
+          </Button>
         </div>
 
-        {/* 본문 */}
+        {/* 컨텐츠 */}
         {hasGroups ? (
           <div className="px-0 pt-2 flex-1 flex flex-col">
             <div
@@ -133,6 +135,17 @@ const GroupSettingModal: React.FC<GroupSettingModalProps> = ({
                     }
                     className="flex-1 h-8 text-sm"
                   />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteGroup(group.id);
+                    }}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-8 w-8"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -168,36 +181,24 @@ const GroupSettingModal: React.FC<GroupSettingModalProps> = ({
               onClick={handleAddGroup}
               disabled={isLoading}
               variant="outline"
-              size="sm"
-              icon={<Plus size={16} className="text-black text-opacity-40" />}
-              className="text-black text-opacity-40 font-medium"
+              className="text-yellow-600 border-yellow-400 hover:bg-yellow-50 flex items-center gap-1"
             >
-              생성
+              <Plus className="w-4 h-4" />
+              그룹 생성
             </Button>
           </div>
 
-          <div className="w-full h-px bg-gray-300 mb-4"></div>
-
-          {/* 확인/취소 버튼 영역 */}
-          <div className="flex justify-end gap-3">
-            <Button
-              onClick={onClose}
-              disabled={isLoading}
-              variant="secondary"
-              size="sm"
-              className="w-20"
-            >
+          {/* 액션 버튼 영역 */}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               취소
             </Button>
             <Button
               onClick={() => onSave(groups)}
               disabled={isLoading}
-              loading={isLoading}
-              variant="primary"
-              size="sm"
-              className="w-20"
+              className="bg-yellow-400 hover:bg-yellow-500 text-white"
             >
-              확인
+              {isLoading ? "저장 중..." : "저장"}
             </Button>
           </div>
         </div>
