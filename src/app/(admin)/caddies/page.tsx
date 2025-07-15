@@ -32,6 +32,10 @@ const CaddieListPage: React.FC = () => {
     updateSearchTerm,
     updateSelectedGroup,
     updateSelectedSpecialTeam,
+    selectedGolfCourseId,
+    golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleGolfCourseSearchChange,
     selection,
     updateSelection,
     deleteSelectedItems,
@@ -84,6 +88,10 @@ const CaddieListPage: React.FC = () => {
         onGroupChange={updateSelectedGroup}
         onSpecialTeamChange={updateSelectedSpecialTeam}
         onDeleteSelected={handleDeleteClick}
+        selectedGolfCourseId={selectedGolfCourseId}
+        golfCourseSearchTerm={golfCourseSearchTerm}
+        onGolfCourseChange={handleGolfCourseChange}
+        onGolfCourseSearchChange={handleGolfCourseSearchChange}
       />
 
       <div className="space-y-6">

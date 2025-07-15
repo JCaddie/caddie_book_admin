@@ -9,9 +9,22 @@ import {
   generateSampleCaddies,
 } from "@/shared/lib/caddie-utils";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { useGolfCourseFilter } from "@/shared/hooks/use-golf-course-filter";
 
 export const useCaddieList = () => {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const isMaster = user?.role === "MASTER";
+
+  // 골프장 필터링 (MASTER 권한에서만 사용)
+  const {
+    selectedGolfCourseId,
+    searchTerm: golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleSearchChange: handleGolfCourseSearchChange,
+    getFilteredData,
+  } = useGolfCourseFilter();
 
   // 필터 상태
   const [filters, setFilters] = useState<CaddieFilters>(DEFAULT_FILTERS);
@@ -36,10 +49,16 @@ export const useCaddieList = () => {
   // 샘플 데이터 생성
   const allCaddies = useMemo(() => generateSampleCaddies(), []);
 
-  // 필터링된 데이터
+  // 골프장 필터링 적용 (MASTER 권한에서만)
+  const golfCourseFilteredCaddies = useMemo(() => {
+    if (!isMaster) return allCaddies;
+    return getFilteredData(allCaddies);
+  }, [allCaddies, getFilteredData, isMaster]);
+
+  // 기존 필터링된 데이터
   const filteredCaddies = useMemo(() => {
-    return filterCaddies(allCaddies, filters);
-  }, [allCaddies, filters]);
+    return filterCaddies(golfCourseFilteredCaddies, filters);
+  }, [golfCourseFilteredCaddies, filters]);
 
   // 페이지네이션
   const { currentPage, totalPages, currentData, handlePageChange } =
@@ -97,6 +116,12 @@ export const useCaddieList = () => {
     updateSearchTerm,
     updateSelectedGroup,
     updateSelectedSpecialTeam,
+
+    // 골프장 필터링 (MASTER 권한용)
+    selectedGolfCourseId,
+    golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleGolfCourseSearchChange,
 
     // 선택 상태
     selection,
