@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { FieldFilters, FieldSelection, FieldTableRow } from "../types";
-import { usePagination } from "@/shared/hooks";
+import { useAuth, useGolfCourseFilter, usePagination } from "@/shared/hooks";
 import { FIELD_CONSTANTS } from "../constants";
 import {
   createNewField,
@@ -10,6 +10,18 @@ import {
 } from "../utils";
 
 export const useFieldManagement = () => {
+  const { user } = useAuth();
+  const isMaster = user?.role === "MASTER";
+
+  // 골프장 필터링 (MASTER 권한에서만 사용)
+  const {
+    selectedGolfCourseId,
+    searchTerm: golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleSearchChange: handleGolfCourseSearchChange,
+    getFilteredData,
+  } = useGolfCourseFilter();
+
   // 필터 상태
   const [filters, setFilters] = useState<FieldFilters>({
     searchTerm: "",
@@ -30,10 +42,16 @@ export const useFieldManagement = () => {
   // 샘플 데이터 (memoized)
   const allFields = useMemo(() => generateSampleFieldData(), []);
 
-  // 필터링된 데이터
+  // 골프장 필터링 적용 (MASTER 권한에서만)
+  const golfCourseFilteredFields = useMemo(() => {
+    if (!isMaster) return allFields;
+    return getFilteredData(allFields);
+  }, [allFields, getFilteredData, isMaster]);
+
+  // 기존 필터링된 데이터
   const filteredFields = useMemo(
-    () => filterFields(allFields, filters.searchTerm),
-    [allFields, filters.searchTerm]
+    () => filterFields(golfCourseFilteredFields, filters.searchTerm),
+    [golfCourseFilteredFields, filters.searchTerm]
   );
 
   // 페이지네이션
@@ -109,6 +127,12 @@ export const useFieldManagement = () => {
     // 필터 상태
     filters,
     updateSearchTerm,
+
+    // 골프장 필터링 (MASTER 권한용)
+    selectedGolfCourseId,
+    golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleGolfCourseSearchChange,
 
     // 선택 상태
     selection,
