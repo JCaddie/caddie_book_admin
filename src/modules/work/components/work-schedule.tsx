@@ -14,6 +14,8 @@ interface WorkScheduleProps {
   draggedCaddie?: CaddieData | null;
   onDragStart?: (caddie: CaddieData) => void;
   onDragEnd?: () => void;
+  hideHeader?: boolean;
+  isFullWidth?: boolean;
 }
 
 interface CaddiePosition {
@@ -30,6 +32,8 @@ export default function WorkSchedule({
   draggedCaddie: externalDraggedCaddie,
   onDragStart: externalOnDragStart,
   onDragEnd: externalOnDragEnd,
+  hideHeader = false,
+  isFullWidth = false,
 }: WorkScheduleProps) {
   // 캐디 위치 상태 관리
   const [caddiePositions, setCaddiePositions] = useState<
@@ -220,49 +224,55 @@ export default function WorkSchedule({
   };
 
   return (
-    <div className="w-[948px]">
+    <div className={isFullWidth ? "w-full" : "w-[948px]"}>
       {/* 라운딩 관리 상단 */}
-      <div className="bg-white rounded-lg p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h2 className="text-[22px] font-bold text-black">라운딩 관리</h2>
+      {!hideHeader && (
+        <div className="bg-white rounded-lg p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <h2 className="text-[22px] font-bold text-black">라운딩 관리</h2>
 
-            {/* 인원 통계 배지 */}
-            <div className="flex items-center gap-4 bg-white rounded-full px-6 py-2">
-              <div className="flex items-center gap-2">
-                <div className="px-2 py-1 bg-[#217F81] text-white text-sm font-bold rounded">
-                  총인원
+              {/* 인원 통계 배지 */}
+              <div className="flex items-center gap-4 bg-white rounded-full px-6 py-2">
+                <div className="flex items-center gap-2">
+                  <div className="px-2 py-1 bg-[#217F81] text-white text-sm font-bold rounded">
+                    총인원
+                  </div>
+                  <span className="text-sm font-bold">
+                    {personnelStats.total}
+                  </span>
                 </div>
-                <span className="text-sm font-bold">
-                  {personnelStats.total}
-                </span>
-              </div>
-              <div className="w-px h-4 bg-gray-300"></div>
-              <div className="flex items-center gap-2">
-                <div className="px-2 py-1 bg-[#FEB912] text-white text-sm font-bold rounded">
-                  가용인원
+                <div className="w-px h-4 bg-gray-300"></div>
+                <div className="flex items-center gap-2">
+                  <div className="px-2 py-1 bg-[#FEB912] text-white text-sm font-bold rounded">
+                    가용인원
+                  </div>
+                  <span className="text-sm font-bold">
+                    {personnelStats.available}
+                  </span>
                 </div>
-                <span className="text-sm font-bold">
-                  {personnelStats.available}
-                </span>
               </div>
             </div>
-          </div>
 
-          {/* 초기화 버튼 */}
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-2 px-4 py-2 bg-[#FEB912] text-white font-semibold rounded-md hover:bg-[#e5a50f] transition-colors"
-          >
-            <RotateCcw className="w-6 h-6" />
-            초기화
-          </button>
+            {/* 초기화 버튼 */}
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-2 px-4 py-2 bg-[#FEB912] text-white font-semibold rounded-md hover:bg-[#e5a50f] transition-colors"
+            >
+              <RotateCcw className="w-6 h-6" />
+              초기화
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 통합 스케줄 테이블 */}
-      <div className="bg-white rounded-lg overflow-x-auto">
-        <table className="min-w-full">
+      <div
+        className={`bg-white rounded-lg ${
+          isFullWidth ? "" : "overflow-x-auto"
+        }`}
+      >
+        <table className={isFullWidth ? "w-full" : "min-w-full"}>
           {/* 테이블 헤더 */}
           <thead>
             <tr className="bg-gray-50">
