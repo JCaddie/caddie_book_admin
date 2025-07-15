@@ -49,7 +49,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
         {
           id: "special-team",
           label: "특수반 관리",
-          href: "/caddies/special-teams",
+          href: "/teams",
         },
       ],
     },
@@ -115,7 +115,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
         {
           id: "special-team",
           label: "특수반 관리",
-          href: "/caddies/special-teams",
+          href: "/teams/me",
         },
       ],
     },
