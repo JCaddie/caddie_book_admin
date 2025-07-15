@@ -2,6 +2,8 @@
 
 import React from "react";
 import { Button, Dropdown, Search } from "@/shared/components/ui";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
 import { VacationRequestFilter } from "../types";
 import {
   VACATION_REQUEST_TYPE_OPTIONS,
@@ -16,6 +18,9 @@ export interface VacationActionBarProps {
   onFilterChange: (filters: VacationRequestFilter) => void;
   onDelete?: () => void;
   loading?: boolean;
+  // 골프장 필터링 props (MASTER 권한에서만 사용)
+  selectedGolfCourseId?: string;
+  onGolfCourseChange?: (golfCourseId: string) => void;
 }
 
 const VacationActionBar: React.FC<VacationActionBarProps> = ({
@@ -25,7 +30,12 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
   onFilterChange,
   onDelete,
   loading = false,
+  selectedGolfCourseId = "",
+  onGolfCourseChange,
 }) => {
+  const { user } = useAuth();
+  const isMaster = user?.role === "MASTER";
+
   const handleRequestTypeChange = (value: string) => {
     onFilterChange({
       ...filters,
@@ -53,6 +63,12 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
     }
   };
 
+  const handleGolfCourseFilterChange = (value: string) => {
+    if (onGolfCourseChange) {
+      onGolfCourseChange(value);
+    }
+  };
+
   return (
     <div className="flex items-center justify-between">
       {/* 왼쪽: 총 건수 */}
@@ -65,8 +81,19 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
         </div>
       </div>
 
-      {/* 오른쪽: 필터 + 검색창 + 버튼들 */}
+      {/* 오른쪽: 골프장 드롭다운 + 필터 + 검색창 + 버튼들 */}
       <div className="flex items-center gap-8">
+        {/* MASTER 권한일 때만 골프장 선택 드롭다운 표시 */}
+        {isMaster && onGolfCourseChange && (
+          <Dropdown
+            options={GOLF_COURSE_DROPDOWN_OPTIONS}
+            value={selectedGolfCourseId}
+            onChange={handleGolfCourseFilterChange}
+            placeholder="골프장 선택"
+            containerClassName="w-48"
+          />
+        )}
+
         {/* 필터 드롭다운들 */}
         <div className="flex items-center gap-2">
           <Dropdown
