@@ -21,6 +21,7 @@ export interface VacationRequest extends Record<string, unknown> {
   approver?: string;
   requestDate: string;
   approvalDate?: string;
+  golfCourse: string; // 소속 골프장 정보 추가
   createdAt: string;
   updatedAt: string;
   isEmpty?: boolean; // BaseTable 자동 패딩을 위한 속성
