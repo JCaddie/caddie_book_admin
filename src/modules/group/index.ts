@@ -20,6 +20,7 @@ export {
 
 // 컴포넌트들
 export {
+  EmptyGroupsState,
   GroupSection,
   GroupStatusActionBar,
   GroupSettingModal,
