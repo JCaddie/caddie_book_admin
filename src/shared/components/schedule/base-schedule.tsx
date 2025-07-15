@@ -29,6 +29,9 @@ interface BaseScheduleProps<T> {
     part: number
   ) => void;
 
+  // 제거 기능 추가
+  onRemove?: (fieldIndex: number, timeIndex: number, part: number) => void;
+
   // 렌더링 함수들
   renderCell: (
     fieldIndex: number,
@@ -61,6 +64,7 @@ export default function BaseSchedule<T>({
   onDragEnd: _onDragEnd,
   onDragOver,
   onDrop,
+  onRemove,
   renderCell,
   getItemAtPosition,
   getCellClassName,
@@ -202,6 +206,8 @@ export default function BaseSchedule<T>({
                       handleDragOver(e, fieldIndex, timeIndex, 1)
                     }
                     onDrop={(e) => handleDrop(e, fieldIndex, timeIndex, 1)}
+                    onDoubleClick={() => onRemove?.(fieldIndex, timeIndex, 1)}
+                    title="더블클릭하여 제거"
                   >
                     {renderCell(fieldIndex, timeIndex, 1)}
                   </td>
@@ -235,6 +241,8 @@ export default function BaseSchedule<T>({
                       handleDragOver(e, fieldIndex, timeIndex, 2)
                     }
                     onDrop={(e) => handleDrop(e, fieldIndex, timeIndex, 2)}
+                    onDoubleClick={() => onRemove?.(fieldIndex, timeIndex, 2)}
+                    title="더블클릭하여 제거"
                   >
                     {renderCell(fieldIndex, timeIndex, 2)}
                   </td>
@@ -268,6 +276,8 @@ export default function BaseSchedule<T>({
                       handleDragOver(e, fieldIndex, timeIndex, 3)
                     }
                     onDrop={(e) => handleDrop(e, fieldIndex, timeIndex, 3)}
+                    onDoubleClick={() => onRemove?.(fieldIndex, timeIndex, 3)}
+                    title="더블클릭하여 제거"
                   >
                     {renderCell(fieldIndex, timeIndex, 3)}
                   </td>
