@@ -41,6 +41,16 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           label: "신규 캐디",
           href: "/caddies/new",
         },
+        {
+          id: "group-status",
+          label: "그룹현황",
+          href: "/caddies/groups",
+        },
+        {
+          id: "special-team",
+          label: "특수반 관리",
+          href: "/caddies/special-teams",
+        },
       ],
     },
     {
@@ -96,6 +106,16 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           id: "new-caddie",
           label: "신규 캐디",
           href: "/caddies/new",
+        },
+        {
+          id: "group-status",
+          label: "그룹현황",
+          href: "/caddies/groups/me",
+        },
+        {
+          id: "special-team",
+          label: "특수반 관리",
+          href: "/caddies/special-teams",
         },
       ],
     },
