@@ -127,10 +127,23 @@ export default function WorkSchedule({
     part: number
   ) => {
     e.preventDefault();
-    const caddieData = e.dataTransfer.getData("text/plain");
+    const rawData = e.dataTransfer.getData("text/plain");
 
     try {
-      const caddie: CaddieData = JSON.parse(caddieData);
+      const dragData = JSON.parse(rawData);
+
+      // 타입 검증: 캐디 데이터만 허용
+      if (!dragData || dragData.type !== "caddie") {
+        console.warn("잘못된 드래그 데이터 타입:", dragData?.type);
+        if (externalOnDragEnd) {
+          externalOnDragEnd();
+        } else {
+          setInternalDraggedCaddie(null);
+        }
+        return;
+      }
+
+      const caddie: CaddieData = dragData.data;
       const draggedCaddieId = caddie.id.toString();
       const currentAssignmentCount = getCaddieAssignmentCount(draggedCaddieId);
 

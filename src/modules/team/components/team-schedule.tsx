@@ -78,10 +78,21 @@ export default function TeamSchedule({
     part: number
   ) => {
     e.preventDefault();
-    const teamData = e.dataTransfer.getData("text/plain");
+    const rawData = e.dataTransfer.getData("text/plain");
 
     try {
-      const team: Team = JSON.parse(teamData);
+      const dragData = JSON.parse(rawData);
+
+      // 타입 검증: 팀 데이터만 허용
+      if (!dragData || dragData.type !== "team") {
+        console.warn("잘못된 드래그 데이터 타입:", dragData?.type);
+        if (onDragEnd) {
+          onDragEnd();
+        }
+        return;
+      }
+
+      const team: Team = dragData.data;
 
       // 팀을 외부 팀 맵에 저장
       setExternalTeams((prev) => new Map(prev).set(team.id, team));
