@@ -12,13 +12,13 @@ import {
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle, usePagination } from "@/shared/hooks";
 
-// 골프장 특수반 통계 데이터 타입
+// 골프장 팀 통계 데이터 타입
 interface GolfCourseTeamStats extends Record<string, unknown> {
   id: string;
   no: number;
   name: string;
   location: string;
-  specialTeamCount: number;
+  teamCount: number;
   caddieCount: number;
   activeCount: number;
   inactiveCount: number;
@@ -31,7 +31,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 1,
     name: "송도골프클럽",
     location: "인천시 연수구",
-    specialTeamCount: 3,
+    teamCount: 3,
     caddieCount: 45,
     activeCount: 38,
     inactiveCount: 7,
@@ -41,7 +41,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 2,
     name: "해운대골프클럽",
     location: "부산시 해운대구",
-    specialTeamCount: 2,
+    teamCount: 2,
     caddieCount: 32,
     activeCount: 28,
     inactiveCount: 4,
@@ -51,7 +51,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 3,
     name: "제주골프클럽",
     location: "제주시 애월읍",
-    specialTeamCount: 4,
+    teamCount: 4,
     caddieCount: 56,
     activeCount: 50,
     inactiveCount: 6,
@@ -61,7 +61,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 4,
     name: "강남골프클럽",
     location: "서울시 강남구",
-    specialTeamCount: 5,
+    teamCount: 5,
     caddieCount: 68,
     activeCount: 62,
     inactiveCount: 6,
@@ -71,7 +71,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 5,
     name: "부산골프클럽",
     location: "부산시 기장군",
-    specialTeamCount: 3,
+    teamCount: 3,
     caddieCount: 42,
     activeCount: 37,
     inactiveCount: 5,
@@ -81,7 +81,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 6,
     name: "경주골프클럽",
     location: "경북 경주시",
-    specialTeamCount: 2,
+    teamCount: 2,
     caddieCount: 28,
     activeCount: 25,
     inactiveCount: 3,
@@ -91,7 +91,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 7,
     name: "대구골프클럽",
     location: "대구시 달성군",
-    specialTeamCount: 4,
+    teamCount: 4,
     caddieCount: 52,
     activeCount: 47,
     inactiveCount: 5,
@@ -101,7 +101,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 8,
     name: "용인골프클럽",
     location: "경기도 용인시",
-    specialTeamCount: 3,
+    teamCount: 3,
     caddieCount: 39,
     activeCount: 35,
     inactiveCount: 4,
@@ -111,7 +111,7 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 9,
     name: "포항골프클럽",
     location: "경북 포항시",
-    specialTeamCount: 2,
+    teamCount: 2,
     caddieCount: 26,
     activeCount: 24,
     inactiveCount: 2,
@@ -121,14 +121,14 @@ const MOCK_GOLF_COURSE_DATA: GolfCourseTeamStats[] = [
     no: 10,
     name: "천안골프클럽",
     location: "충남 천안시",
-    specialTeamCount: 3,
+    teamCount: 3,
     caddieCount: 41,
     activeCount: 36,
     inactiveCount: 5,
   },
 ];
 
-// 골프장 특수반 통계 테이블 컬럼
+// 골프장 팀 통계 테이블 컬럼
 const columns = [
   {
     key: "no",
@@ -155,7 +155,7 @@ const columns = [
     ),
   },
   {
-    key: "specialTeamCount",
+    key: "teamCount",
     title: "특수반 수",
     width: 100,
     render: (value: unknown) => (
@@ -192,7 +192,7 @@ const TeamsPage: React.FC = () => {
   const router = useRouter();
 
   // 페이지 타이틀 설정
-  useDocumentTitle({ title: "골프장별 특수반 관리" });
+  useDocumentTitle({ title: "골프장별 팀 관리" });
 
   // 삭제 모달 상태 관리
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -223,7 +223,7 @@ const TeamsPage: React.FC = () => {
     itemsPerPage: 20,
   });
 
-  // 행 클릭 핸들러 (해당 골프장의 특수반 관리 페이지로 이동)
+  // 행 클릭 핸들러 (해당 골프장의 팀 관리 페이지로 이동)
   const handleRowClick = (golfCourse: GolfCourseTeamStats) => {
     router.push(`/teams/${golfCourse.id}`);
   };
@@ -278,7 +278,7 @@ const TeamsPage: React.FC = () => {
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
-      <AdminPageHeader title="골프장별 특수반 관리" />
+      <AdminPageHeader title="골프장별 팀 관리" />
 
       {/* 액션바 */}
       <div className="flex items-center justify-between">
