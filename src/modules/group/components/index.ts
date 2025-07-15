@@ -3,6 +3,7 @@ export * from "./group-section";
 export * from "./group-status-action-bar";
 export * from "./group-status-columns";
 export * from "./group-setting-modal";
+export * from "./group-setting-config";
 
 // Default exports를 위한 별칭 export
 export { default as EmptyGroupsState } from "./empty-groups-state";
