@@ -1,5 +1,6 @@
 export { default as Badge } from "./badge";
 export { default as BaseTable } from "./base-table";
+export { default as BaseSettingModal } from "./base-setting-modal";
 export { default as Button } from "./button";
 export { default as CaddieAssignmentModal } from "./caddie-assignment-modal";
 export { default as ConfirmationModal } from "./confirmation-modal";
