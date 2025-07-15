@@ -29,7 +29,12 @@ export default function CaddieCard({
   const specialBadgeStyle = getSpecialBadgeStyle(caddie.specialBadge);
 
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData("text/plain", JSON.stringify(caddie));
+    // 타입 식별자와 함께 데이터 설정
+    const dragData = {
+      type: "caddie",
+      data: caddie,
+    };
+    e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
     e.dataTransfer.effectAllowed = "move";
     onDragStart?.(caddie);
   };
