@@ -24,7 +24,7 @@ export interface SpecialTeamMember {
 }
 
 // 특수반 스케줄 타입
-export interface SpecialTeamSchedule {
+export interface SpecialTeamScheduleData {
   id: string;
   teamId: string;
   date: string;
@@ -84,7 +84,7 @@ export interface SpecialTeamSettingModalProps {
 export interface SpecialTeamScheduleTableProps {
   teams: SpecialTeam[];
   timeSlots: string[];
-  schedules: SpecialTeamSchedule[];
+  schedules: SpecialTeamScheduleData[];
   onScheduleChange: (
     teamId: string,
     timeSlot: string,
