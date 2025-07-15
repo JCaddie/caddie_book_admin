@@ -5,17 +5,16 @@ import { Button } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
 import { Settings } from "lucide-react";
-import { CaddieData } from "@/modules/work/types";
 import {
   FIELDS,
   generateTimeSlots,
   PERSONNEL_STATS,
 } from "@/modules/work/constants/work-detail";
-import WorkSchedule from "@/modules/work/components/work-schedule";
 import {
   DEFAULT_SPECIAL_TEAMS,
   SPECIAL_TEAM_UI_TEXT,
   SpecialTeam,
+  SpecialTeamSchedule,
   SpecialTeamStatus,
 } from "@/modules/special-team";
 
@@ -36,7 +35,6 @@ const TeamsDetailPage: React.FC<TeamsDetailPageProps> = ({ params }) => {
   useDocumentTitle({ title: pageTitle });
 
   // 드래그 상태 관리
-  const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
   const [draggedTeam, setDraggedTeam] = useState<SpecialTeam | null>(null);
 
   // 시간 슬롯 생성
@@ -44,15 +42,6 @@ const TeamsDetailPage: React.FC<TeamsDetailPageProps> = ({ params }) => {
 
   // 특수반 데이터
   const specialTeams = DEFAULT_SPECIAL_TEAMS;
-
-  // 공통 드래그 이벤트 핸들러
-  const handleDragStart = (caddie: CaddieData) => {
-    setDraggedCaddie(caddie);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedCaddie(null);
-  };
 
   // 특수반 드래그 이벤트 핸들러
   const handleTeamDragStart = (team: SpecialTeam) => {
@@ -82,16 +71,16 @@ const TeamsDetailPage: React.FC<TeamsDetailPageProps> = ({ params }) => {
       <div className="flex gap-8">
         {/* 왼쪽: 특수반 관리 스케줄 */}
         <div className="flex-1">
-          <WorkSchedule
+          <SpecialTeamSchedule
             fields={FIELDS}
             timeSlots={timeSlots}
             personnelStats={PERSONNEL_STATS}
             onResetClick={() => {
               console.log("Reset clicked");
             }}
-            draggedCaddie={draggedCaddie}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
+            draggedTeam={draggedTeam}
+            onDragStart={handleTeamDragStart}
+            onDragEnd={handleTeamDragEnd}
             hideHeader={true}
             isFullWidth={true}
           />
