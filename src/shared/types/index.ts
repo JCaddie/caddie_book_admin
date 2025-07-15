@@ -89,6 +89,42 @@ export interface ApiError {
 }
 
 // ================================
+// 설정 모달 공통 타입
+// ================================
+
+// 설정 모달 아이템 기본 인터페이스
+export interface BaseSettingItem {
+  id: string;
+  name: string;
+  order: number;
+}
+
+// 설정 모달 설정 타입
+export interface SettingModalConfig<T extends BaseSettingItem> {
+  title: string;
+  emptyMessage: string;
+  createButtonText: string;
+  createNewItem: () => T;
+  validateItem: (item: T) => string | null;
+  renderItem: (
+    item: T,
+    isSelected: boolean,
+    onNameChange: (name: string) => void,
+    onDelete: () => void
+  ) => React.ReactNode;
+}
+
+// 설정 모달 Props
+export interface BaseSettingModalProps<T extends BaseSettingItem> {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (items: T[]) => void;
+  initialItems?: T[];
+  isLoading?: boolean;
+  config: SettingModalConfig<T>;
+}
+
+// ================================
 // 드래그 앤 드롭 타입 안전성
 // ================================
 
