@@ -87,3 +87,26 @@ export interface ApiError {
   message: string;
   details?: Record<string, unknown>;
 }
+
+// ================================
+// 드래그 앤 드롭 타입 안전성
+// ================================
+
+// 드래그 데이터 타입 식별자
+export interface DragData<T = unknown> {
+  type: "caddie" | "team";
+  data: T;
+}
+
+// 타입 가드 함수들
+export function isCaddieDrag(
+  dragData: DragData
+): dragData is DragData<import("./caddie").Caddie> {
+  return dragData.type === "caddie";
+}
+
+export function isTeamDrag(
+  dragData: DragData
+): dragData is DragData<import("../../modules/team/types").Team> {
+  return dragData.type === "team";
+}
