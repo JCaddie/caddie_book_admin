@@ -1,23 +1,19 @@
 "use client";
 
 import React from "react";
-import {
-  Button,
-  CaddieAssignmentModal,
-  GroupSettingModal,
-  Search,
-} from "@/shared/components/ui";
+import { Button, CaddieAssignmentModal, Search } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
 import { Plus } from "lucide-react";
 import {
   GROUP_OPTIONS,
+  GroupSection,
+  GroupSettingModal,
   SPECIAL_TEAM_OPTIONS,
   STATUS_OPTIONS,
-} from "@/modules/caddie/constants";
-import { GroupSection } from "@/modules/caddie/components";
-import { useGroupManagement } from "@/modules/caddie/hooks";
-import { GroupFilterOption } from "@/modules/caddie/types";
+  useGroupManagement,
+} from "@/modules/group";
+import { GroupFilterOption } from "@/modules/group/types";
 
 interface GroupManagementPageProps {
   params: Promise<{
