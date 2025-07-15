@@ -58,14 +58,10 @@ export default function WorkDetailPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-white rounded-xl p-8 space-y-6">
       {/* 최상단 헤더 */}
-      <div className="bg-white">
-        <div className="max-w-[1920px] mx-auto">
-          <div className="flex items-center justify-between px-4 py-4">
-            <h1 className="text-2xl font-bold text-black">제이캐디아카데미</h1>
-          </div>
-        </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-black">제이캐디아카데미</h1>
       </div>
 
       {/* 날짜 네비게이션 및 검색 섹션 */}
@@ -75,7 +71,7 @@ export default function WorkDetailPage({
       />
 
       {/* 메인 콘텐츠 */}
-      <div className="max-w-[1920px] mx-auto flex gap-8 p-6">
+      <div className="flex gap-8">
         {/* 왼쪽: 라운딩 관리 */}
         <WorkSchedule
           fields={FIELDS}
