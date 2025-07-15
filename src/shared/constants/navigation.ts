@@ -58,6 +58,18 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       label: "근무",
       href: "/works",
       icon: Clock,
+      subItems: [
+        {
+          id: "work-schedule",
+          label: "근무 일정",
+          href: "/works",
+        },
+        {
+          id: "vacation",
+          label: "휴무관리",
+          href: "/works/vacation",
+        },
+      ],
     },
     {
       id: "fields",
