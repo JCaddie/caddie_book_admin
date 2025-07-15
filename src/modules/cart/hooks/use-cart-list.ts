@@ -2,10 +2,22 @@ import { useCallback, useMemo, useState } from "react";
 import { Cart, CartFilters, CartSelection, CartStatus } from "../types";
 import { generateSampleCarts } from "../utils";
 import { CART_ITEMS_PER_PAGE } from "../constants";
-import { usePagination } from "@/shared/hooks";
+import { useAuth, useGolfCourseFilter, usePagination } from "@/shared/hooks";
 import { simulateApiDelay } from "@/shared/lib/data-utils";
 
 export const useCartList = () => {
+  const { user } = useAuth();
+  const isMaster = user?.role === "MASTER";
+
+  // 골프장 필터링 (MASTER 권한에서만 사용)
+  const {
+    selectedGolfCourseId,
+    searchTerm: golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleSearchChange: handleGolfCourseSearchChange,
+    getFilteredData,
+  } = useGolfCourseFilter();
+
   // 필터 상태
   const [filters, setFilters] = useState<CartFilters>({
     searchTerm: "",
@@ -27,9 +39,15 @@ export const useCartList = () => {
   // 전체 카트 데이터 생성 (메모이제이션)
   const allCarts = useMemo(() => generateSampleCarts(), []);
 
-  // 필터링된 카트 데이터 (메모이제이션)
+  // 골프장 필터링 적용 (MASTER 권한에서만)
+  const golfCourseFilteredCarts = useMemo(() => {
+    if (!isMaster) return allCarts;
+    return getFilteredData(allCarts);
+  }, [allCarts, getFilteredData, isMaster]);
+
+  // 기존 필터링된 카트 데이터 (메모이제이션)
   const filteredCarts = useMemo(() => {
-    return allCarts.filter((cart) => {
+    return golfCourseFilteredCarts.filter((cart) => {
       const matchesSearch =
         !filters.searchTerm ||
         cart.name.includes(filters.searchTerm) ||
@@ -47,7 +65,7 @@ export const useCartList = () => {
         matchesSearch && matchesStatus && matchesGolfCourse && matchesField
       );
     });
-  }, [allCarts, filters]);
+  }, [golfCourseFilteredCarts, filters]);
 
   // 페이지네이션 처리
   const { currentPage, totalPages, currentData, handlePageChange } =
@@ -161,6 +179,12 @@ export const useCartList = () => {
     updateStatus,
     updateGolfCourse,
     updateField,
+
+    // 골프장 필터링 (MASTER 권한용)
+    selectedGolfCourseId,
+    golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleGolfCourseSearchChange,
 
     // 선택
     selection,

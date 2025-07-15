@@ -9,12 +9,17 @@ import { useVacationManagement } from "@/modules/vacation/hooks";
 import { VACATION_UI_TEXT } from "@/modules/vacation/constants";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { DataTable, EmptyState, Pagination } from "@/shared/components/ui";
-import { useDocumentTitle } from "@/shared/hooks";
+import { useDocumentTitle, useGolfCourseFilter } from "@/shared/hooks";
 import { VacationRequest } from "@/modules/vacation/types";
 import { useRouter } from "next/navigation";
 
 export default function VacationManagementPage() {
   const router = useRouter();
+
+  // 골프장 필터링 (MASTER 권한에서만 사용, UI만 제공)
+  const { selectedGolfCourseId, handleGolfCourseChange } =
+    useGolfCourseFilter();
+
   const {
     data,
     totalCount,
@@ -100,6 +105,8 @@ export default function VacationManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         loading={loading}
+        selectedGolfCourseId={selectedGolfCourseId}
+        onGolfCourseChange={handleGolfCourseChange}
       />
 
       {/* 테이블 또는 로딩/빈 상태 */}

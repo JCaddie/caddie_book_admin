@@ -11,9 +11,18 @@ import {
 } from "@/modules/announcement/components";
 import { AnnouncementWithNo } from "@/modules/announcement/types";
 import { isValidAnnouncement } from "@/modules/announcement/utils";
+import { useGolfCourseFilter } from "@/shared/hooks";
 
 const AnnouncementsPage: React.FC = () => {
   const router = useRouter();
+
+  // 골프장 필터링 (MASTER 권한에서만 사용, UI만 제공)
+  const {
+    selectedGolfCourseId,
+    searchTerm: golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleSearchChange: handleGolfCourseSearchChange,
+  } = useGolfCourseFilter();
 
   // 컬럼 정의 (메모이제이션)
   const columns = useAnnouncementColumns();
@@ -78,6 +87,10 @@ const AnnouncementsPage: React.FC = () => {
         onDeleteSelected={deleteSelectedAnnouncements}
         onCreateNew={handleCreateNew}
         isDeleting={isDeleting}
+        selectedGolfCourseId={selectedGolfCourseId}
+        golfCourseSearchTerm={golfCourseSearchTerm}
+        onGolfCourseChange={handleGolfCourseChange}
+        onGolfCourseSearchChange={handleGolfCourseSearchChange}
       />
 
       {/* 에러 메시지 표시 */}

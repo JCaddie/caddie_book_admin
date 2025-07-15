@@ -1,4 +1,5 @@
 import { VacationRequest, VacationRequestType, VacationStatus } from "../types";
+import { GOLF_COURSE_LIST } from "@/shared/constants/golf-course";
 
 // ================================
 // 샘플 데이터 생성 유틸리티
@@ -124,6 +125,7 @@ const generateMockVacationRequest = (id: number): VacationRequest => {
     approver,
     requestDate,
     approvalDate,
+    golfCourse: getRandomElement([...GOLF_COURSE_LIST]).name, // 랜덤 골프장 할당
     createdAt,
     updatedAt,
   };

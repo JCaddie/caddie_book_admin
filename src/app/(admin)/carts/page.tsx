@@ -24,6 +24,10 @@ const CartsPage: React.FC = () => {
     handlePageChange,
     filters,
     updateSearchTerm,
+    selectedGolfCourseId,
+    golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleGolfCourseSearchChange,
     selection,
     updateSelection,
     deleteSelectedCarts,
@@ -65,6 +69,10 @@ const CartsPage: React.FC = () => {
         onDeleteSelected={deleteSelectedCarts}
         onCreateNew={handleCreateNew}
         isDeleting={isDeleting}
+        selectedGolfCourseId={selectedGolfCourseId}
+        golfCourseSearchTerm={golfCourseSearchTerm}
+        onGolfCourseChange={handleGolfCourseChange}
+        onGolfCourseSearchChange={handleGolfCourseSearchChange}
       />
 
       {/* 에러 메시지 표시 */}

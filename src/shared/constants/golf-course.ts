@@ -152,3 +152,41 @@ export const createOperationCards = (
     searchParam: golfCourseName,
   },
 ];
+
+// 골프장 목록 (개발사 권한에서 사용)
+export const GOLF_COURSE_LIST = [
+  { id: "golf-course-1", name: "송도골프클럽" },
+  { id: "golf-course-2", name: "해운대골프클럽" },
+  { id: "golf-course-3", name: "제주골프클럽" },
+  { id: "golf-course-4", name: "강남골프클럽" },
+  { id: "golf-course-5", name: "부산골프클럽" },
+  { id: "golf-course-6", name: "경주골프클럽" },
+  { id: "golf-course-7", name: "대구골프클럽" },
+  { id: "golf-course-8", name: "용인골프클럽" },
+  { id: "golf-course-9", name: "포항골프클럽" },
+  { id: "golf-course-10", name: "천안골프클럽" },
+  { id: "golf-course-11", name: "전주골프클럽" },
+  { id: "golf-course-12", name: "광주골프클럽" },
+  { id: "golf-course-13", name: "울산골프클럽" },
+  { id: "golf-course-14", name: "수원골프클럽" },
+  { id: "golf-course-15", name: "춘천골프클럽" },
+  { id: "golf-course-16", name: "강릉골프클럽" },
+  { id: "golf-course-17", name: "서산골프클럽" },
+  { id: "golf-course-18", name: "청주골프클럽" },
+  { id: "golf-course-19", name: "목포골프클럽" },
+  { id: "golf-course-20", name: "여수골프클럽" },
+  { id: "golf-course-21", name: "안동골프클럽" },
+  { id: "golf-course-22", name: "진주골프클럽" },
+  { id: "golf-course-23", name: "창원골프클럽" },
+  { id: "golf-course-24", name: "순천골프클럽" },
+  { id: "golf-course-25", name: "속초골프클럽" },
+] as const;
+
+// 드롭다운 옵션 형태로 변환
+export const GOLF_COURSE_DROPDOWN_OPTIONS = [
+  { value: "", label: "전체 골프장" },
+  ...GOLF_COURSE_LIST.map((course) => ({
+    value: course.id,
+    label: course.name,
+  })),
+];

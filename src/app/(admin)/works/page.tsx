@@ -4,7 +4,11 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { ConfirmationModal, Pagination } from "@/shared/components/ui";
-import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
+import {
+  PAGE_TITLES,
+  useDocumentTitle,
+  useGolfCourseFilter,
+} from "@/shared/hooks";
 import { Work } from "@/modules/work/types";
 import {
   useWorksData,
@@ -18,6 +22,10 @@ const WorksPage: React.FC = () => {
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: PAGE_TITLES.WORKS });
+
+  // 골프장 필터링 (MASTER 권한에서만 사용, UI만 제공)
+  const { selectedGolfCourseId, handleGolfCourseChange } =
+    useGolfCourseFilter();
 
   // 커스텀 훅들 사용
   const {
@@ -80,6 +88,8 @@ const WorksPage: React.FC = () => {
         onSearchChange={handleSearchChange}
         onDelete={handleDelete}
         onCreate={handleCreate}
+        selectedGolfCourseId={selectedGolfCourseId}
+        onGolfCourseChange={handleGolfCourseChange}
       />
 
       {/* 테이블 */}

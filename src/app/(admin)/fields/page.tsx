@@ -29,6 +29,12 @@ export default function FieldsPage() {
     filters,
     updateSearchTerm,
 
+    // 골프장 필터링 (MASTER 권한용)
+    selectedGolfCourseId,
+    golfCourseSearchTerm,
+    handleGolfCourseChange,
+    handleGolfCourseSearchChange,
+
     // 선택 상태
     selection,
     updateSelection,
@@ -63,6 +69,10 @@ export default function FieldsPage() {
         onSearchChange={updateSearchTerm}
         onDeleteClick={openDeleteModal}
         onCreateClick={addField}
+        selectedGolfCourseId={selectedGolfCourseId}
+        golfCourseSearchTerm={golfCourseSearchTerm}
+        onGolfCourseChange={handleGolfCourseChange}
+        onGolfCourseSearchChange={handleGolfCourseSearchChange}
       />
 
       <div className="space-y-6">
