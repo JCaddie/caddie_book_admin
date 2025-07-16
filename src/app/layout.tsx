@@ -47,11 +47,12 @@ export const metadata: Metadata = {
     title: "캐디북 관리자",
     description: "골프장 운영을 위한 종합 관리 시스템",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

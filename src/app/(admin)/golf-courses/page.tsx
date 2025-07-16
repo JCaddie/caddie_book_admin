@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import {
@@ -8,12 +8,16 @@ import {
   ConfirmationModal,
   Dropdown,
   EmptyState,
-  Pagination,
   Search,
   SelectableDataTable,
 } from "@/shared/components/ui";
-import { usePagination, useUrlSearchParams } from "@/shared/hooks";
-import { GolfCourse } from "@/shared/types/golf-course";
+import { useUrlSearchParams } from "@/shared/hooks";
+import { useGolfCourseList } from "@/modules/golf-course/hooks/use-golf-course-list";
+import {
+  GolfCourse,
+  GolfCourseFilters,
+} from "@/modules/golf-course/types/golf-course";
+import Pagination from "@/shared/components/ui/pagination";
 import {
   GOLF_COURSE_FILTER_OPTIONS,
   GOLF_COURSE_TABLE_COLUMNS,
@@ -21,7 +25,7 @@ import {
 
 const GolfCoursesPage: React.FC = () => {
   // 필터 상태
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<GolfCourseFilters>({
     contract: "",
     holes: "",
     membershipType: "",
@@ -34,123 +38,72 @@ const GolfCoursesPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+
   // URL 검색 파라미터 처리
   const { searchTerm, setSearchTerm } = useUrlSearchParams();
 
-  // 샘플 데이터 (실제로는 API에서 가져옴)
-  const allGolfCourses: GolfCourse[] = Array.from(
-    { length: 32 },
-    (_, index) => ({
-      id: `golf-${index + 1}`,
-      no: index + 1,
-      name: "제이캐디 아카데미",
-      region: "서울시 종로구",
-      contractStatus: "완료",
-      phone: "02-1111-2222",
-      membershipType: "회원제",
-      caddies: 6,
-      fields: 32,
-    })
+  // API 데이터 fetch (올바른 인자 전달)
+  const { data, isLoading, isError } = useGolfCourseList(
+    currentPage,
+    searchTerm,
+    filters
   );
 
-  // 필터링된 데이터
-  const filteredData = useMemo(() => {
-    let filtered = allGolfCourses;
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-    // 검색어 필터링
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (course) =>
-          course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          course.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          course.phone.includes(searchTerm)
-      );
-    }
-
-    // 다른 필터들 적용
-    if (filters.contract) {
-      filtered = filtered.filter((course) => {
-        if (filters.contract === "completed")
-          return course.contractStatus === "완료";
-        if (filters.contract === "pending")
-          return course.contractStatus === "대기";
-        if (filters.contract === "rejected")
-          return course.contractStatus === "거절";
-        return true;
-      });
-    }
-
-    if (filters.membershipType) {
-      filtered = filtered.filter((course) => {
-        if (filters.membershipType === "member")
-          return course.membershipType === "회원제";
-        if (filters.membershipType === "public")
-          return course.membershipType === "퍼블릭";
-        return true;
-      });
-    }
-
-    return filtered;
-  }, [allGolfCourses, searchTerm, filters]);
-
-  // 페이지네이션 훅 사용
-  const { currentPage, totalPages, currentData, handlePageChange } =
-    usePagination({
-      data: filteredData,
-      itemsPerPage: 20,
-    });
-
-  // 페이지네이션된 데이터에 번호 추가
-  const paginatedData = React.useMemo(() => {
-    const startIndex = (currentPage - 1) * 20;
-    return currentData.map((course, index) => ({
-      ...course,
-      no: startIndex + index + 1,
+  // 필터/검색 변경 시 페이지 1로 리셋
+  const handleFilterChange = (
+    filterKey: keyof GolfCourseFilters,
+    value: string
+  ) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterKey]: value,
     }));
-  }, [currentData, currentPage]);
+    setCurrentPage(1);
+  };
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
 
   // 행 클릭 핸들러
   const handleRowClick = (record: GolfCourse) => {
-    // 빈 행인 경우 클릭 이벤트 무시
-    if (record.isEmpty) {
+    if ((record as { isEmpty?: boolean }).isEmpty) {
       return;
     }
-    // 골프장 상세 페이지로 이동
     window.location.href = `/golf-courses/${record.id}`;
   };
 
   // 선택 변경 핸들러
   const handleUpdateSelection = useCallback(
     (keys: string[]) => {
-      // 빈 행 제외한 선택만 허용
       const filteredKeys = keys.filter((key) => {
-        const record = paginatedData.find((item) => item.id === key);
-        return record && !record.isEmpty;
+        const record = (data?.results ?? []).find((item) => item.id === key);
+        return record && !(record as { isEmpty?: boolean }).isEmpty;
       });
       setSelectedRowKeys(filteredKeys);
     },
-    [paginatedData]
+    [data]
   );
 
-  // 삭제 핸들러
+  // 삭제 핸들러 등 기존 로직 동일
   const handleDeleteSelected = useCallback(() => {
     if (selectedRowKeys.length === 0) return;
     setIsDeleteModalOpen(true);
   }, [selectedRowKeys]);
 
-  // 삭제 확인 핸들러
   const handleConfirmDelete = useCallback(async () => {
     if (selectedRowKeys.length === 0) return;
-
     setIsDeleting(true);
     try {
-      // 실제 API 호출 시뮬레이션
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // 선택된 아이템 삭제 로직
       console.log("삭제할 골프장 ID:", selectedRowKeys);
-
-      // 삭제 후 선택 초기화
       setSelectedRowKeys([]);
       setIsDeleteModalOpen(false);
     } catch (error) {
@@ -160,29 +113,36 @@ const GolfCoursesPage: React.FC = () => {
     }
   }, [selectedRowKeys]);
 
-  // 생성 버튼 핸들러
   const handleCreateClick = useCallback(() => {
     window.location.href = "/golf-courses/new";
   }, []);
 
-  // 필터 변경 핸들러
-  const handleFilterChange = (filterKey: string, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterKey]: value,
-    }));
-  };
+  // 로딩/에러/빈 상태 처리
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-96 text-lg">
+        로딩 중...
+      </div>
+    );
+  }
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-96 text-lg text-red-500">
+        데이터를 불러오는 중 오류가 발생했습니다.
+      </div>
+    );
+  }
 
-  // 검색 핸들러
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
+  const hasNoResults = (data?.results?.length ?? 0) === 0;
 
-  // 검색 결과가 없는 경우 체크
-  const hasNoResults = filteredData.length === 0;
+  // no(목록 번호) 자동 부여
+  const tableData = (data?.results ?? []).map((item, idx) => ({
+    ...item,
+    no: ((data?.page ?? 1) - 1) * (data?.page_size ?? 20) + idx + 1,
+  }));
 
   return (
-    <RoleGuard requiredRole="MASTER">
+    <RoleGuard requiredRoles={["MASTER", "ADMIN"]}>
       <div className="bg-white rounded-xl p-8 space-y-6">
         {/* 제목 */}
         <div>
@@ -193,7 +153,7 @@ const GolfCoursesPage: React.FC = () => {
         <div className="flex items-center justify-between">
           {/* 왼쪽: 총 건수 */}
           <div className="text-base font-bold text-gray-900">
-            총 {filteredData.length}건
+            총 {data?.count ?? 0}건
           </div>
 
           {/* 오른쪽: 필터 및 액션 버튼들 */}
@@ -321,7 +281,7 @@ const GolfCoursesPage: React.FC = () => {
           <div className="space-y-6">
             <SelectableDataTable
               columns={GOLF_COURSE_TABLE_COLUMNS}
-              data={paginatedData}
+              data={tableData}
               onRowClick={handleRowClick}
               selectedRowKeys={selectedRowKeys}
               onSelectChange={handleUpdateSelection}
@@ -331,8 +291,8 @@ const GolfCoursesPage: React.FC = () => {
             />
 
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
+              currentPage={data?.page ?? 1}
+              totalPages={data?.total_pages ?? 1}
               onPageChange={handlePageChange}
             />
           </div>

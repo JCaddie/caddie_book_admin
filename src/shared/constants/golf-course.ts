@@ -1,4 +1,4 @@
-import { GolfCourse } from "@/shared/types/golf-course";
+import { GolfCourse } from "../../modules/golf-course/types/golf-course";
 
 // 골프장 필터 옵션
 export const GOLF_COURSE_FILTER_OPTIONS = {

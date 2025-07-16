@@ -1,5 +1,5 @@
 // 사용자 권한 타입
-export type UserRole = "MASTER" | "ADMIN";
+export type UserRole = "MASTER" | "ADMIN" | "DEV";
 
 // 사용자 정보 인터페이스
 export interface User {
