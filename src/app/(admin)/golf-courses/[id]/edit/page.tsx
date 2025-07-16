@@ -5,8 +5,28 @@ import { useParams, useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import { Button } from "@/shared/components/ui";
 import { GolfCourseEditForm } from "@/shared/components/golf-course";
-import { EditableGolfCourse } from "@/shared/types/golf-course";
+import { EditableGolfCourse } from "@/modules/golf-course/types/golf-course";
 import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
+import { updateGolfCourse } from "@/modules/golf-course/api/golf-course-api";
+import { useGolfCourseDetail } from "@/modules/golf-course/hooks/use-golf-course-detail";
+import { useQueryClient } from "@tanstack/react-query";
+
+// PATCH 요청용 변환 함수
+function toApiPayload(formData: EditableGolfCourse) {
+  return {
+    name: formData.name,
+    region: formData.region,
+    address: formData.address,
+    contract_status: formData.contractStatus,
+    contract_start_date: formData.contractStartDate,
+    contract_end_date: formData.contractEndDate,
+    phone: formData.phone,
+    ceo_name: formData.representative.name,
+    manager_name: formData.manager.name,
+    manager_contact: formData.manager.contact,
+    manager_email: formData.manager.email,
+  };
+}
 
 const GolfCourseEditPage: React.FC = () => {
   const router = useRouter();
@@ -16,49 +36,69 @@ const GolfCourseEditPage: React.FC = () => {
   // 페이지 타이틀 설정
   useDocumentTitle({ title: PAGE_TITLES.GOLF_COURSE_EDIT });
 
-  // 편집 가능한 골프장 데이터 상태
-  const [formData, setFormData] = useState<EditableGolfCourse>({
-    id: golfCourseId,
-    name: "제이캐디 아카데미",
-    address:
-      "충청북도 청주시 청원구 오창읍 양청송대길 10, 406호(청주미래누리터(지식산업센터))",
-    contractStatus: "계약",
-    contractStartDate: "2025.05.26",
-    contractEndDate: "2025.11.26",
-    phone: "02 - 123 - 4567",
-    representative: {
-      name: "홍길동",
-      contact: "010-1234-5678",
-      email: "cs@daangnservice.com",
-    },
-    manager: {
-      name: "감강찬",
-      contact: "010-1234-5678",
-      email: "cs@daangnservice.com",
-    },
-  });
+  // 상세 데이터 패칭
+  const {
+    data: detail,
+    isLoading,
+    isError,
+  } = useGolfCourseDetail(golfCourseId);
+
+  // formData 상태
+  const [formData, setFormData] = useState<EditableGolfCourse | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+
+  // 상세 데이터 받아오면 formData 초기화
+  React.useEffect(() => {
+    if (detail) {
+      setFormData({
+        id: detail.id,
+        name: detail.name,
+        region: detail.region,
+        address: detail.address,
+        contractStatus: detail.contract_status,
+        contractStartDate: detail.contract_start_date,
+        contractEndDate: detail.contract_end_date,
+        phone: detail.phone,
+        representative: {
+          name: detail.ceo_name,
+          contact: "",
+          email: "",
+        },
+        manager: {
+          name: detail.manager_name,
+          contact: detail.manager_contact,
+          email: detail.manager_email,
+        },
+      });
+    }
+  }, [detail]);
 
   // 입력 필드 변경 핸들러
   const handleInputChange = (field: string, value: string) => {
+    if (!formData) return;
     if (field.includes(".")) {
       const [parent, child] = field.split(".");
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[
-            parent as keyof Pick<
-              EditableGolfCourse,
-              "representative" | "manager"
-            >
-          ],
-          [child]: value,
-        },
-      }));
+      setFormData((prev) =>
+        prev
+          ? {
+              ...prev,
+              [parent]: {
+                ...prev[
+                  parent as keyof Pick<
+                    EditableGolfCourse,
+                    "representative" | "manager"
+                  >
+                ],
+                [child]: value,
+              },
+            }
+          : prev
+      );
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
+      setFormData((prev) => (prev ? { ...prev, [field]: value } : prev));
     }
   };
 
@@ -68,13 +108,45 @@ const GolfCourseEditPage: React.FC = () => {
   };
 
   // 완료 버튼 핸들러
-  const handleSubmit = () => {
-    // 실제로는 API 호출하여 저장
-    // TODO: API 호출로 데이터 저장
-
-    // 저장 후 상세 페이지로 이동
-    router.push(`/golf-courses/${golfCourseId}`);
+  const handleSubmit = async () => {
+    if (!formData) return;
+    setIsSaving(true);
+    setError(null);
+    try {
+      await updateGolfCourse(golfCourseId, toApiPayload(formData));
+      // 캐시 무효화
+      await queryClient.invalidateQueries({
+        queryKey: ["golf-course-detail", golfCourseId],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["golf-courses"] });
+      router.push(`/golf-courses/${golfCourseId}`);
+    } catch (e: unknown) {
+      if (e && typeof e === "object" && "message" in e) {
+        setError(
+          (e as { message?: string }).message || "저장 중 오류가 발생했습니다."
+        );
+      } else {
+        setError("저장 중 오류가 발생했습니다.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading || !formData) {
+    return (
+      <div className="flex justify-center items-center h-96 text-lg">
+        로딩 중...
+      </div>
+    );
+  }
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-96 text-lg text-red-500">
+        데이터를 불러오는 중 오류가 발생했습니다.
+      </div>
+    );
+  }
 
   return (
     <RoleGuard requiredRole="MASTER">
@@ -96,14 +168,22 @@ const GolfCourseEditPage: React.FC = () => {
                 size="md"
                 onClick={handleCancel}
                 className="border-[#FEB912] text-[#FEB912] hover:bg-[#FEB912] hover:text-white"
+                disabled={isSaving}
               >
                 취소
               </Button>
-              <Button variant="primary" size="md" onClick={handleSubmit}>
-                완료
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleSubmit}
+                disabled={isSaving}
+              >
+                {isSaving ? "저장 중..." : "완료"}
               </Button>
             </div>
           </div>
+
+          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
 
           <GolfCourseEditForm
             formData={formData}
