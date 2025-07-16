@@ -22,6 +22,7 @@ import {
   GOLF_COURSE_FILTER_OPTIONS,
   GOLF_COURSE_TABLE_COLUMNS,
 } from "@/shared/constants/golf-course";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const GolfCoursesPage: React.FC = () => {
   // 필터 상태
@@ -38,11 +39,11 @@ const GolfCoursesPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // 페이지네이션 상태
-  const [currentPage, setCurrentPage] = useState(1);
-
   // URL 검색 파라미터 처리
   const { searchTerm, setSearchTerm } = useUrlSearchParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const currentPage = Number(searchParams.get("page") || 1);
 
   // API 데이터 fetch (올바른 인자 전달)
   const { data, isLoading, isError } = useGolfCourseList(
@@ -51,12 +52,7 @@ const GolfCoursesPage: React.FC = () => {
     filters
   );
 
-  // 페이지 변경 핸들러
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // 필터/검색 변경 시 페이지 1로 리셋
+  // 필터/검색 변경 시 page=1로 리셋
   const handleFilterChange = (
     filterKey: keyof GolfCourseFilters,
     value: string
@@ -65,11 +61,15 @@ const GolfCoursesPage: React.FC = () => {
       ...prev,
       [filterKey]: value,
     }));
-    setCurrentPage(1);
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
   };
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
   };
 
   // 행 클릭 핸들러
@@ -290,11 +290,7 @@ const GolfCoursesPage: React.FC = () => {
               className="w-full"
             />
 
-            <Pagination
-              currentPage={data?.page ?? 1}
-              totalPages={data?.total_pages ?? 1}
-              onPageChange={handlePageChange}
-            />
+            <Pagination totalPages={data?.total_pages ?? 1} />
           </div>
         )}
 
