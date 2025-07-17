@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button, Dropdown, Search } from "@/shared/components/ui";
+import { Button, Dropdown, SearchWithButton } from "@/shared/components/ui";
 import { GroupStatusFilters } from "../types";
 
 interface GroupStatusActionBarProps {
@@ -60,13 +60,11 @@ const GroupStatusActionBar: React.FC<GroupStatusActionBarProps> = ({
             placeholder="그룹"
           />
 
-          <div className="w-[360px]">
-            <Search
-              value={filters.searchTerm}
-              onChange={handleSearchInputChange}
-              placeholder="그룹명 또는 그룹장 검색"
-            />
-          </div>
+          <SearchWithButton
+            placeholder="그룹명 또는 그룹장 검색"
+            containerClassName="w-[420px]"
+            searchClassName="w-[360px]"
+          />
         </div>
 
         {/* 버튼 그룹 */}

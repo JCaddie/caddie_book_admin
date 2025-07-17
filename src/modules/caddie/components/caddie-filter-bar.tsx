@@ -5,7 +5,7 @@ import {
   Button,
   Dropdown,
   GolfCourseSelector,
-  Search,
+  SearchWithButton,
 } from "@/shared/components/ui";
 import { CaddieFilters } from "@/shared/types/caddie";
 import { GROUP_OPTIONS, SPECIAL_TEAM_OPTIONS } from "@/shared/constants/caddie";
@@ -90,13 +90,11 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
               placeholder="특수반"
             />
 
-            <div className="w-[360px]">
-              <Search
-                value={filters.searchTerm}
-                onChange={handleSearchInputChange}
-                placeholder="캐디명 검색"
-              />
-            </div>
+            <SearchWithButton
+              placeholder="캐디명 검색"
+              containerClassName="w-[420px]"
+              searchClassName="w-[360px]"
+            />
           </div>
 
           {/* 버튼 그룹 */}
