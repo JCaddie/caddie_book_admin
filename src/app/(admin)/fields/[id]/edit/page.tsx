@@ -1,38 +1,48 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
-import FieldFormSection from "@/modules/field/components/field-form-section";
-import FieldForm from "@/modules/field/components/field-form";
+import FieldFormSection from "../../../../modules/field/components/field-form-section";
+import FieldForm from "../../../../modules/field/components/field-form";
 import { FieldFormData } from "@/modules/field/types";
-import { generateSampleFieldData } from "@/modules/field/utils";
-
-// 샘플 API (실제 구현 시 교체)
-const updateField = async (id: string, data: FieldFormData) => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return { ...data, id };
-};
+import { useUpdateField } from "@/modules/field/hooks";
+import { fetchFieldDetail } from "@/modules/field/api/field-api";
 
 const FieldEditPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const { id } = params as { id: string };
 
-  // 샘플 데이터에서 해당 id 찾기
-  const originData = useMemo(() => {
-    return generateSampleFieldData().find((f) => f.id === id);
+  const [formData, setFormData] = useState<FieldFormData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const updateFieldMutation = useUpdateField();
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    fetchFieldDetail(id)
+      .then((data) => {
+        // id, no, createdAt 등은 제외하고 폼 데이터만 추출
+        const { fieldName, golfCourse, capacity, cart, status, description } =
+          data;
+        setFormData({
+          fieldName,
+          golfCourse,
+          capacity,
+          cart,
+          status,
+          description,
+        });
+      })
+      .catch(() => setError("필드 정보를 불러오지 못했습니다."))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  const [formData, setFormData] = useState<FieldFormData | null>(
-    originData ?? null
-  );
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  if (!formData) {
+  if (loading) return <div className="p-8 text-lg">로딩 중...</div>;
+  if (!formData)
     return <div className="p-8 text-lg">존재하지 않는 필드입니다.</div>;
-  }
 
   // 입력값 변경 핸들러
   const handleInputChange = (
@@ -49,15 +59,12 @@ const FieldEditPage: React.FC = () => {
 
   // 저장 버튼
   const handleSubmit = async () => {
-    setIsSaving(true);
     setError(null);
     try {
-      await updateField(id, formData);
+      await updateFieldMutation.mutateAsync({ id, data: formData });
       router.push(`/fields/${id}`);
     } catch {
       setError("저장 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -65,7 +72,7 @@ const FieldEditPage: React.FC = () => {
     <RoleGuard requiredRole="MASTER">
       <FieldFormSection
         title="필드 수정"
-        isSaving={isSaving}
+        isSaving={updateFieldMutation.isPending}
         error={error}
         onCancel={handleCancel}
         onSubmit={handleSubmit}

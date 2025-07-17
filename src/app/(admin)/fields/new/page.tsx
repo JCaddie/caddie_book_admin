@@ -3,46 +3,31 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
-import FieldForm from "@/modules/field/components/field-form";
+import FieldForm from "../../../../modules/field/components/field-form";
 import { FieldFormData } from "@/modules/field/types";
-import { useQueryClient } from "@tanstack/react-query";
-import { FIELD_CONSTANTS } from "@/modules/field/constants";
 import FieldFormSection from "../../../../modules/field/components/field-form-section";
-
-// 필드 생성 API (예시)
-const createField = async (data: FieldFormData) => {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const res = await fetch(`${API_BASE_URL}/api/v1/fields/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("필드 등록에 실패했습니다.");
-  return res.json();
-};
+import { useCreateField } from "@/modules/field/hooks";
 
 const EMPTY_FORM: FieldFormData = {
-  fieldName: "",
-  golfCourse: "",
-  capacity: 0,
-  cart: "",
-  status: FIELD_CONSTANTS.STATUS.OPERATING,
+  name: "",
+  golf_course: "",
   description: "",
+  par: 0,
+  is_active: false,
 };
 
 const FieldCreatePage: React.FC = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState<FieldFormData>(EMPTY_FORM);
-  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState<
+    Omit<FieldFormData, "golfCourse"> & { golf_course: string }
+  >(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
-  const queryClient = useQueryClient();
+  const createFieldMutation = useCreateField();
 
   // 입력값 변경 핸들러
   const handleInputChange = (
-    field: keyof FieldFormData,
-    value: string | number
+    field: keyof FieldFormData | "golf_course",
+    value: string | number | boolean
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -54,16 +39,12 @@ const FieldCreatePage: React.FC = () => {
 
   // 등록 버튼
   const handleSubmit = async () => {
-    setIsSaving(true);
     setError(null);
     try {
-      await createField(formData);
-      await queryClient.invalidateQueries({ queryKey: ["fields"] });
+      await createFieldMutation.mutateAsync(formData);
       router.push("/fields");
     } catch {
       setError("저장 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -71,7 +52,7 @@ const FieldCreatePage: React.FC = () => {
     <RoleGuard requiredRole="MASTER">
       <FieldFormSection
         title="필드 등록"
-        isSaving={isSaving}
+        isSaving={createFieldMutation.isPending}
         error={error}
         onCancel={handleCancel}
         onSubmit={handleSubmit}
