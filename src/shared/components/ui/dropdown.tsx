@@ -33,6 +33,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownButtonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   const selectedOption = options.find((option) => option.value === value);
 
@@ -52,6 +54,20 @@ const Dropdown: React.FC<DropdownProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // 드롭다운 열릴 때 위치 계산 (fixed)
+  useEffect(() => {
+    if (isOpen && dropdownButtonRef.current) {
+      const rect = dropdownButtonRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 4, // 약간의 여백
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
+  }, [isOpen]);
 
   const handleToggle = () => {
     if (!disabled) {
@@ -95,6 +111,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         onClick={handleToggle}
         disabled={disabled}
         className={[getButtonStyles(), className].filter(Boolean).join(" ")}
+        ref={dropdownButtonRef}
       >
         {/* 좌측 콘텐츠 */}
         <div className="flex items-center gap-2">
@@ -126,7 +143,10 @@ const Dropdown: React.FC<DropdownProps> = ({
 
       {/* 드롭다운 목록 - Figma open 상태 */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div
+          className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+          style={dropdownStyle}
+        >
           {options.map((option, index) => {
             const isSelected = value === option.value;
             const isHovered = hoveredIndex === index;

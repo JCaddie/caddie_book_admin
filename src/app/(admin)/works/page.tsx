@@ -34,10 +34,8 @@ const WorksPage: React.FC = () => {
     searchTerm,
     filteredWorks,
     currentData,
-    currentPage,
     totalPages,
     handleSearchChange,
-    handlePageChange,
   } = useWorksData();
 
   const { selectedRowKeys, selectedRows, handleSelectChange, clearSelection } =
@@ -102,11 +100,7 @@ const WorksPage: React.FC = () => {
       />
 
       {/* 페이지네이션 */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      <Pagination totalPages={totalPages} />
 
       {/* 삭제 확인 모달 */}
       <ConfirmationModal

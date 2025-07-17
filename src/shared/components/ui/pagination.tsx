@@ -6,20 +6,27 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export interface PaginationProps {
-  currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
   className?: string;
 }
 
 export default function Pagination({
-  currentPage,
   totalPages,
-  onPageChange,
   className = "",
 }: PaginationProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const currentPage = Number(searchParams.get("page") || 1);
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    params.set("page", String(page));
+    router.push(`?${params.toString()}`);
+  };
+
   const generatePageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisiblePages = 5;
@@ -66,7 +73,7 @@ export default function Pagination({
     <div className={`flex items-center justify-center gap-4 ${className}`}>
       {/* 첫 페이지로 이동 */}
       <button
-        onClick={() => onPageChange(1)}
+        onClick={() => handlePageChange(1)}
         disabled={currentPage === 1}
         className="p-1 rounded-md border border-[#DDDDDD] bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
       >
@@ -75,7 +82,7 @@ export default function Pagination({
 
       {/* 이전 페이지로 이동 */}
       <button
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="p-1 rounded-md border border-[#DDDDDD] bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
       >
@@ -88,7 +95,7 @@ export default function Pagination({
           <div key={index}>
             {typeof page === "number" ? (
               <button
-                onClick={() => onPageChange(page)}
+                onClick={() => handlePageChange(page)}
                 className={`min-w-[24px] h-[24px] px-2 rounded-md text-[13px] font-${
                   page === currentPage ? "bold" : "medium"
                 } transition-colors ${
@@ -110,7 +117,7 @@ export default function Pagination({
 
       {/* 다음 페이지로 이동 */}
       <button
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="p-1 rounded-md border border-[#DDDDDD] bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
       >
@@ -119,7 +126,7 @@ export default function Pagination({
 
       {/* 마지막 페이지로 이동 */}
       <button
-        onClick={() => onPageChange(totalPages)}
+        onClick={() => handlePageChange(totalPages)}
         disabled={currentPage === totalPages}
         className="p-1 rounded-md border border-[#DDDDDD] bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
       >

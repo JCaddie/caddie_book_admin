@@ -4,6 +4,7 @@ import { UserRole } from "@/shared/types/user";
 export const ROLE_LABELS: Record<UserRole, string> = {
   MASTER: "마스터",
   ADMIN: "관리자",
+  DEV: "개발자",
 };
 
 // 페이지네이션 상수

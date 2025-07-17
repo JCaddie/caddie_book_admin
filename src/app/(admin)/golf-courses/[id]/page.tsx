@@ -8,50 +8,71 @@ import {
   GolfCourseInfo,
   OperationCards,
 } from "@/shared/components/golf-course";
-import { GolfCourseDetail } from "@/shared/types/golf-course";
-import { createOperationCards } from "@/shared/constants/golf-course";
+import { useGolfCourseDetail } from "@/modules/golf-course/hooks/use-golf-course-detail";
 
 const GolfCourseDetailPage: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const golfCourseId = params.id as string;
 
-  // 샘플 데이터 (실제로는 API에서 가져옴)
-  const golfCourse: GolfCourseDetail = {
-    id: golfCourseId,
-    name: "제이캐디 아카데미",
-    address:
-      "충청북도 청주시 청원구 오창읍 양청송대길 10, 406호(청주미래누리터(지식산업센터))",
-    contractStatus: "계약",
-    contractPeriod: "2025.05.26 ~ 2025.11.26",
-    phone: "02 - 123 - 4567",
-    representative: {
-      name: "홍길동",
-      contact: "010-1234-5678",
-      email: "cs@daangnservice.com",
-    },
-    manager: {
-      name: "감강찬",
-      contact: "010-1234-5678",
-      email: "cs@daangnservice.com",
-    },
-    operationStats: {
-      caddies: 156,
-      admins: 6,
-      reservations: 156,
-      fields: 4,
-      carts: 56,
-    },
-  };
+  // API 데이터 fetch
+  const {
+    data: golfCourse,
+    isLoading,
+    isError,
+  } = useGolfCourseDetail(golfCourseId);
 
-  // 운영현황 카드 데이터
-  const operationCards = createOperationCards(
-    golfCourse.name,
-    golfCourse.operationStats
-  );
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-96 text-lg">
+        로딩 중...
+      </div>
+    );
+  }
+  if (isError || !golfCourse) {
+    return (
+      <div className="flex justify-center items-center h-96 text-lg text-red-500">
+        상세 정보를 불러오는 중 오류가 발생했습니다.
+      </div>
+    );
+  }
+
+  // 운영현황 카드 데이터 (API 필드에 맞게 매핑)
+  const operationCards = [
+    {
+      title: "캐디 수",
+      value: String(golfCourse.total_caddies),
+      route: "/caddies",
+      searchParam: golfCourse.name,
+    },
+    {
+      title: "필드 수",
+      value: String(golfCourse.field_count),
+      route: "/fields",
+      searchParam: golfCourse.name,
+    },
+    {
+      title: "카트 수",
+      value: String(golfCourse.cart_count),
+      route: "/carts",
+      searchParam: golfCourse.name,
+    },
+    {
+      title: "매니저 수",
+      value: String(golfCourse.manager_count),
+      route: "/users",
+      searchParam: golfCourse.name,
+    },
+    {
+      title: "근무 수",
+      value: String(golfCourse.work_count),
+      route: "/works",
+      searchParam: golfCourse.name,
+    },
+  ];
 
   return (
-    <RoleGuard requiredRole="MASTER">
+    <RoleGuard requiredRoles={["MASTER", "ADMIN"]}>
       <div className="bg-white rounded-xl p-8 space-y-8">
         {/* 상단 헤더 - 뒤로가기 버튼 제거 */}
         <div className="pb-4">

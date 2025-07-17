@@ -32,9 +32,7 @@ const AnnouncementsPage: React.FC = () => {
     data,
     totalCount,
     realDataCount,
-    currentPage,
     totalPages,
-    handlePageChange,
     filters,
     updateSearchTerm,
     selection,
@@ -125,13 +123,7 @@ const AnnouncementsPage: React.FC = () => {
           className="border-gray-200"
         />
 
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+        {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
     </div>
   );

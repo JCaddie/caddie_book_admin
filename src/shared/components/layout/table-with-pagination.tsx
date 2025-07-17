@@ -13,9 +13,7 @@ interface TableColumn<T> {
 interface TableWithPaginationProps<T> {
   columns: TableColumn<T>[];
   data: T[];
-  currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
   onRowClick?: (record: T, index: number) => void;
   layout?: "fixed" | "flexible";
   maxHeight?: number | string;
@@ -25,9 +23,7 @@ interface TableWithPaginationProps<T> {
 function TableWithPagination<T extends Record<string, unknown>>({
   columns,
   data,
-  currentPage,
   totalPages,
-  onPageChange,
   onRowClick,
   layout = "flexible",
   maxHeight,
@@ -45,11 +41,7 @@ function TableWithPagination<T extends Record<string, unknown>>({
 
       {/* 페이지네이션 */}
       <div className="flex justify-center">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
+        <Pagination totalPages={totalPages} />
       </div>
     </div>
   );

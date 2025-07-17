@@ -24,9 +24,8 @@ export default function VacationManagementPage() {
     data,
     totalCount,
     filteredCount,
-    currentPage,
     totalPages,
-    handlePageChange,
+    currentPage, // 추가: 현재 페이지
     filters,
     handleFilterChange,
     // handleApprove, // 사용되지 않음
@@ -48,9 +47,9 @@ export default function VacationManagementPage() {
   const dataWithNumbers = useMemo(() => {
     return data.map((item, index) => ({
       ...item,
-      no: (currentPage - 1) * 20 + index + 1,
+      no: index + 1,
     }));
-  }, [data, currentPage]);
+  }, [data]);
 
   // 행 클릭 핸들러
   const handleRowClick = useCallback(
@@ -138,11 +137,7 @@ export default function VacationManagementPage() {
           {/* 페이지네이션 */}
           {totalPages > 1 && (
             <div className="flex justify-center">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
+              <Pagination totalPages={totalPages} />
             </div>
           )}
         </>

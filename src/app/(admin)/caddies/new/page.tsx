@@ -25,7 +25,6 @@ export default function NewCaddiePage() {
     isIndividualApprovalModalOpen,
     isIndividualRejectModalOpen,
     selectedCaddieName,
-    currentPage,
     totalPages,
     currentData,
     pendingCount,
@@ -41,7 +40,6 @@ export default function NewCaddiePage() {
     handleSearchClear,
     handleSelectChange,
     handleRowClick,
-    handlePageChange,
     setIsApprovalModalOpen,
     setIsRejectModalOpen,
     setIsIndividualApprovalModalOpen,
@@ -79,13 +77,7 @@ export default function NewCaddiePage() {
           emptyText={NEW_CADDIE_CONSTANTS.EMPTY_STATE_MESSAGE}
         />
 
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+        {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
 
       {/* 모달 */}

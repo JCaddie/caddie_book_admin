@@ -31,13 +31,9 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
   const resolvedParams = use(params);
 
   // 커스텀 훅으로 카트 상세 데이터 가져오기
-  const {
-    cartDetail,
-    currentHistoryData,
-    currentPage,
-    totalPages,
-    handlePageChange,
-  } = useCartDetail({ cartId: resolvedParams.id });
+  const { cartDetail, currentHistoryData, totalPages } = useCartDetail({
+    cartId: resolvedParams.id,
+  });
 
   // 테이블 컬럼 생성
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,11 +107,7 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
 
           {/* 페이지네이션 */}
           <div className="flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
+            <Pagination totalPages={totalPages} />
           </div>
         </div>
       </div>
