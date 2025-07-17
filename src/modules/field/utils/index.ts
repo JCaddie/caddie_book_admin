@@ -35,6 +35,7 @@ export const generateSampleFieldData = (): FieldTableRow[] => {
       }대`,
       status:
         i % MAINTENANCE_CYCLE === 0 ? STATUS.MAINTENANCE : STATUS.OPERATING,
+      description: `샘플 상세설명 ${i}`,
     });
   }
 
@@ -72,6 +73,7 @@ export const createEmptyRowTemplate = (): Omit<
   capacity: 0,
   cart: "",
   status: "",
+  description: "",
 });
 
 /**
@@ -85,6 +87,7 @@ export const createNewField = (existingFieldsCount: number): FieldTableRow => ({
   capacity: 20,
   cart: "4대",
   status: FIELD_CONSTANTS.STATUS.OPERATING,
+  description: "",
 });
 
 /**

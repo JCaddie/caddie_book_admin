@@ -10,40 +10,34 @@ export const useFieldColumns = (): Column<FieldTableRow>[] => {
   return useMemo(
     () => [
       {
-        key: "no",
-        title: "No.",
-        width: 80,
-        render: basicRenderers.index, // 🎉 중복 제거!
-      },
-      {
         key: "fieldName",
         title: "필드명",
         width: 200,
-        render: basicRenderers.text, // 🎉 중복 제거!
+        render: basicRenderers.text,
       },
       {
         key: "golfCourse",
         title: "골프장",
         width: 200,
-        render: basicRenderers.text, // 🎉 중복 제거!
+        render: basicRenderers.text,
       },
       {
         key: "capacity",
-        title: "가용인원수",
+        title: "홀수",
         width: 120,
-        render: basicRenderers.number, // 🎉 숫자 포맷팅!
-      },
-      {
-        key: "cart",
-        title: "카트",
-        width: 120,
-        render: basicRenderers.text, // 🎉 중복 제거!
+        render: basicRenderers.number,
       },
       {
         key: "status",
         title: "운영현황",
         width: 120,
-        render: basicRenderers.status, // 🎉 상태 배지!
+        render: basicRenderers.status,
+      },
+      {
+        key: "description",
+        title: "상세설명",
+        width: 300,
+        render: basicRenderers.text,
       },
     ],
     []

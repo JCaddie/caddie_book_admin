@@ -21,6 +21,7 @@ export interface FieldData {
   capacity: number;
   cart: string;
   status: FieldStatus;
+  description: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -36,6 +37,7 @@ export interface FieldTableRow extends Record<string, unknown> {
   capacity: number;
   cart: string;
   status: FieldStatus;
+  description: string;
   isEmpty?: boolean;
 }
 
@@ -71,6 +73,7 @@ export interface FieldFormData {
   capacity: number;
   cart: string;
   status: FieldStatus;
+  description: string;
 }
 
 // ================================
