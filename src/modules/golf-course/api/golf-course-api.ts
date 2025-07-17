@@ -20,8 +20,8 @@ export const fetchGolfCourses = async ({
   params.append("page", String(page));
   if (searchTerm) params.append("search", searchTerm);
   if (filters.contract) params.append("contract_status", filters.contract);
-  if (filters.membershipType)
-    params.append("membership_type", filters.membershipType);
+  if (filters.membership_type)
+    params.append("membership_type", filters.membership_type);
   if (filters.field_count) params.append("field_count", filters.field_count);
   // 기타 필터도 필요시 추가
 
