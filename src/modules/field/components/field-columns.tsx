@@ -10,34 +10,29 @@ export const useFieldColumns = (): Column<FieldTableRow>[] => {
   return useMemo(
     () => [
       {
-        key: "fieldName",
+        key: "name",
         title: "필드명",
         width: 200,
         render: basicRenderers.text,
       },
       {
-        key: "golfCourse",
+        key: "golf_course",
         title: "골프장",
         width: 200,
         render: basicRenderers.text,
       },
       {
-        key: "capacity",
-        title: "홀수",
+        key: "hole_count",
+        title: "홀 수",
         width: 120,
         render: basicRenderers.number,
       },
       {
-        key: "status",
-        title: "운영현황",
+        key: "is_active",
+        title: "활성여부",
         width: 120,
-        render: basicRenderers.status,
-      },
-      {
-        key: "description",
-        title: "상세설명",
-        width: 300,
-        render: basicRenderers.text,
+        render: (value, _record, _index) =>
+          (value as boolean) ? "활성" : "비활성",
       },
     ],
     []

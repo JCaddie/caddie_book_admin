@@ -1,29 +1,16 @@
-import { FIELD_CONSTANTS } from "../constants";
-
 // ================================
 // 기본 필드 관련 타입
 // ================================
-
-/**
- * 필드 운영 상태
- */
-export type FieldStatus =
-  (typeof FIELD_CONSTANTS.STATUS)[keyof typeof FIELD_CONSTANTS.STATUS];
 
 /**
  * 기본 필드 데이터 (API 응답 형태)
  */
 export interface FieldData {
   id: string;
-  no: number;
-  fieldName: string;
-  golfCourse: string;
-  capacity: number;
-  cart: string;
-  status: FieldStatus;
-  description: string;
-  createdAt?: string;
-  updatedAt?: string;
+  name: string;
+  golf_course: string; // 골프장명(문자열)
+  is_active: boolean;
+  hole_count: number;
 }
 
 /**
@@ -31,13 +18,10 @@ export interface FieldData {
  */
 export interface FieldTableRow extends Record<string, unknown> {
   id: string;
-  no: number;
-  fieldName: string;
-  golfCourse: string;
-  capacity: number;
-  cart: string;
-  status: FieldStatus;
-  description: string;
+  name: string;
+  golf_course: string;
+  is_active: boolean;
+  hole_count: number;
   isEmpty?: boolean;
 }
 
@@ -68,12 +52,10 @@ export interface FieldSelection {
  * 필드 생성/수정 폼 데이터
  */
 export interface FieldFormData {
-  fieldName: string;
-  golfCourse: string;
-  capacity: number;
-  cart: string;
-  status: FieldStatus;
-  description: string;
+  name: string;
+  golf_course: string;
+  is_active: boolean;
+  hole_count: number;
 }
 
 // ================================
