@@ -8,10 +8,10 @@ import {
   ConfirmationModal,
   Dropdown,
   EmptyState,
-  Search,
+  SearchWithButton,
   SelectableDataTable,
 } from "@/shared/components/ui";
-import { useUrlSearchParams } from "@/shared/hooks";
+
 import { useGolfCourseList } from "@/modules/golf-course/hooks/use-golf-course-list";
 import Pagination from "@/shared/components/ui/pagination";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -95,10 +95,10 @@ const GolfCoursesPage: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // URL 검색 파라미터 처리
-  const { searchTerm, setSearchTerm } = useUrlSearchParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentPage = Number(searchParams.get("page") || 1);
+  const searchTerm = searchParams.get("search") || "";
 
   // 드롭다운 value는 URL에서 읽음
   const contractValue = searchParams.get("contract") || "";
@@ -115,12 +115,6 @@ const GolfCoursesPage: React.FC = () => {
       params.set(key, value);
     }
     params.set("page", "1"); // 필터 변경 시 페이지 1로
-    router.push(`?${params.toString()}`);
-  };
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    const params = new URLSearchParams(Array.from(searchParams.entries()));
-    params.set("page", "1");
     router.push(`?${params.toString()}`);
   };
 
@@ -289,11 +283,10 @@ const GolfCoursesPage: React.FC = () => {
 
             {/* 검색 및 버튼 그룹 */}
             <div className="flex items-center gap-2">
-              <Search
+              <SearchWithButton
                 placeholder="검색어 입력"
-                containerClassName="w-[360px]"
-                onChange={handleSearch}
-                value={searchTerm}
+                containerClassName="w-[420px]"
+                searchClassName="w-[360px]"
               />
 
               {/* 삭제 버튼 */}
