@@ -1,4 +1,4 @@
-import { FieldTableRow } from "../types";
+import { Field, FieldTableRow } from "../types";
 
 /**
  * 샘플 필드 데이터 생성 (API 구조와 동일)
@@ -8,14 +8,14 @@ export const generateSampleFieldData = (): FieldTableRow[] => {
     {
       id: "1",
       name: "샘플 필드 1",
-      golf_course: "샘플 골프장",
+      golf_course_name: "샘플 골프장",
       is_active: true,
       hole_count: 18,
     },
     {
       id: "2",
       name: "샘플 필드 2",
-      golf_course: "샘플 골프장",
+      golf_course_name: "샘플 골프장",
       is_active: false,
       hole_count: 9,
     },
@@ -23,7 +23,7 @@ export const generateSampleFieldData = (): FieldTableRow[] => {
 };
 
 /**
- * 필드 검색 필터링 (name, golf_course 기준)
+ * 필드 검색 필터링 (name, golf_course_name 기준)
  */
 export const filterFields = (
   fields: FieldTableRow[],
@@ -35,8 +35,8 @@ export const filterFields = (
     (field) =>
       (typeof field.name === "string" &&
         field.name.toLowerCase().includes(lowerSearchTerm)) ||
-      (typeof field.golf_course === "string" &&
-        field.golf_course.toLowerCase().includes(lowerSearchTerm))
+      (typeof field.golf_course_name === "string" &&
+        field.golf_course_name.toLowerCase().includes(lowerSearchTerm))
   );
 };
 
@@ -47,13 +47,10 @@ export const createEmptyRowTemplate = (): Omit<
   FieldTableRow,
   "id" | "isEmpty"
 > => ({
-  no: 0,
-  fieldName: "",
-  golfCourse: "",
-  capacity: 0,
-  cart: "",
-  status: "",
-  description: "",
+  name: "",
+  golf_course_name: "",
+  is_active: false,
+  hole_count: 0,
 });
 
 /**
@@ -62,7 +59,7 @@ export const createEmptyRowTemplate = (): Omit<
 export const createNewField = (existingFieldsCount: number): FieldTableRow => ({
   id: String(Date.now()),
   name: `새 필드 ${existingFieldsCount + 1}`,
-  golf_course: "샘플 골프장",
+  golf_course_name: "샘플 골프장",
   is_active: true,
   hole_count: 18,
 });
@@ -72,3 +69,21 @@ export const createNewField = (existingFieldsCount: number): FieldTableRow => ({
  */
 export const simulateApiDelay = (ms: number = 1000): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * API 응답(Field[]) → 테이블 row(FieldTableRow[]) 변환
+ */
+export function transformFieldsToTableRows(
+  fields: Field[],
+  page = 1,
+  pageSize = 20
+): FieldTableRow[] {
+  return fields.map((item, idx) => ({
+    id: String(item.id),
+    name: item.name,
+    golf_course_name: item.golf_course_name,
+    is_active: item.is_active,
+    hole_count: item.hole_count,
+    no: (page - 1) * pageSize + idx + 1,
+  }));
+}
