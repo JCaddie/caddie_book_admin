@@ -16,7 +16,7 @@ export const useFieldColumns = (): Column<FieldTableRow>[] => {
         render: basicRenderers.text,
       },
       {
-        key: "golf_course",
+        key: "golf_course_name",
         title: "골프장",
         width: 200,
         render: basicRenderers.text,
