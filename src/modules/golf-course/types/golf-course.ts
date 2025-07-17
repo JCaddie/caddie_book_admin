@@ -9,7 +9,6 @@ export interface GolfCourse {
   caddies: number;
   fields: number;
   isEmpty?: boolean;
-  
 }
 
 export interface GolfCourseDetail {
@@ -48,8 +47,8 @@ export interface GolfCourseListResponse {
 
 export interface GolfCourseFilters {
   contract: string;
-  holes: string;
-  membershipType: string;
+  field_count: string;
+  membership_type: string;
   category: string;
 }
 

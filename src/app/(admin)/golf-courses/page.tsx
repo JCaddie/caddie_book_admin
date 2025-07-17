@@ -19,7 +19,7 @@ import { GOLF_COURSE_TABLE_COLUMNS } from "@/shared/constants/golf-course";
 // import type { GolfCourse } from "@/modules/golf-course/types/golf-course";
 
 const FIELD_COUNT_OPTIONS = [
-  { label: "모두", value: "" },
+  { label: "필드 수", value: "" },
   ...Array.from({ length: 9 }, (_, i) => ({
     label: `${i + 1}`,
     value: String(i + 1),
@@ -30,13 +30,13 @@ const GolfCoursesPage: React.FC = () => {
   // 드롭다운 옵션 상태
   const [contractOptions, setContractOptions] = useState<
     { label: string; value: string; rawId?: string }[]
-  >([{ label: "모두", value: "" }]);
+  >([{ label: "계약현황", value: "" }]);
   const [membershipOptions, setMembershipOptions] = useState<
     { label: string; value: string; rawId?: string }[]
-  >([{ label: "모두", value: "" }]);
+  >([{ label: "종류", value: "" }]);
   const [isActiveOptions, setIsActiveOptions] = useState<
     { label: string; value: string }[]
-  >([{ label: "모두", value: "" }]);
+  >([{ label: "활성 여부", value: "" }]);
   const [loadingOptions, setLoadingOptions] = useState(true);
 
   // 옵션 fetch
@@ -61,7 +61,7 @@ const GolfCoursesPage: React.FC = () => {
           Array<{ id: boolean; value: string }>
         ]) => {
           setContractOptions([
-            { label: "모두", value: "" },
+            { label: "계약현황", value: "" },
             ...contract.map((opt) => ({
               label: opt.value,
               value: String(opt.id),
@@ -69,7 +69,7 @@ const GolfCoursesPage: React.FC = () => {
             })),
           ]);
           setMembershipOptions([
-            { label: "모두", value: "" },
+            { label: "종류", value: "" },
             ...membership.map((opt) => ({
               label: opt.value,
               value: String(opt.id),
@@ -77,7 +77,7 @@ const GolfCoursesPage: React.FC = () => {
             })),
           ]);
           setIsActiveOptions([
-            { label: "모두", value: "" },
+            { label: "활성 여부", value: "" },
             ...isActive.map((opt) => ({
               label: opt.value,
               value: String(opt.id),
@@ -101,8 +101,8 @@ const GolfCoursesPage: React.FC = () => {
 
   // 드롭다운 value는 URL에서 읽음
   const contractValue = searchParams.get("contract") || "";
-  const holesValue = searchParams.get("holes") || "";
-  const membershipValue = searchParams.get("membershipType") || "";
+  const fieldCountValue = searchParams.get("field_count") || "";
+  const membershipValue = searchParams.get("membership_type") || "";
   const isActiveValue = searchParams.get("isActive") || "";
 
   // 드롭다운 변경 핸들러 (모두 선택 시 파라미터 삭제)
@@ -126,10 +126,10 @@ const GolfCoursesPage: React.FC = () => {
   // URL 파라미터 기반 필터 객체 생성
   const filters = {
     contract: searchParams.get("contract") || "",
-    holes: searchParams.get("holes") || "",
-    membershipType: searchParams.get("membershipType") || "",
+    field_count: searchParams.get("field_count") || "",
+    membership_type: searchParams.get("membership_type") || "",
     category: "", // 필요시 추가 구현
-  };
+  } as import("@/modules/golf-course/types/golf-course").GolfCourseFilters;
   const { data, isLoading, isError } = useGolfCourseList(
     currentPage,
     searchTerm,
@@ -260,8 +260,8 @@ const GolfCoursesPage: React.FC = () => {
               />
               <Dropdown
                 options={FIELD_COUNT_OPTIONS}
-                value={holesValue}
-                onChange={(value) => handleDropdownChange("holes", value)}
+                value={fieldCountValue}
+                onChange={(value) => handleDropdownChange("field_count", value)}
                 placeholder="필드수"
                 containerClassName="w-[106px]"
               />
@@ -269,7 +269,7 @@ const GolfCoursesPage: React.FC = () => {
                 options={membershipOptions}
                 value={membershipValue}
                 onChange={(value) =>
-                  handleDropdownChange("membershipType", value)
+                  handleDropdownChange("membership_type", value)
                 }
                 placeholder="회원제 구분"
                 containerClassName="w-[106px]"

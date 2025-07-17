@@ -22,6 +22,7 @@ export const fetchGolfCourses = async ({
   if (filters.contract) params.append("contract_status", filters.contract);
   if (filters.membershipType)
     params.append("membership_type", filters.membershipType);
+  if (filters.field_count) params.append("field_count", filters.field_count);
   // 기타 필터도 필요시 추가
 
   const res = await fetch(`${API_BASE_URL}/api/v1/golf-courses/?${params}`);
