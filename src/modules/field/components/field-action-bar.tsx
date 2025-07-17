@@ -2,15 +2,11 @@
 
 import React from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/shared/components/ui";
-import Search from "@/shared/components/ui/search";
+import { Button, SearchWithButton } from "@/shared/components/ui";
 
 interface FieldActionBarProps {
   totalCount: number;
   selectedCount: number;
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  onSearchSubmit: () => void;
   onDeleteClick: () => void;
   onCreateClick: () => void;
 }
@@ -18,9 +14,6 @@ interface FieldActionBarProps {
 export const FieldActionBar: React.FC<FieldActionBarProps> = ({
   totalCount,
   selectedCount,
-  searchTerm,
-  onSearchChange,
-  onSearchSubmit,
   onDeleteClick,
   onCreateClick,
 }) => {
@@ -36,27 +29,11 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
         {/* 오른쪽: 검색창 + 버튼들 */}
         <div className="flex items-center gap-8">
           {/* 검색 */}
-          <div className="flex items-center gap-2">
-            <Search
-              placeholder="필드명 검색"
-              value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                onSearchChange(e.target.value)
-              }
-              containerClassName="w-[260px]"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") onSearchSubmit();
-              }}
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              className="h-10 px-4"
-              onClick={onSearchSubmit}
-            >
-              검색
-            </Button>
-          </div>
+          <SearchWithButton
+            placeholder="필드명 검색"
+            containerClassName="w-[320px]"
+            searchClassName="w-[260px]"
+          />
           {/* 버튼 그룹 */}
           <div className="flex items-center gap-2">
             {/* 삭제 버튼 */}
