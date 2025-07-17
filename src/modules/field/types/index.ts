@@ -1,16 +1,16 @@
 // ================================
-// 기본 필드 관련 타입
+// 필드 상세 데이터 (상세 API)
 // ================================
-
-/**
- * 기본 필드 데이터 (API 응답 형태)
- */
 export interface FieldData {
-  id: string;
+  id: number;
   name: string;
-  golf_course: string; // 골프장명(문자열)
+  golf_course_id: string;
+  golf_course_name: string;
   is_active: boolean;
   hole_count: number;
+  description: string;
+  created_at: string;
+  updated_at: string;
 }
 
 /**
@@ -23,6 +23,37 @@ export interface FieldTableRow extends Record<string, unknown> {
   is_active: boolean;
   hole_count: number;
   isEmpty?: boolean;
+}
+
+// ================================
+// 필드 리스트 아이템 (목록 API)
+// ================================
+export interface FieldListItem {
+  id: number;
+  name: string;
+  golf_course_id: string;
+  golf_course_name: string;
+  is_active: boolean;
+  [key: string]: unknown;
+}
+
+// ================================
+// 필드 폼 데이터 (생성/수정)
+// ================================
+export interface FieldFormData {
+  name: string;
+  golf_course_id: string; // 드롭다운 value는 id
+  is_active: boolean;
+  hole_count: number;
+  description: string;
+}
+
+// ================================
+// 골프장 옵션 타입 (드롭다운)
+// ================================
+export interface GolfCourseOption {
+  label: string; // 골프장명
+  value: string; // 골프장 id
 }
 
 // ================================
@@ -42,20 +73,6 @@ export interface FieldFilters {
 export interface FieldSelection {
   selectedRowKeys: string[];
   selectedRows: FieldTableRow[];
-}
-
-// ================================
-// 폼 관련 타입
-// ================================
-
-/**
- * 필드 생성/수정 폼 데이터
- */
-export interface FieldFormData {
-  name: string;
-  golf_course: string;
-  is_active: boolean;
-  hole_count: number;
 }
 
 // ================================

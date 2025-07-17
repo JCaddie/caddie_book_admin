@@ -10,22 +10,12 @@ import {
 import {
   FIELD_CONSTANTS,
   FieldActionBar,
-  fieldColumns,
+  FieldListItem,
   useDeleteField,
   useFieldList,
 } from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
-import { FieldTableRow } from "@/modules/field/types";
 import { useRouter } from "next/navigation";
-
-// API 응답 타입 임시 정의 (실제 타입은 modules/field/types에서 가져와야 함)
-interface FieldListApiResponse {
-  results: FieldTableRow[];
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-}
 
 export default function FieldsPage() {
   useDocumentTitle({ title: "필드 관리" });
@@ -45,8 +35,18 @@ export default function FieldsPage() {
   // 데이터 fetch
   // 타입 임시 우회 (API 구조와 타입 불일치로 인한 에러 방지)
   const queryResult = useFieldList(currentPage, searchTerm);
-  const data = queryResult.data as unknown as FieldListApiResponse;
-  const columns = fieldColumns();
+  const data = queryResult.data;
+  // FieldListItem에 맞는 컬럼 정의 (필요시 직접 정의)
+  const columns: import("@/shared/types/table").Column<FieldListItem>[] = [
+    { key: "name", title: "필드명", width: 200 },
+    { key: "golf_course_name", title: "골프장", width: 200 },
+    {
+      key: "is_active",
+      title: "활성여부",
+      width: 120,
+      render: (value) => (value ? "활성" : "비활성"),
+    },
+  ];
 
   React.useEffect(() => {
     if (data) {
@@ -56,7 +56,7 @@ export default function FieldsPage() {
   }, [data]);
 
   // row 클릭 시 상세화면 이동
-  const handleRowClick = (row: FieldTableRow) => {
+  const handleRowClick = (row: FieldListItem) => {
     if (row && row.id) {
       router.push(`/fields/${row.id}`);
     }
@@ -93,7 +93,10 @@ export default function FieldsPage() {
   };
 
   // 데이터 변환 (API 응답 -> 테이블 row)
-  const tableData: FieldTableRow[] = (data?.results ?? []).map((item, idx) => ({
+  // FieldListItem에 인덱스 시그니처 추가 (for DataTable)
+  const tableData: (FieldListItem & Record<string, unknown>)[] = (
+    data?.results ?? []
+  ).map((item, idx) => ({
     ...item,
     no:
       data && data.page && data.page_size
@@ -106,7 +109,7 @@ export default function FieldsPage() {
       <AdminPageHeader title="필드 관리" />
 
       <FieldActionBar
-        totalCount={data?.total ?? 0}
+        totalCount={data?.count ?? 0}
         selectedCount={selectedRowKeys.length}
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
@@ -115,7 +118,7 @@ export default function FieldsPage() {
       />
 
       <div className="space-y-6">
-        <SelectableDataTable<FieldTableRow>
+        <SelectableDataTable<FieldListItem>
           columns={columns}
           data={tableData}
           selectable

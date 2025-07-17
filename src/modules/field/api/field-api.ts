@@ -1,9 +1,5 @@
-import {
-  CreateFieldRequest,
-  FieldData,
-  FieldListResponse,
-  UpdateFieldRequest,
-} from "../types";
+import { FieldListApiResponse } from "../hooks/use-field-list";
+import { CreateFieldRequest, FieldData, UpdateFieldRequest } from "../types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -14,7 +10,7 @@ export const fetchFields = async ({
 }: {
   page: number;
   searchTerm: string;
-}): Promise<FieldListResponse> => {
+}): Promise<FieldListApiResponse> => {
   const params = new URLSearchParams();
   params.append("page", String(page));
   if (searchTerm) params.append("search", searchTerm);
