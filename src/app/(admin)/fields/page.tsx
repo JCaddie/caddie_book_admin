@@ -18,6 +18,15 @@ import { useDocumentTitle } from "@/shared/hooks";
 import { FieldTableRow } from "@/modules/field/types";
 import { useRouter } from "next/navigation";
 
+// API 응답 타입 임시 정의 (실제 타입은 modules/field/types에서 가져와야 함)
+interface FieldListApiResponse {
+  results: FieldTableRow[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
 export default function FieldsPage() {
   useDocumentTitle({ title: "필드 관리" });
   const router = useRouter();
@@ -34,7 +43,9 @@ export default function FieldsPage() {
   const deleteFieldMutation = useDeleteField();
 
   // 데이터 fetch
-  const { data } = useFieldList(currentPage, searchTerm);
+  // 타입 임시 우회 (API 구조와 타입 불일치로 인한 에러 방지)
+  const queryResult = useFieldList(currentPage, searchTerm);
+  const data = queryResult.data as unknown as FieldListApiResponse;
   const columns = fieldColumns();
 
   React.useEffect(() => {
@@ -82,11 +93,11 @@ export default function FieldsPage() {
   };
 
   // 데이터 변환 (API 응답 -> 테이블 row)
-  const tableData: FieldTableRow[] = (data?.data ?? []).map((item, idx) => ({
+  const tableData: FieldTableRow[] = (data?.results ?? []).map((item, idx) => ({
     ...item,
     no:
-      data && data.page && data.limit
-        ? (data.page - 1) * data.limit + idx + 1
+      data && data.page && data.page_size
+        ? (data.page - 1) * data.page_size + idx + 1
         : idx + 1,
   }));
 
@@ -118,11 +129,7 @@ export default function FieldsPage() {
           rowKey={(record) => String(record.id)}
         />
 
-        <Pagination
-          totalPages={
-            data?.total ? Math.ceil(data.total / (data.limit || 20)) : 1
-          }
-        />
+        <Pagination totalPages={data?.total_pages ? data.total_pages : 1} />
       </div>
 
       {/* 삭제 확인 모달 */}
