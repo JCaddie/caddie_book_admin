@@ -36,9 +36,14 @@ export default function UserDetailPage() {
     if (isMyInfo && authUser) {
       // 내 정보인 경우 현재 로그인한 사용자 정보 사용
       return {
-        ...authUser,
-        username: "admin", // 실제로는 API에서 가져와야 함
-        phone: "010-1234-5678", // 실제로는 API에서 가져와야 함
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        username: "admin",
+        phone: "010-1234-5678",
+        role: (authUser.role === "MASTER" ? "MASTER" : "ADMIN") as
+          | "MASTER"
+          | "ADMIN",
       };
     } else {
       // 다른 사용자 정보인 경우 mockUsers에서 조회
@@ -48,6 +53,11 @@ export default function UserDetailPage() {
             ...foundUser,
             username: foundUser.username || "admin",
             phone: foundUser.phone || "010-0000-0000",
+            // DEV 권한은 ADMIN으로 변환하여 타입 오류 방지
+            role:
+              foundUser.role === "DEV"
+                ? "ADMIN"
+                : (foundUser.role as "MASTER" | "ADMIN"),
           }
         : {
             id: userId,
