@@ -15,14 +15,14 @@ import {
   useFieldList,
 } from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function FieldsPage() {
   useDocumentTitle({ title: "필드 관리" });
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // 검색어, 페이지네이션 상태
-  const [searchTerm, setSearchTerm] = useState("");
+  // 페이지네이션 상태만 관리
   const [currentPage, setCurrentPage] = useState(1);
 
   // 선택 상태
@@ -32,9 +32,12 @@ export default function FieldsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const deleteFieldMutation = useDeleteField();
 
-  // 데이터 fetch
-  // 타입 임시 우회 (API 구조와 타입 불일치로 인한 에러 방지)
-  const queryResult = useFieldList(currentPage, searchTerm);
+  // search 파라미터를 URL에서 읽어옴
+  const searchParamValue = searchParams.get("search") || "";
+  // 검색 input의 상태는 별도로 관리
+  const [searchInput, setSearchInput] = useState(searchParamValue);
+  // 데이터 fetch는 URL 파라미터 기준
+  const queryResult = useFieldList(currentPage, searchParamValue);
   const data = queryResult.data;
   // FieldListItem에 맞는 컬럼 정의 (필요시 직접 정의)
   const columns: import("@/shared/types/table").Column<FieldListItem>[] = [
@@ -64,13 +67,25 @@ export default function FieldsPage() {
 
   // 검색어 변경
   const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
+    setSearchInput(value);
+  };
+
+  // 검색 버튼 클릭 또는 엔터 시 URL 파라미터 변경
+  const handleSearchSubmit = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchInput) {
+      params.set("search", searchInput);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`/fields?${params.toString()}`);
     setCurrentPage(1);
   };
 
   // 선택 변경
   const handleSelectChange = (keys: string[]) => {
-    setSelectedRowKeys(keys);
+    setSelectedRowKeys(keys.map(String));
   };
 
   // 삭제 버튼 클릭
@@ -111,8 +126,9 @@ export default function FieldsPage() {
       <FieldActionBar
         totalCount={data?.count ?? 0}
         selectedCount={selectedRowKeys.length}
-        searchTerm={searchTerm}
+        searchTerm={searchInput}
         onSearchChange={handleSearchChange}
+        onSearchSubmit={handleSearchSubmit}
         onDeleteClick={handleDeleteClick}
         onCreateClick={() => router.push("/fields/new")}
       />

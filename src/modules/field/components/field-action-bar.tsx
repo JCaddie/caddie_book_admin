@@ -10,6 +10,7 @@ interface FieldActionBarProps {
   selectedCount: number;
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onSearchSubmit: () => void;
   onDeleteClick: () => void;
   onCreateClick: () => void;
 }
@@ -19,6 +20,7 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
   selectedCount,
   searchTerm,
   onSearchChange,
+  onSearchSubmit,
   onDeleteClick,
   onCreateClick,
 }) => {
@@ -34,14 +36,27 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
         {/* 오른쪽: 검색창 + 버튼들 */}
         <div className="flex items-center gap-8">
           {/* 검색 */}
-          <Search
-            placeholder="필드명 검색"
-            value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onSearchChange(e.target.value)
-            }
-            containerClassName="w-[360px]"
-          />
+          <div className="flex items-center gap-2">
+            <Search
+              placeholder="필드명 검색"
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onSearchChange(e.target.value)
+              }
+              containerClassName="w-[260px]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onSearchSubmit();
+              }}
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              className="h-10 px-4"
+              onClick={onSearchSubmit}
+            >
+              검색
+            </Button>
+          </div>
           {/* 버튼 그룹 */}
           <div className="flex items-center gap-2">
             {/* 삭제 버튼 */}
