@@ -16,6 +16,7 @@ import { useGolfCourseList } from "@/modules/golf-course/hooks/use-golf-course-l
 import Pagination from "@/shared/components/ui/pagination";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GOLF_COURSE_TABLE_COLUMNS } from "@/shared/constants/golf-course";
+import { deleteGolfCourse } from "@/modules/golf-course/api/golf-course-api";
 // import type { GolfCourse } from "@/modules/golf-course/types/golf-course";
 
 const FIELD_COUNT_OPTIONS = [
@@ -164,8 +165,9 @@ const GolfCoursesPage: React.FC = () => {
     if (selectedRowKeys.length === 0) return;
     setIsDeleting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("삭제할 골프장 ID:", selectedRowKeys);
+      await Promise.all(selectedRowKeys.map((id) => deleteGolfCourse(id)));
+      // 삭제 후 리스트 새로고침 (React Query invalidate 등 필요시 추가)
+      window.location.reload();
       setSelectedRowKeys([]);
       setIsDeleteModalOpen(false);
     } catch (error) {

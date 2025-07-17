@@ -52,3 +52,12 @@ export const updateGolfCourse = async (
   if (!res.ok) throw new Error("골프장 정보를 수정하지 못했습니다.");
   return res.json();
 };
+
+export async function deleteGolfCourse(id: string) {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const res = await fetch(`${API_BASE_URL}/api/v1/golf-courses/${id}/`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("삭제 실패");
+  return true;
+}
