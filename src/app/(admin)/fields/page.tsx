@@ -25,9 +25,6 @@ export default function FieldsPage() {
     selectedRowKeys,
     isDeleteModalOpen,
     deleteFieldMutation,
-    searchInput,
-    handleSearchChange,
-    handleSearchSubmit,
     handleSelectChange,
     handleRowClick,
     handleDeleteClick,
@@ -41,9 +38,6 @@ export default function FieldsPage() {
       <FieldActionBar
         totalCount={data?.count ?? 0}
         selectedCount={selectedRowKeys.length}
-        searchTerm={searchInput}
-        onSearchChange={handleSearchChange}
-        onSearchSubmit={handleSearchSubmit}
         onDeleteClick={handleDeleteClick}
         onCreateClick={() => handleRowClick({ id: "new" } as FieldTableRow)}
       />

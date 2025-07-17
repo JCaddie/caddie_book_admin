@@ -6,7 +6,7 @@ import {
   Button,
   ConfirmationModal,
   Pagination,
-  Search,
+  SearchWithButton,
   SelectableDataTable,
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
@@ -441,14 +441,11 @@ const GolfCourseStatsPage: React.FC = () => {
         {/* 오른쪽: 검색 + 버튼들 */}
         <div className="flex items-center gap-8">
           {/* 검색 */}
-          <div className="w-[400px]">
-            <Search
-              placeholder="골프장명 또는 위치 검색..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onClear={handleSearchClear}
-            />
-          </div>
+          <SearchWithButton
+            placeholder="골프장명 또는 위치 검색..."
+            containerClassName="w-[460px]"
+            searchClassName="w-[400px]"
+          />
 
           {/* 버튼 그룹 */}
           {selectedRowKeys.length > 0 && (

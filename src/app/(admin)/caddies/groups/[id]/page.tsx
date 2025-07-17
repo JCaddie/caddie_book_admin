@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { Button, CaddieAssignmentModal, Search } from "@/shared/components/ui";
+import {
+  Button,
+  CaddieAssignmentModal,
+  SearchWithButton,
+} from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
 import { Plus } from "lucide-react";
@@ -114,14 +118,11 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
               </select>
 
               {/* 검색창 */}
-              <div className="w-[400px]">
-                <Search
-                  placeholder="캐디 검색"
-                  value={filters.searchTerm}
-                  onChange={handleSearchChange}
-                  onClear={handleSearchClear}
-                />
-              </div>
+              <SearchWithButton
+                placeholder="캐디 검색"
+                containerClassName="w-[460px]"
+                searchClassName="w-[400px]"
+              />
             </div>
 
             {/* 버튼들 */}

@@ -1,6 +1,10 @@
 import React, { memo, useCallback, useState } from "react";
 import { Plus } from "lucide-react";
-import { Button, ConfirmationModal, Search } from "@/shared/components/ui";
+import {
+  Button,
+  ConfirmationModal,
+  SearchWithButton,
+} from "@/shared/components/ui";
 import { UserActionBarProps } from "../types";
 import { ROLE_FILTER_OPTIONS } from "../constants";
 
@@ -8,22 +12,13 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
   ({
     totalCount,
     selectedCount,
-    searchTerm,
     roleFilter,
-    onSearchChange,
     onRoleFilterChange,
     onDeleteSelected,
     onCreateClick,
     isDeleting = false,
   }) => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-    const handleSearchChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        onSearchChange(e.target.value);
-      },
-      [onSearchChange]
-    );
 
     const handleDeleteClick = useCallback(() => {
       if (selectedCount > 0) {
@@ -66,15 +61,10 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
             </select>
 
             {/* 검색창 */}
-            <Search
-              value={searchTerm}
-              onChange={handleSearchChange}
-              placeholder="검색어 입력"
-              containerClassName="w-[360px]"
-            />
+            <SearchWithButton placeholder="검색어 입력" />
 
             {/* 버튼 그룹 */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               {/* 삭제 버튼 */}
               <Button
                 variant="secondary"

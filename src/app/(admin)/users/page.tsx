@@ -24,7 +24,6 @@ export default function UsersPage() {
     // 상태
     selectedRowKeys,
     isDeleting,
-    searchTerm,
     roleFilter,
     totalPages,
 
@@ -39,7 +38,6 @@ export default function UsersPage() {
     handleCloseModal,
     handleSubmitUser,
     handleRowClick,
-    setSearchTerm,
     setRoleFilter,
   } = useUserManagement();
 
@@ -50,9 +48,7 @@ export default function UsersPage() {
       <UserActionBar
         totalCount={filteredData.length}
         selectedCount={selectedRowKeys.length}
-        searchTerm={searchTerm}
         roleFilter={roleFilter}
-        onSearchChange={setSearchTerm}
         onRoleFilterChange={setRoleFilter}
         onDeleteSelected={handleDeleteUsers}
         onCreateClick={handleCreateUser}

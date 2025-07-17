@@ -2,15 +2,11 @@
 
 import React from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/shared/components/ui";
-import Search from "@/shared/components/ui/search";
+import { Button, SearchWithButton } from "@/shared/components/ui";
 
 interface FieldActionBarProps {
   totalCount: number;
   selectedCount: number;
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  onSearchSubmit: () => void;
   onDeleteClick: () => void;
   onCreateClick: () => void;
 }
@@ -18,9 +14,6 @@ interface FieldActionBarProps {
 export const FieldActionBar: React.FC<FieldActionBarProps> = ({
   totalCount,
   selectedCount,
-  searchTerm,
-  onSearchChange,
-  onSearchSubmit,
   onDeleteClick,
   onCreateClick,
 }) => {
@@ -35,50 +28,32 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
         </div>
         {/* 오른쪽: 검색창 + 버튼들 */}
         <div className="flex items-center gap-8">
-          {/* 검색 */}
-          <div className="flex items-center gap-2">
-            <Search
-              placeholder="필드명 검색"
-              value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                onSearchChange(e.target.value)
-              }
-              containerClassName="w-[260px]"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") onSearchSubmit();
-              }}
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              className="h-10 px-4"
-              onClick={onSearchSubmit}
-            >
-              검색
-            </Button>
-          </div>
-          {/* 버튼 그룹 */}
-          <div className="flex items-center gap-2">
-            {/* 삭제 버튼 */}
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={onDeleteClick}
-              disabled={selectedCount === 0}
-              className="w-24"
-            >
-              삭제
-            </Button>
-            {/* 생성 버튼 */}
-            <Button
-              variant="primary"
-              size="md"
-              onClick={onCreateClick}
-              icon={<Plus size={24} />}
-              className="w-24"
-            >
-              생성
-            </Button>
+          {/* 검색 및 버튼 그룹 */}
+          <div className="flex items-center gap-4">
+            <SearchWithButton placeholder="필드명 검색" />
+            {/* 버튼 그룹 */}
+            <div className="flex items-center gap-2">
+              {/* 삭제 버튼 */}
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={onDeleteClick}
+                disabled={selectedCount === 0}
+                className="w-24"
+              >
+                삭제
+              </Button>
+              {/* 생성 버튼 */}
+              <Button
+                variant="primary"
+                size="md"
+                onClick={onCreateClick}
+                icon={<Plus size={24} />}
+                className="w-24"
+              >
+                생성
+              </Button>
+            </div>
           </div>
         </div>
       </div>

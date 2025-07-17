@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button, Dropdown, Search } from "@/shared/components/ui";
+import { Button, Dropdown, SearchWithButton } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
 import { VacationRequestFilter } from "../types";
@@ -47,13 +47,6 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
     onFilterChange({
       ...filters,
       status: value as VacationRequestFilter["status"],
-    });
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({
-      ...filters,
-      searchTerm: event.target.value,
     });
   };
 
@@ -113,12 +106,10 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
         </div>
 
         {/* 검색 필드 */}
-        <Search
+        <SearchWithButton
           placeholder={VACATION_UI_TEXT.SEARCH_PLACEHOLDER}
-          containerClassName="w-[360px]"
-          onChange={handleSearchChange}
-          value={filters.searchTerm || ""}
-          aria-label="캐디 검색"
+          containerClassName="w-[420px]"
+          searchClassName="w-[360px]"
         />
 
         {/* 버튼 그룹 */}

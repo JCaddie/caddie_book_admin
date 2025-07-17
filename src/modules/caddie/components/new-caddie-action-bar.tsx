@@ -1,15 +1,12 @@
 "use client";
 
 import React from "react";
-import { Button, Search } from "@/shared/components/ui";
+import { Button, SearchWithButton } from "@/shared/components/ui";
 import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
 
 interface NewCaddieActionBarProps {
   pendingCount: number;
   selectedCount: number;
-  searchTerm: string;
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSearchClear: () => void;
   onRejectSelected: () => void;
   onApproveAll: () => void;
 }
@@ -17,9 +14,6 @@ interface NewCaddieActionBarProps {
 const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
   pendingCount,
   selectedCount,
-  searchTerm,
-  onSearchChange,
-  onSearchClear,
   onRejectSelected,
   onApproveAll,
 }) => {
@@ -35,14 +29,11 @@ const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
       {/* 오른쪽: 검색 + 버튼들 */}
       <div className="flex items-center gap-8">
         {/* 검색 */}
-        <div className="w-[400px]">
-          <Search
-            placeholder={NEW_CADDIE_CONSTANTS.SEARCH_PLACEHOLDER}
-            value={searchTerm}
-            onChange={onSearchChange}
-            onClear={onSearchClear}
-          />
-        </div>
+        <SearchWithButton
+          placeholder={NEW_CADDIE_CONSTANTS.SEARCH_PLACEHOLDER}
+          containerClassName="w-[460px]"
+          searchClassName="w-[400px]"
+        />
 
         {/* 버튼 그룹 */}
         <div className="flex items-center gap-2">

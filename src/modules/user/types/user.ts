@@ -16,9 +16,7 @@ export interface User extends Record<string, unknown> {
 export interface UserActionBarProps {
   totalCount: number;
   selectedCount: number;
-  searchTerm: string;
   roleFilter: string;
-  onSearchChange: (term: string) => void;
   onRoleFilterChange: (role: string) => void;
   onDeleteSelected: () => void;
   onCreateClick: () => void;

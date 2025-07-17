@@ -6,7 +6,7 @@ import {
   Button,
   ConfirmationModal,
   GolfCourseSelector,
-  Search,
+  SearchWithButton,
 } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks/use-auth";
 
@@ -97,11 +97,10 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
             {/* 우측: 검색창과 버튼들 */}
             <div className="flex items-center gap-8">
               {/* 검색창 */}
-              <Search
-                value={searchTerm}
-                onChange={handleSearchChange}
+              <SearchWithButton
                 placeholder="카트명, 골프장명 검색"
-                containerClassName="w-[360px]"
+                containerClassName="w-[420px]"
+                searchClassName="w-[360px]"
               />
 
               {/* 버튼 그룹 */}
