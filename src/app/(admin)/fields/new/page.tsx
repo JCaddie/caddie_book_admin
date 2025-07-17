@@ -10,23 +10,21 @@ import { useCreateField } from "@/modules/field/hooks";
 
 const EMPTY_FORM: FieldFormData = {
   name: "",
-  golf_course: "",
-  description: "",
-  par: 0,
+  golf_course_id: "",
+  hole_count: 0,
   is_active: false,
+  description: "",
 };
 
 const FieldCreatePage: React.FC = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState<
-    Omit<FieldFormData, "golfCourse"> & { golf_course: string }
-  >(EMPTY_FORM);
+  const [formData, setFormData] = useState<FieldFormData>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
   const createFieldMutation = useCreateField();
 
   // 입력값 변경 핸들러
   const handleInputChange = (
-    field: keyof FieldFormData | "golf_course",
+    field: keyof FieldFormData,
     value: string | number | boolean
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
