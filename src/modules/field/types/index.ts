@@ -1,100 +1,72 @@
-import { FIELD_CONSTANTS } from "../constants";
-
 // ================================
-// 기본 필드 관련 타입
+// 필드 기준 타입 (상세 API 기준)
 // ================================
-
-/**
- * 필드 운영 상태
- */
-export type FieldStatus =
-  (typeof FIELD_CONSTANTS.STATUS)[keyof typeof FIELD_CONSTANTS.STATUS];
-
-/**
- * 기본 필드 데이터 (API 응답 형태)
- */
-export interface FieldData {
-  id: string;
-  no: number;
-  fieldName: string;
-  golfCourse: string;
-  capacity: number;
-  cart: string;
-  status: FieldStatus;
-  createdAt?: string;
-  updatedAt?: string;
+export interface Field {
+  id: number;
+  name: string;
+  golf_course_id: string;
+  golf_course_name: string;
+  is_active: boolean;
+  hole_count: number;
+  description: string;
+  created_at: string;
+  updated_at: string;
 }
 
-/**
- * 테이블 표시용 필드 데이터
- */
-export interface FieldTableRow extends Record<string, unknown> {
-  id: string;
-  no: number;
-  fieldName: string;
-  golfCourse: string;
-  capacity: number;
-  cart: string;
-  status: FieldStatus;
+// ================================
+// 테이블/리스트용 타입 (id는 string으로 변환)
+// ================================
+export type FieldTableRow = {
+  id: string; // 테이블에서는 string id 사용
+  name: string;
+  golf_course_name: string;
+  is_active: boolean;
+  hole_count: number;
+  no?: number;
   isEmpty?: boolean;
+};
+
+// ================================
+// 폼 데이터 (생성/수정)
+// ================================
+export type FieldFormData = Pick<
+  Field,
+  "name" | "golf_course_id" | "is_active" | "hole_count" | "description"
+>;
+
+// ================================
+// 골프장 옵션 타입 (드롭다운)
+// ================================
+export interface GolfCourseOption {
+  label: string; // 골프장명
+  value: string; // 골프장 id
 }
 
 // ================================
 // 필터 및 선택 관련 타입
 // ================================
-
-/**
- * 필드 검색 필터
- */
 export interface FieldFilters {
   searchTerm: string;
 }
 
-/**
- * 필드 선택 상태
- */
 export interface FieldSelection {
   selectedRowKeys: string[];
   selectedRows: FieldTableRow[];
 }
 
 // ================================
-// 폼 관련 타입
-// ================================
-
-/**
- * 필드 생성/수정 폼 데이터
- */
-export interface FieldFormData {
-  fieldName: string;
-  golfCourse: string;
-  capacity: number;
-  cart: string;
-  status: FieldStatus;
-}
-
-// ================================
 // API 관련 타입
 // ================================
-
-/**
- * 필드 목록 조회 응답
- */
-export interface FieldListResponse {
-  data: FieldData[];
-  total: number;
+export interface FieldListApiResponse {
+  results: Field[];
+  count: number;
   page: number;
-  limit: number;
+  page_size: number;
+  total_pages: number;
 }
 
-/**
- * 필드 생성 요청
- */
 export type CreateFieldRequest = FieldFormData;
 
-/**
- * 필드 수정 요청
- */
 export interface UpdateFieldRequest extends Partial<FieldFormData> {
   id: string;
 }

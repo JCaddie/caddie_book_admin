@@ -34,7 +34,9 @@ function SelectableDataTable<T extends Record<string, unknown>>({
   // 테이블 선택 로직
   const selection = useTableSelection({
     data,
-    extractRowKey: getRowKey || ((record) => String(record[rowKey as keyof T])),
+    extractRowKey: getRowKey
+      ? (record) => String(getRowKey(record))
+      : (record) => String(record[rowKey as keyof T]),
     selectedRowKeys,
     onSelectChange,
   });

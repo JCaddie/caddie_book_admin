@@ -2,22 +2,17 @@
 
 import React from "react";
 import { Plus } from "lucide-react";
-import { Button, GolfCourseSelector, Search } from "@/shared/components/ui";
-import { useAuth } from "@/shared/hooks/use-auth";
-import { FIELD_CONSTANTS } from "../constants";
+import { Button } from "@/shared/components/ui";
+import Search from "@/shared/components/ui/search";
 
 interface FieldActionBarProps {
   totalCount: number;
   selectedCount: number;
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onSearchSubmit: () => void;
   onDeleteClick: () => void;
   onCreateClick: () => void;
-  // 골프장 필터링 props (MASTER 권한에서만 사용)
-  selectedGolfCourseId?: string;
-  golfCourseSearchTerm?: string;
-  onGolfCourseChange?: (golfCourseId: string) => void;
-  onGolfCourseSearchChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const FieldActionBar: React.FC<FieldActionBarProps> = ({
@@ -25,34 +20,12 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
   selectedCount,
   searchTerm,
   onSearchChange,
+  onSearchSubmit,
   onDeleteClick,
   onCreateClick,
-  selectedGolfCourseId = "",
-  golfCourseSearchTerm = "",
-  onGolfCourseChange,
-  onGolfCourseSearchChange,
 }) => {
-  const { user } = useAuth();
-  const isMaster = user?.role === "MASTER";
-
   return (
     <div className="space-y-4">
-      {/* MASTER 권한일 때만 골프장 선택 영역 표시 */}
-      {isMaster && onGolfCourseChange && onGolfCourseSearchChange && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-base font-bold text-black">골프장 선택</span>
-          </div>
-          <GolfCourseSelector
-            selectedGolfCourseId={selectedGolfCourseId}
-            searchTerm={golfCourseSearchTerm}
-            onGolfCourseChange={onGolfCourseChange}
-            onSearchChange={onGolfCourseSearchChange}
-          />
-        </div>
-      )}
-
-      {/* 기존 액션바 영역 */}
       <div className="flex items-center justify-between">
         {/* 왼쪽: 총 건수 */}
         <div className="flex items-center gap-3">
@@ -60,17 +33,30 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
             총 {totalCount}건
           </span>
         </div>
-
         {/* 오른쪽: 검색창 + 버튼들 */}
         <div className="flex items-center gap-8">
           {/* 검색 */}
-          <Search
-            placeholder={FIELD_CONSTANTS.UI_TEXT.SEARCH_PLACEHOLDER}
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            containerClassName="w-[360px]"
-          />
-
+          <div className="flex items-center gap-2">
+            <Search
+              placeholder="필드명 검색"
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onSearchChange(e.target.value)
+              }
+              containerClassName="w-[260px]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onSearchSubmit();
+              }}
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              className="h-10 px-4"
+              onClick={onSearchSubmit}
+            >
+              검색
+            </Button>
+          </div>
           {/* 버튼 그룹 */}
           <div className="flex items-center gap-2">
             {/* 삭제 버튼 */}
@@ -83,7 +69,6 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
             >
               삭제
             </Button>
-
             {/* 생성 버튼 */}
             <Button
               variant="primary"
@@ -92,7 +77,7 @@ export const FieldActionBar: React.FC<FieldActionBarProps> = ({
               icon={<Plus size={24} />}
               className="w-24"
             >
-              {FIELD_CONSTANTS.UI_TEXT.CREATE_BUTTON}
+              생성
             </Button>
           </div>
         </div>

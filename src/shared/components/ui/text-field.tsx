@@ -34,11 +34,27 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const [showPassword, setShowPassword] = useState(false);
     const hasValue = value && value.toString().length > 0;
 
+    // 숫자 입력일 때 input type을 text로 강제, inputMode와 pattern 추가
+    const isNumber = propType === "number";
     const type = showVisibilityToggle
       ? showPassword
         ? "text"
         : "password"
+      : isNumber
+      ? "text"
       : propType;
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (isNumber) {
+        // 숫자만 허용
+        const val = e.target.value;
+        if (val === "" || /^\d+$/.test(val)) {
+          onChange?.(e);
+        }
+      } else {
+        onChange?.(e);
+      }
+    };
 
     const handleClear = () => {
       if (onChange) {
@@ -96,13 +112,15 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           <input
             ref={ref}
             type={type}
-            value={value}
-            onChange={onChange}
+            value={isNumber && value === 0 && !isFocused ? "" : value}
+            onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             className={[getInputStyles(), className].filter(Boolean).join(" ")}
+            inputMode={isNumber ? "numeric" : undefined}
+            pattern={isNumber ? "[0-9]*" : undefined}
             {...props}
           />
 
