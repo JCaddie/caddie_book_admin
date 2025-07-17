@@ -1,4 +1,4 @@
-import { GolfCourse } from "../../modules/golf-course/types/golf-course";
+// import { GolfCourse } from "../../modules/golf-course/types/golf-course";
 
 // 골프장 필터 옵션
 export const GOLF_COURSE_FILTER_OPTIONS = {
@@ -36,8 +36,12 @@ export const CONTRACT_STATUS_OPTIONS = [
 ];
 
 // 기본 셀 렌더러
-const renderCell = (value: unknown, record: GolfCourse) => {
+const renderCell = (
+  value: unknown,
+  record: Record<string, unknown>
+): React.ReactNode => {
   if ("isEmpty" in record && record.isEmpty) return null;
+  if (value === 0) return "0";
   return String(value || "");
 };
 

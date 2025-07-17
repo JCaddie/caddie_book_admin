@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { GolfCourseDetail } from "@/shared/types/golf-course";
+import { GolfCourseDetail } from "../../../modules/golf-course/types/golf-course";
 
 interface GolfCourseInfoProps {
   golfCourse: GolfCourseDetail;

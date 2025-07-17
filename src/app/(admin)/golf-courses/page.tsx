@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import {
@@ -13,26 +13,80 @@ import {
 } from "@/shared/components/ui";
 import { useUrlSearchParams } from "@/shared/hooks";
 import { useGolfCourseList } from "@/modules/golf-course/hooks/use-golf-course-list";
-import {
-  GolfCourse,
-  GolfCourseFilters,
-} from "@/modules/golf-course/types/golf-course";
 import Pagination from "@/shared/components/ui/pagination";
-import {
-  GOLF_COURSE_FILTER_OPTIONS,
-  GOLF_COURSE_TABLE_COLUMNS,
-} from "@/shared/constants/golf-course";
 import { useRouter, useSearchParams } from "next/navigation";
+import { GOLF_COURSE_TABLE_COLUMNS } from "@/shared/constants/golf-course";
+// import type { GolfCourse } from "@/modules/golf-course/types/golf-course";
+
+const FIELD_COUNT_OPTIONS = [
+  { label: "모두", value: "" },
+  ...Array.from({ length: 9 }, (_, i) => ({
+    label: `${i + 1}`,
+    value: String(i + 1),
+  })),
+];
 
 const GolfCoursesPage: React.FC = () => {
-  // 필터 상태
-  const [filters, setFilters] = useState<GolfCourseFilters>({
-    contract: "",
-    holes: "",
-    membershipType: "",
-    category: "",
-    dailyTeams: "",
-  });
+  // 드롭다운 옵션 상태
+  const [contractOptions, setContractOptions] = useState<
+    { label: string; value: string; rawId?: string }[]
+  >([{ label: "모두", value: "" }]);
+  const [membershipOptions, setMembershipOptions] = useState<
+    { label: string; value: string; rawId?: string }[]
+  >([{ label: "모두", value: "" }]);
+  const [isActiveOptions, setIsActiveOptions] = useState<
+    { label: string; value: string }[]
+  >([{ label: "모두", value: "" }]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+
+  // 옵션 fetch
+  useEffect(() => {
+    setLoadingOptions(true);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    Promise.all([
+      fetch(
+        `${API_BASE_URL}/api/v1/golf-courses/constants/contract_status/`
+      ).then((res) => res.json()),
+      fetch(
+        `${API_BASE_URL}/api/v1/golf-courses/constants/membership_type/`
+      ).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/v1/golf-courses/constants/is_active/`).then(
+        (res) => res.json()
+      ),
+    ])
+      .then(
+        ([contract, membership, isActive]: [
+          Array<{ id: string | boolean; value: string }>,
+          Array<{ id: string; value: string }>,
+          Array<{ id: boolean; value: string }>
+        ]) => {
+          setContractOptions([
+            { label: "모두", value: "" },
+            ...contract.map((opt) => ({
+              label: opt.value,
+              value: String(opt.id),
+              rawId: String(opt.id),
+            })),
+          ]);
+          setMembershipOptions([
+            { label: "모두", value: "" },
+            ...membership.map((opt) => ({
+              label: opt.value,
+              value: String(opt.id),
+              rawId: String(opt.id),
+            })),
+          ]);
+          setIsActiveOptions([
+            { label: "모두", value: "" },
+            ...isActive.map((opt) => ({
+              label: opt.value,
+              value: String(opt.id),
+            })),
+          ]);
+        }
+      )
+      .finally(() => setLoadingOptions(false));
+  }, []);
 
   // 선택 상태 관리
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -45,24 +99,21 @@ const GolfCoursesPage: React.FC = () => {
   const router = useRouter();
   const currentPage = Number(searchParams.get("page") || 1);
 
-  // API 데이터 fetch (올바른 인자 전달)
-  const { data, isLoading, isError } = useGolfCourseList(
-    currentPage,
-    searchTerm,
-    filters
-  );
+  // 드롭다운 value는 URL에서 읽음
+  const contractValue = searchParams.get("contract") || "";
+  const holesValue = searchParams.get("holes") || "";
+  const membershipValue = searchParams.get("membershipType") || "";
+  const isActiveValue = searchParams.get("isActive") || "";
 
-  // 필터/검색 변경 시 page=1로 리셋
-  const handleFilterChange = (
-    filterKey: keyof GolfCourseFilters,
-    value: string
-  ) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterKey]: value,
-    }));
+  // 드롭다운 변경 핸들러 (모두 선택 시 파라미터 삭제)
+  const handleDropdownChange = (key: string, value: string) => {
     const params = new URLSearchParams(Array.from(searchParams.entries()));
-    params.set("page", "1");
+    if (!value) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    params.set("page", "1"); // 필터 변경 시 페이지 1로
     router.push(`?${params.toString()}`);
   };
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,11 +123,22 @@ const GolfCoursesPage: React.FC = () => {
     router.push(`?${params.toString()}`);
   };
 
+  // URL 파라미터 기반 필터 객체 생성
+  const filters = {
+    contract: searchParams.get("contract") || "",
+    holes: searchParams.get("holes") || "",
+    membershipType: searchParams.get("membershipType") || "",
+    category: "", // 필요시 추가 구현
+  };
+  const { data, isLoading, isError } = useGolfCourseList(
+    currentPage,
+    searchTerm,
+    filters
+  );
+
   // 행 클릭 핸들러
-  const handleRowClick = (record: GolfCourse) => {
-    if ((record as { isEmpty?: boolean }).isEmpty) {
-      return;
-    }
+  const handleRowClick = (record: Record<string, unknown>) => {
+    if ((record as { isEmpty?: boolean }).isEmpty) return;
     window.location.href = `/golf-courses/${record.id}`;
   };
 
@@ -136,10 +198,38 @@ const GolfCoursesPage: React.FC = () => {
   const hasNoResults = (data?.results?.length ?? 0) === 0;
 
   // no(목록 번호) 자동 부여
-  const tableData = (data?.results ?? []).map((item, idx) => ({
-    ...item,
-    no: ((data?.page ?? 1) - 1) * (data?.page_size ?? 20) + idx + 1,
-  }));
+  interface GolfCourseAPI {
+    id: string;
+    name: string;
+    region: string;
+    contract_status: string;
+    phone: string;
+    membership_type: string;
+    total_caddies: number;
+    field_count: number;
+  }
+  const tableData: Record<string, unknown>[] = (
+    (data?.results ?? []) as unknown as GolfCourseAPI[]
+  ).map((item, idx) => {
+    const contractLabel =
+      contractOptions.find((opt) => opt.value === String(item.contract_status))
+        ?.label || item.contract_status;
+    const membershipLabel =
+      membershipOptions.find(
+        (opt) => opt.value === String(item.membership_type)
+      )?.label || item.membership_type;
+    return {
+      id: item.id,
+      no: ((data?.page ?? 1) - 1) * (data?.page_size ?? 20) + idx + 1,
+      name: item.name,
+      region: item.region,
+      contractStatus: contractLabel,
+      phone: item.phone,
+      membershipType: membershipLabel,
+      caddies: item.total_caddies,
+      fields: item.field_count,
+    };
+  });
 
   return (
     <RoleGuard requiredRoles={["MASTER", "ADMIN"]}>
@@ -161,41 +251,37 @@ const GolfCoursesPage: React.FC = () => {
             {/* 필터 드롭다운들 */}
             <div className="flex items-center gap-2">
               <Dropdown
-                options={GOLF_COURSE_FILTER_OPTIONS.contract}
-                value={filters.contract}
-                onChange={(value) => handleFilterChange("contract", value)}
-                placeholder="계약"
+                options={contractOptions}
+                value={contractValue}
+                onChange={(value) => handleDropdownChange("contract", value)}
+                placeholder="계약상태"
+                containerClassName="w-[106px]"
+                disabled={loadingOptions}
+              />
+              <Dropdown
+                options={FIELD_COUNT_OPTIONS}
+                value={holesValue}
+                onChange={(value) => handleDropdownChange("holes", value)}
+                placeholder="필드수"
                 containerClassName="w-[106px]"
               />
               <Dropdown
-                options={GOLF_COURSE_FILTER_OPTIONS.holes}
-                value={filters.holes}
-                onChange={(value) => handleFilterChange("holes", value)}
-                placeholder="홀수"
-                containerClassName="w-[106px]"
-              />
-              <Dropdown
-                options={GOLF_COURSE_FILTER_OPTIONS.membershipType}
-                value={filters.membershipType}
+                options={membershipOptions}
+                value={membershipValue}
                 onChange={(value) =>
-                  handleFilterChange("membershipType", value)
+                  handleDropdownChange("membershipType", value)
                 }
-                placeholder="회원제"
+                placeholder="회원제 구분"
                 containerClassName="w-[106px]"
+                disabled={loadingOptions}
               />
               <Dropdown
-                options={GOLF_COURSE_FILTER_OPTIONS.category}
-                value={filters.category}
-                onChange={(value) => handleFilterChange("category", value)}
-                placeholder="부분류"
+                options={isActiveOptions}
+                value={isActiveValue}
+                onChange={(value) => handleDropdownChange("isActive", value)}
+                placeholder="활성화 여부"
                 containerClassName="w-[106px]"
-              />
-              <Dropdown
-                options={GOLF_COURSE_FILTER_OPTIONS.dailyTeams}
-                value={filters.dailyTeams}
-                onChange={(value) => handleFilterChange("dailyTeams", value)}
-                placeholder="당일팀수"
-                containerClassName="w-[106px]"
+                disabled={loadingOptions}
               />
             </div>
 

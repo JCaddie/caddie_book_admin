@@ -9,6 +9,7 @@ export interface GolfCourse {
   caddies: number;
   fields: number;
   isEmpty?: boolean;
+  
 }
 
 export interface GolfCourseDetail {
@@ -50,7 +51,6 @@ export interface GolfCourseFilters {
   holes: string;
   membershipType: string;
   category: string;
-  dailyTeams: string;
 }
 
 export interface EditableGolfCourse {
