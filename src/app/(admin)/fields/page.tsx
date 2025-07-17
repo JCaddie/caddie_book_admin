@@ -15,9 +15,12 @@ import {
 } from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
 import { FieldTableRow } from "@/modules/field/types";
+import { useRouter } from "next/navigation";
 
 export default function FieldsPage() {
   useDocumentTitle({ title: "필드 관리" });
+
+  const router = useRouter();
 
   const {
     // 데이터
@@ -29,12 +32,6 @@ export default function FieldsPage() {
     filters,
     updateSearchTerm,
 
-    // 골프장 필터링 (MASTER 권한용)
-    selectedGolfCourseId,
-    golfCourseSearchTerm,
-    handleGolfCourseChange,
-    handleGolfCourseSearchChange,
-
     // 선택 상태
     selection,
     updateSelection,
@@ -43,7 +40,6 @@ export default function FieldsPage() {
     totalPages,
 
     // 액션
-    addField,
     openDeleteModal,
     closeDeleteModal,
     deleteSelectedFields,
@@ -56,6 +52,13 @@ export default function FieldsPage() {
   // 테이블 컬럼 생성
   const columns = fieldColumns();
 
+  // row 클릭 시 상세화면 이동
+  const handleRowClick = (row: FieldTableRow) => {
+    if (row && row.id) {
+      router.push(`/fields/${row.id}`);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
       <AdminPageHeader title="필드 관리" />
@@ -66,11 +69,7 @@ export default function FieldsPage() {
         searchTerm={filters.searchTerm}
         onSearchChange={updateSearchTerm}
         onDeleteClick={openDeleteModal}
-        onCreateClick={addField}
-        selectedGolfCourseId={selectedGolfCourseId}
-        golfCourseSearchTerm={golfCourseSearchTerm}
-        onGolfCourseChange={handleGolfCourseChange}
-        onGolfCourseSearchChange={handleGolfCourseSearchChange}
+        onCreateClick={() => router.push("/fields/new")}
       />
 
       <div className="space-y-6">
@@ -84,6 +83,7 @@ export default function FieldsPage() {
           containerWidth="auto"
           layout="flexible"
           className="border-gray-200"
+          onRowClick={handleRowClick}
         />
 
         <Pagination totalPages={totalPages} />
