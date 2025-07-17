@@ -97,4 +97,5 @@ export type DashboardSection =
 export const ROLE_SECTIONS: Record<UserRole, DashboardSection[]> = {
   MASTER: ["announcements", "contract-status", "user-status"],
   ADMIN: ["announcements", "work-hours", "team-count", "worker-ranking"],
+  DEV: ["announcements", "work-hours", "team-count", "worker-ranking"], // DEV 추가
 };

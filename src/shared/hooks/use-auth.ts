@@ -165,6 +165,15 @@ export const useAuth = (): UseAuthReturn => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      DEV: {
+        id: "3",
+        name: "개발자",
+        email: "dev2@example.com",
+        role: "DEV",
+        golfCourseId: "golf-course-2",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     };
 
     const targetUser = testUsers[targetRole];
