@@ -10,12 +10,20 @@ import {
 import {
   FIELD_CONSTANTS,
   FieldActionBar,
-  FieldListItem,
   useDeleteField,
   useFieldList,
 } from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
 import { useRouter, useSearchParams } from "next/navigation";
+
+// 테이블용 필드 아이템 타입 정의 (SelectableDataTable에서 사용)
+interface FieldTableItem extends Record<string, unknown> {
+  id: string; // 테이블에서는 string id 사용
+  name: string;
+  golf_course_name: string;
+  is_active: boolean;
+  no: number;
+}
 
 export default function FieldsPage() {
   useDocumentTitle({ title: "필드 관리" });
@@ -39,8 +47,9 @@ export default function FieldsPage() {
   // 데이터 fetch는 URL 파라미터 기준
   const queryResult = useFieldList(currentPage, searchParamValue);
   const data = queryResult.data;
-  // FieldListItem에 맞는 컬럼 정의 (필요시 직접 정의)
-  const columns: import("@/shared/types/table").Column<FieldListItem>[] = [
+
+  // FieldTableItem에 맞는 컬럼 정의
+  const columns: import("@/shared/types/table").Column<FieldTableItem>[] = [
     { key: "name", title: "필드명", width: 200 },
     { key: "golf_course_name", title: "골프장", width: 200 },
     {
@@ -59,7 +68,7 @@ export default function FieldsPage() {
   }, [data]);
 
   // row 클릭 시 상세화면 이동
-  const handleRowClick = (row: FieldListItem) => {
+  const handleRowClick = (row: FieldTableItem) => {
     if (row && row.id) {
       router.push(`/fields/${row.id}`);
     }
@@ -83,9 +92,13 @@ export default function FieldsPage() {
     setCurrentPage(1);
   };
 
-  // 선택 변경
-  const handleSelectChange = (keys: string[]) => {
-    setSelectedRowKeys(keys.map(String));
+  // 선택 변경 - 올바른 타입으로 수정
+  const handleSelectChange = (
+    keys: string[],
+    selectedRows: FieldTableItem[]
+  ) => {
+    console.log("[선택 변경]", { keys, selectedRows }); // 디버깅용
+    setSelectedRowKeys(keys);
   };
 
   // 삭제 버튼 클릭
@@ -97,27 +110,33 @@ export default function FieldsPage() {
   const handleConfirmDelete = async () => {
     if (selectedRowKeys.length === 0) return;
     try {
+      // Promise.all을 사용하여 모든 삭제 요청을 병렬로 실행
       await Promise.all(
         selectedRowKeys.map((id) => deleteFieldMutation.mutateAsync(id))
       );
       setSelectedRowKeys([]);
       setIsDeleteModalOpen(false);
-    } catch {
+      // 성공 시 데이터 재조회
+      queryResult.refetch();
+    } catch (error) {
+      console.error("[삭제 오류]", error);
       // 에러 처리 필요시 추가
     }
   };
 
-  // 데이터 변환 (API 응답 -> 테이블 row)
-  // FieldListItem에 인덱스 시그니처 추가 (for DataTable)
-  const tableData: (FieldListItem & Record<string, unknown>)[] = (
-    data?.results ?? []
-  ).map((item, idx) => ({
-    ...item,
-    no:
-      data && data.page && data.page_size
-        ? (data.page - 1) * data.page_size + idx + 1
-        : idx + 1,
-  }));
+  // API 응답 데이터를 테이블 형식으로 변환
+  const tableData: FieldTableItem[] = (data?.results ?? []).map(
+    (item, idx) => ({
+      id: String(item.id), // number를 string으로 변환
+      name: item.name,
+      golf_course_name: item.golf_course_name,
+      is_active: item.is_active,
+      no:
+        data && data.page && data.page_size
+          ? (data.page - 1) * data.page_size + idx + 1
+          : idx + 1,
+    })
+  );
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
@@ -134,7 +153,7 @@ export default function FieldsPage() {
       />
 
       <div className="space-y-6">
-        <SelectableDataTable<FieldListItem>
+        <SelectableDataTable<FieldTableItem>
           columns={columns}
           data={tableData}
           selectable
@@ -145,7 +164,7 @@ export default function FieldsPage() {
           layout="flexible"
           className="border-gray-200"
           onRowClick={handleRowClick}
-          rowKey={(record) => String(record.id)}
+          rowKey="id" // 간단하게 키 이름만 전달
         />
 
         <Pagination totalPages={data?.total_pages ? data.total_pages : 1} />
