@@ -362,13 +362,7 @@ const GolfCourseStatsPage: React.FC = () => {
   );
 
   // 페이지네이션
-  const {
-    currentData,
-    currentPage,
-    totalPages,
-    handlePageChange,
-    setCurrentPage,
-  } = usePagination({
+  const { currentData, totalPages, setCurrentPage } = usePagination({
     data: filteredData,
     itemsPerPage: 20,
   });
@@ -486,13 +480,7 @@ const GolfCourseStatsPage: React.FC = () => {
         />
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+        {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
 
       {/* 삭제 확인 모달 */}

@@ -212,13 +212,7 @@ const TeamsPage: React.FC = () => {
   );
 
   // 페이지네이션
-  const {
-    currentData,
-    currentPage,
-    totalPages,
-    handlePageChange,
-    setCurrentPage,
-  } = usePagination({
+  const { currentData, totalPages } = usePagination({
     data: filteredData,
     itemsPerPage: 20,
   });
@@ -236,14 +230,14 @@ const TeamsPage: React.FC = () => {
   // 검색 변경 핸들러
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // 검색 시 첫 페이지로 이동
+    // setCurrentPage(1); // 검색 시 첫 페이지로 이동
     setSelectedRowKeys([]); // 검색 시 선택 상태 초기화
   };
 
   // 검색 클리어 핸들러
   const handleSearchClear = () => {
     setSearchTerm("");
-    setCurrentPage(1); // 검색 클리어 시 첫 페이지로 이동
+    // setCurrentPage(1); // 검색 클리어 시 첫 페이지로 이동
     setSelectedRowKeys([]); // 검색 클리어 시 선택 상태 초기화
   };
 
@@ -336,13 +330,7 @@ const TeamsPage: React.FC = () => {
         />
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+        {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
 
       {/* 삭제 확인 모달 */}

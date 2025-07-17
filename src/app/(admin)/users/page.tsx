@@ -26,15 +26,11 @@ export default function UsersPage() {
     isDeleting,
     searchTerm,
     roleFilter,
-    currentPage,
+    totalPages,
 
     // 모달 상태
     isCreateModalOpen,
     isCreating,
-
-    // 페이지네이션
-    totalPages,
-    handlePageChange,
 
     // 액션
     handleUpdateSelection,
@@ -75,11 +71,7 @@ export default function UsersPage() {
           {...USER_TABLE_CONFIG}
         />
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        <Pagination totalPages={totalPages} />
       </div>
 
       {/* 사용자 생성 모달 */}

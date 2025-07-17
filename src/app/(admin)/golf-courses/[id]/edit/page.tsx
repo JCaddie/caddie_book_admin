@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import { Button } from "@/shared/components/ui";
-import { GolfCourseEditForm } from "@/shared/components/golf-course";
+import { GolfCourseForm } from "@/shared/components/golf-course";
 import { EditableGolfCourse } from "@/modules/golf-course/types/golf-course";
 import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
 import { updateGolfCourse } from "@/modules/golf-course/api/golf-course-api";
 import { useGolfCourseDetail } from "@/modules/golf-course/hooks/use-golf-course-detail";
 import { useQueryClient } from "@tanstack/react-query";
+import { useContractStatusOptions } from "@/shared/hooks/use-contract-status-options";
 
 // PATCH 요청용 변환 함수
 function toApiPayload(formData: EditableGolfCourse) {
@@ -49,6 +50,8 @@ const GolfCourseEditPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
+  const { options: contractStatusOptions, loading: contractStatusLoading } =
+    useContractStatusOptions();
 
   // 상세 데이터 받아오면 formData 초기화
   React.useEffect(() => {
@@ -185,9 +188,11 @@ const GolfCourseEditPage: React.FC = () => {
 
           {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
 
-          <GolfCourseEditForm
+          <GolfCourseForm
             formData={formData}
             onInputChange={handleInputChange}
+            contractStatusOptions={contractStatusOptions}
+            contractStatusLoading={contractStatusLoading}
           />
         </div>
       </div>

@@ -19,9 +19,7 @@ const CartsPage: React.FC = () => {
     data,
     totalCount,
     realDataCount,
-    currentPage,
     totalPages,
-    handlePageChange,
     filters,
     updateSearchTerm,
     selectedGolfCourseId,
@@ -98,13 +96,7 @@ const CartsPage: React.FC = () => {
           className="border-gray-200"
         />
 
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+        {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
     </div>
   );

@@ -38,7 +38,6 @@ interface Career {
 
 const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
   const resolvedParams = use(params);
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState("캐디");
   const [selectedGroup, setSelectedGroup] = useState("1조");
   const [selectedClass, setSelectedClass] = useState("2부");
@@ -115,11 +114,7 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
   // 페이지네이션 계산
   const itemsPerPage = 10;
   const totalPages = Math.ceil(workHistory.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentWorkHistory = workHistory.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const currentWorkHistory = workHistory.slice(0, itemsPerPage);
 
   // 테이블 컬럼 정의 - Figma 디자인 기반 유연한 레이아웃
   const workColumns = [
@@ -131,10 +126,6 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
     { key: "groupOrder", title: "조 순서", align: "center" as const }, // flex
     { key: "cart", title: "카트", align: "center" as const }, // flex
   ];
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
 
   const roleOptions = [
     { value: "캐디", label: "캐디" },
@@ -306,11 +297,7 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
 
               {/* 페이지네이션 */}
               <div className="flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <Pagination totalPages={totalPages} />
               </div>
             </div>
           </div>

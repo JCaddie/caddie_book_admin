@@ -41,9 +41,7 @@ const CaddieListPage: React.FC = () => {
     deleteSelectedItems,
     canDelete,
     selectedCount,
-    currentPage,
     totalPages,
-    handlePageChange,
   } = useCaddieList();
 
   // 행 클릭 핸들러 (상세 페이지로 이동)
@@ -107,11 +105,7 @@ const CaddieListPage: React.FC = () => {
           layout="flexible"
         />
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        <Pagination totalPages={totalPages} />
       </div>
 
       {/* 삭제 확인 모달 */}

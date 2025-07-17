@@ -40,9 +40,7 @@ export default function FieldsPage() {
     updateSelection,
 
     // 페이지네이션
-    currentPage,
     totalPages,
-    handlePageChange,
 
     // 액션
     addField,
@@ -88,11 +86,7 @@ export default function FieldsPage() {
           className="border-gray-200"
         />
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        <Pagination totalPages={totalPages} />
       </div>
 
       {/* 삭제 확인 모달 */}

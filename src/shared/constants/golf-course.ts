@@ -1,40 +1,5 @@
 // import { GolfCourse } from "../../modules/golf-course/types/golf-course";
 
-// 골프장 필터 옵션
-export const GOLF_COURSE_FILTER_OPTIONS = {
-  contract: [
-    { value: "completed", label: "완료" },
-    { value: "pending", label: "대기" },
-    { value: "rejected", label: "거절" },
-  ],
-  holes: [
-    { value: "18", label: "18홀" },
-    { value: "27", label: "27홀" },
-    { value: "36", label: "36홀" },
-  ],
-  membershipType: [
-    { value: "member", label: "회원제" },
-    { value: "public", label: "퍼블릭" },
-  ],
-  category: [
-    { value: "premium", label: "프리미엄" },
-    { value: "standard", label: "일반" },
-  ],
-  dailyTeams: [
-    { value: "high", label: "많음" },
-    { value: "medium", label: "보통" },
-    { value: "low", label: "적음" },
-  ],
-};
-
-// 계약 상태 옵션
-export const CONTRACT_STATUS_OPTIONS = [
-  { value: "계약", label: "계약" },
-  { value: "대기", label: "대기" },
-  { value: "만료", label: "만료" },
-  { value: "해지", label: "해지" },
-];
-
 // 기본 셀 렌더러
 const renderCell = (
   value: unknown,
