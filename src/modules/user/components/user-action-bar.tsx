@@ -61,14 +61,10 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
             </select>
 
             {/* 검색창 */}
-            <SearchWithButton
-              placeholder="검색어 입력"
-              containerClassName="w-[420px]"
-              searchClassName="w-[360px]"
-            />
+            <SearchWithButton placeholder="검색어 입력" />
 
             {/* 버튼 그룹 */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               {/* 삭제 버튼 */}
               <Button
                 variant="secondary"

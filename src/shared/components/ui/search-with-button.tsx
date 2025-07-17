@@ -7,8 +7,6 @@ import Button from "./button";
 
 interface SearchWithButtonProps {
   placeholder?: string;
-  containerClassName?: string;
-  searchClassName?: string;
   buttonText?: string;
   disabled?: boolean;
   searchParam?: string; // URL 파라미터 키 (기본값: "search")
@@ -17,8 +15,6 @@ interface SearchWithButtonProps {
 
 const SearchWithButton: React.FC<SearchWithButtonProps> = ({
   placeholder = "검색어 입력",
-  containerClassName,
-  searchClassName,
   buttonText = "검색",
   disabled = false,
   searchParam = "search",
@@ -82,13 +78,13 @@ const SearchWithButton: React.FC<SearchWithButtonProps> = ({
   };
 
   return (
-    <div className={`flex items-center gap-2 ${containerClassName ?? ""}`}>
+    <div className="flex items-center gap-2 w-[340px]">
       <Search
         value={inputValue}
         onChange={handleInputChange}
         onClear={handleClear}
         placeholder={placeholder}
-        className={searchClassName}
+        className="w-[180px]"
         onKeyPress={handleKeyPress}
         disabled={disabled}
       />
@@ -97,7 +93,7 @@ const SearchWithButton: React.FC<SearchWithButtonProps> = ({
         size="md"
         onClick={handleSearch}
         disabled={disabled}
-        className="w-20"
+        className="w-24"
       >
         {buttonText}
       </Button>

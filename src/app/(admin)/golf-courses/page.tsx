@@ -282,12 +282,8 @@ const GolfCoursesPage: React.FC = () => {
             </div>
 
             {/* 검색 및 버튼 그룹 */}
-            <div className="flex items-center gap-2">
-              <SearchWithButton
-                placeholder="검색어 입력"
-                containerClassName="w-[420px]"
-                searchClassName="w-[360px]"
-              />
+            <div className="flex items-center gap-4">
+              <SearchWithButton placeholder="검색어 입력" />
 
               {/* 삭제 버튼 */}
               <Button
