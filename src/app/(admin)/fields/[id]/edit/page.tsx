@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
-import FieldFormSection from "../../../../modules/field/components/field-form-section";
-import FieldForm from "../../../../modules/field/components/field-form";
+import FieldFormSection from "@/modules/field/components/field-form-section";
+import FieldForm from "@/modules/field/components/field-form";
 import { FieldFormData } from "@/modules/field/types";
 import { useUpdateField } from "@/modules/field/hooks";
 import { fetchFieldDetail } from "@/modules/field/api/field-api";
@@ -24,16 +24,15 @@ const FieldEditPage: React.FC = () => {
     setLoading(true);
     fetchFieldDetail(id)
       .then((data) => {
-        // id, no, createdAt 등은 제외하고 폼 데이터만 추출
-        const { fieldName, golfCourse, capacity, cart, status, description } =
+        // id 등은 제외하고 폼 데이터만 추출
+        const { name, golf_course_id, is_active, hole_count, description } =
           data;
         setFormData({
-          fieldName,
-          golfCourse,
-          capacity,
-          cart,
-          status,
-          description,
+          name,
+          golf_course_id,
+          is_active,
+          hole_count,
+          description: description ?? "",
         });
       })
       .catch(() => setError("필드 정보를 불러오지 못했습니다."))
@@ -47,7 +46,7 @@ const FieldEditPage: React.FC = () => {
   // 입력값 변경 핸들러
   const handleInputChange = (
     field: keyof FieldFormData,
-    value: string | number
+    value: string | number | boolean
   ) => {
     setFormData((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
@@ -61,7 +60,12 @@ const FieldEditPage: React.FC = () => {
   const handleSubmit = async () => {
     setError(null);
     try {
-      await updateFieldMutation.mutateAsync({ id, data: formData });
+      // PATCH 시 golf_course에는 골프장 id를 전송해야 함
+      const patchData = {
+        ...formData!,
+        id,
+      };
+      await updateFieldMutation.mutateAsync({ id, data: patchData });
       router.push(`/fields/${id}`);
     } catch {
       setError("저장 중 오류가 발생했습니다.");

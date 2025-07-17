@@ -33,8 +33,8 @@ const FieldForm: React.FC<FieldFormProps> = ({ formData, onInputChange }) => {
           </label>
           <Dropdown
             options={golfCourseOptions}
-            value={formData.golf_course}
-            onChange={(value) => onInputChange("golf_course", value)}
+            value={formData.golf_course_id}
+            onChange={(value) => onInputChange("golf_course_id", value)}
             placeholder={
               golfCourseLoading
                 ? "로딩 중..."
@@ -69,6 +69,18 @@ const FieldForm: React.FC<FieldFormProps> = ({ formData, onInputChange }) => {
             placeholder="활성 여부 선택"
           />
         </div>
+      </div>
+      <div className="col-span-2">
+        <label className="block text-sm font-medium text-gray-800 mb-1">
+          상세설명
+        </label>
+        <textarea
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          rows={4}
+          value={formData.description || ""}
+          onChange={(e) => onInputChange("description", e.target.value)}
+          placeholder="상세설명을 입력하세요"
+        />
       </div>
     </div>
   );
