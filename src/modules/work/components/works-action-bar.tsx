@@ -2,15 +2,13 @@
 
 import React from "react";
 import { Plus } from "lucide-react";
-import { Button, Dropdown, Search } from "@/shared/components/ui";
+import { Button, Dropdown, SearchWithButton } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
 
 interface WorksActionBarProps {
   totalCount: number;
   selectedCount: number;
-  searchTerm: string;
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDelete: () => void;
   onCreate: () => void;
   // 골프장 필터링 props (MASTER 권한에서만 사용)
@@ -21,8 +19,6 @@ interface WorksActionBarProps {
 const WorksActionBar: React.FC<WorksActionBarProps> = ({
   totalCount,
   selectedCount,
-  searchTerm,
-  onSearchChange,
   onDelete,
   onCreate,
   selectedGolfCourseId = "",
@@ -56,11 +52,10 @@ const WorksActionBar: React.FC<WorksActionBarProps> = ({
         )}
 
         {/* 검색 필드 */}
-        <Search
+        <SearchWithButton
           placeholder="골프장명 검색"
-          containerClassName="w-[360px]"
-          onChange={onSearchChange}
-          value={searchTerm}
+          containerClassName="w-[420px]"
+          searchClassName="w-[360px]"
         />
 
         {/* 버튼 그룹 */}

@@ -6,7 +6,7 @@ import {
   Button,
   ConfirmationModal,
   GolfCourseSelector,
-  Search,
+  SearchWithButton,
 } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { ANNOUNCEMENT_CONSTANTS } from "../constants";
@@ -14,8 +14,6 @@ import { ANNOUNCEMENT_CONSTANTS } from "../constants";
 interface AnnouncementActionBarProps {
   totalCount: number;
   selectedCount: number;
-  searchTerm: string;
-  onSearchChange: (searchTerm: string) => void;
   onDeleteSelected: () => void;
   onCreateNew: () => void;
   isDeleting?: boolean;
@@ -30,8 +28,6 @@ const AnnouncementActionBar: React.FC<AnnouncementActionBarProps> = memo(
   ({
     totalCount,
     selectedCount,
-    searchTerm,
-    onSearchChange,
     onDeleteSelected,
     onCreateNew,
     isDeleting = false,
@@ -43,13 +39,6 @@ const AnnouncementActionBar: React.FC<AnnouncementActionBarProps> = memo(
     const { user } = useAuth();
     const isMaster = user?.role === "MASTER";
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-    const handleSearchChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        onSearchChange(e.target.value);
-      },
-      [onSearchChange]
-    );
 
     const handleDeleteClick = useCallback(() => {
       if (selectedCount > 0) {
@@ -98,11 +87,10 @@ const AnnouncementActionBar: React.FC<AnnouncementActionBarProps> = memo(
             {/* 우측: 검색창과 버튼들 */}
             <div className="flex items-center gap-8">
               {/* 검색창 */}
-              <Search
-                value={searchTerm}
-                onChange={handleSearchChange}
+              <SearchWithButton
                 placeholder={ANNOUNCEMENT_CONSTANTS.DEFAULT_SEARCH_PLACEHOLDER}
-                containerClassName="w-[360px]"
+                containerClassName="w-[420px]"
+                searchClassName="w-[360px]"
               />
 
               {/* 버튼 그룹 */}
