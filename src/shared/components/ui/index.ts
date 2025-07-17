@@ -12,6 +12,7 @@ export { default as FileUpload } from "./file-upload";
 export { default as Input } from "./input";
 export { default as Pagination } from "./pagination";
 export { default as Search } from "./search";
+export { default as SearchWithButton } from "./search-with-button";
 export { default as SelectableDataTable } from "./selectable-data-table";
 export { default as TextField } from "./text-field";
 export { default as GolfCourseSelector } from "./golf-course-selector";
