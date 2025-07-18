@@ -107,7 +107,7 @@ export const getUserDetail = async (userId: string): Promise<User> => {
 };
 
 /**
- * 사용자 정보 수정
+ * 사용자 정보 수정 (기본 정보)
  */
 export const updateUser = async (
   userId: string,
@@ -116,6 +116,7 @@ export const updateUser = async (
     name: string;
     phone: string;
     email: string;
+    golf_course_id: string;
   }>
 ): Promise<User> => {
   try {
@@ -128,6 +129,26 @@ export const updateUser = async (
     return response;
   } catch (error) {
     console.error("❌ 사용자 정보 수정 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 사용자 비밀번호 수정
+ */
+export const updateUserPassword = async (
+  userId: string,
+  passwordData: {
+    password: string;
+    password_confirm: string;
+  }
+): Promise<void> => {
+  try {
+    console.log("🔄 사용자 비밀번호 수정 시작:", userId);
+    await apiClient.patch<void>(`/api/v1/auth/admins/${userId}/`, passwordData);
+    console.log("✅ 사용자 비밀번호 수정 성공");
+  } catch (error) {
+    console.error("❌ 사용자 비밀번호 수정 실패:", error);
     throw error;
   }
 };
