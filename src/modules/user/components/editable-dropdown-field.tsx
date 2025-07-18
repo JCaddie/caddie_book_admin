@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronUp, X } from "lucide-react";
-import { Button } from "@/shared/components/ui";
+import React, { useEffect, useState } from "react";
+import { Check, X } from "lucide-react";
+import { Button, Dropdown } from "@/shared/components/ui";
 
 export interface DropdownOption {
   value: string;
@@ -32,40 +32,13 @@ export const EditableDropdownField: React.FC<EditableDropdownFieldProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  // 외부 클릭 시 드롭다운 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isDropdownOpen]);
 
   // value prop이 변경되면 내부 상태 동기화
   useEffect(() => {
     setSelectedValue(value);
   }, [value]);
 
-  const currentOption = options.find(
-    (option) => option.value === selectedValue
-  );
   const originalOption = options.find((option) => option.value === value);
 
   const handleEdit = () => {
@@ -78,14 +51,12 @@ export const EditableDropdownField: React.FC<EditableDropdownFieldProps> = ({
   const handleCancel = () => {
     setSelectedValue(value);
     setIsEditing(false);
-    setIsDropdownOpen(false);
   };
 
   const handleSave = async () => {
     try {
       await onSave(selectedValue);
       setIsEditing(false);
-      setIsDropdownOpen(false);
     } catch (error) {
       console.error("저장 실패:", error);
       // 에러 발생 시 원래 값으로 복원
@@ -93,16 +64,15 @@ export const EditableDropdownField: React.FC<EditableDropdownFieldProps> = ({
     }
   };
 
-  const handleOptionSelect = (optionValue: string) => {
-    setSelectedValue(optionValue);
-    setIsDropdownOpen(false);
+  const handleDropdownChange = (newValue: string) => {
+    setSelectedValue(newValue);
   };
 
   // 키보드 이벤트 처리
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       handleCancel();
-    } else if (e.key === "Enter" && !isDropdownOpen) {
+    } else if (e.key === "Enter") {
       handleSave();
     }
   };
@@ -121,53 +91,16 @@ export const EditableDropdownField: React.FC<EditableDropdownFieldProps> = ({
 
   const renderEditContent = () => {
     return (
-      <div className="relative w-full" ref={dropdownRef}>
-        {/* 드롭다운 버튼 */}
-        <button
-          ref={buttonRef}
-          type="button"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          onKeyDown={handleKeyDown}
+      <div className="w-full" onKeyDown={handleKeyDown}>
+        <Dropdown
+          options={options}
+          value={selectedValue}
+          onChange={handleDropdownChange}
+          placeholder={placeholder}
           disabled={isLoading || optionsLoading}
-          className="w-full h-8 px-3 border border-gray-300 rounded-md bg-white text-left text-sm flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
-        >
-          <span className="truncate">
-            {currentOption?.label || placeholder}
-          </span>
-          {isDropdownOpen ? (
-            <ChevronUp size={16} className="text-gray-400 flex-shrink-0" />
-          ) : (
-            <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
-          )}
-        </button>
-
-        {/* 드롭다운 목록 */}
-        {isDropdownOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
-            {optionsLoading ? (
-              <div className="px-3 py-2 text-sm text-gray-400">로딩 중...</div>
-            ) : options.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-gray-400">
-                선택 가능한 옵션이 없습니다
-              </div>
-            ) : (
-              options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleOptionSelect(option.value)}
-                  className={`w-full px-3 py-2 text-sm text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 ${
-                    selectedValue === option.value
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-900"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))
-            )}
-          </div>
-        )}
+          className="h-8"
+          containerClassName="w-full"
+        />
       </div>
     );
   };
