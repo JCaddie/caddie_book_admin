@@ -147,7 +147,7 @@ export default function UserDetailPage() {
             {renderField(
               "권한",
               <Badge
-                variant={user.role === "MASTER" ? "primary" : "secondary"}
+                variant={user.role === "MASTER" ? "yellow" : "gray"}
                 className="font-medium"
               >
                 {user.role === "MASTER" ? "마스터" : "관리자"}
