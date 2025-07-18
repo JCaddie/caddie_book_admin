@@ -3,21 +3,35 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { Button, Dropdown, Input } from "@/shared/components/ui";
+import { useGolfCoursesSimple } from "@/modules/golf-course/hooks/use-golf-courses-simple";
+
+interface UserSubmitData {
+  username: string;
+  password: string;
+  password_confirm: string;
+  name: string;
+  phone: string;
+  phonePrefix: string;
+  email: string;
+  golf_course_id: string;
+}
 
 interface UserCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (userData: UserFormData) => void;
+  onSubmit: (userData: UserSubmitData) => void;
   isLoading?: boolean;
 }
 
 interface UserFormData {
   username: string;
   password: string;
+  password_confirm: string;
   name: string;
   phone: string;
   phonePrefix: string;
   email: string;
+  golf_course_id: string;
 }
 
 const PHONE_PREFIX_OPTIONS = [
@@ -35,13 +49,27 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
   onSubmit,
   isLoading = false,
 }) => {
+  // 골프장 목록 조회
+  const { data: golfCoursesData } = useGolfCoursesSimple();
+
+  // 골프장 드롭다운 옵션 생성
+  const golfCourseOptions = React.useMemo(() => {
+    if (!golfCoursesData?.results) return [];
+    return golfCoursesData.results.map((course) => ({
+      label: course.name,
+      value: course.id,
+    }));
+  }, [golfCoursesData]);
+
   const [formData, setFormData] = useState<UserFormData>({
     username: "",
     password: "",
+    password_confirm: "",
     name: "",
     phone: "",
     phonePrefix: "010",
     email: "",
+    golf_course_id: "",
   });
 
   const [errors, setErrors] = useState<Partial<UserFormData>>({});
@@ -75,6 +103,12 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
       newErrors.password = "비밀번호는 8자 이상이어야 합니다.";
     }
 
+    if (!formData.password_confirm.trim()) {
+      newErrors.password_confirm = "비밀번호 확인을 입력해주세요.";
+    } else if (formData.password !== formData.password_confirm) {
+      newErrors.password_confirm = "비밀번호가 일치하지 않습니다.";
+    }
+
     if (!formData.name.trim()) {
       newErrors.name = "이름을 입력해주세요.";
     }
@@ -89,6 +123,10 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
       newErrors.email = "이메일을 입력해주세요.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "이메일 형식이 올바르지 않습니다.";
+    }
+
+    if (!formData.golf_course_id.trim()) {
+      newErrors.golf_course_id = "골프장을 선택해주세요.";
     }
 
     setErrors(newErrors);
@@ -111,10 +149,12 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
       setFormData({
         username: "",
         password: "",
+        password_confirm: "",
         name: "",
         phone: "",
         phonePrefix: "010",
         email: "",
+        golf_course_id: "",
       });
       setErrors({});
       onClose();
@@ -178,6 +218,22 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               />
             </div>
 
+            {/* 비밀번호 확인 입력 */}
+            <div>
+              <Input
+                type="password"
+                placeholder="비밀번호 확인*"
+                value={formData.password_confirm}
+                onChange={(e) =>
+                  handleInputChange("password_confirm", e.target.value)
+                }
+                disabled={isLoading}
+                error={errors.password_confirm}
+                showVisibilityToggle
+                containerClassName="w-full"
+              />
+            </div>
+
             {/* 이름 입력 */}
             <div>
               <Input
@@ -227,6 +283,23 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
                 error={errors.email}
                 containerClassName="w-full"
               />
+            </div>
+
+            {/* 골프장 선택 */}
+            <div>
+              <Dropdown
+                options={golfCourseOptions}
+                value={formData.golf_course_id}
+                onChange={(value) => handleInputChange("golf_course_id", value)}
+                placeholder="골프장 선택*"
+                disabled={isLoading}
+                containerClassName="w-full"
+              />
+              {errors.golf_course_id && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.golf_course_id}
+                </p>
+              )}
             </div>
           </div>
 
