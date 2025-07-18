@@ -1,16 +1,45 @@
+// 골프장 정보 타입
+export interface GolfCourse {
+  id: string;
+  name: string;
+  region: string;
+}
+
+// 그룹 정보 타입
+export interface Group {
+  id: number;
+  name: string;
+  group_type: string;
+}
+
+// 특수그룹 타입 (배열로 관리)
+export interface SpecialGroup {
+  id: number;
+  name: string;
+  group_type: string;
+}
+
+// 고용 타입
+export type EmploymentType =
+  | "FULL_TIME"
+  | "PART_TIME"
+  | "CONTRACT"
+  | "TEMPORARY";
+
+// 성별 타입
+export type Gender = "M" | "F";
+
 // 캐디 기본 정보 인터페이스
 export interface Caddie extends Record<string, unknown> {
   id: string;
-  no: number;
   name: string;
-  golfCourse: string;
-  gender: string;
-  workStatus: string;
-  group: string;
-  groupOrder: string;
-  specialTeam: string;
+  golf_course: GolfCourse;
+  gender: Gender;
+  employment_type: EmploymentType;
+  primary_group: Group;
+  special_groups: SpecialGroup[];
   phone: string;
-  workScore: string;
+  work_score: number;
   isEmpty?: boolean;
 }
 

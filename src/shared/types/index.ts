@@ -15,6 +15,11 @@ export type { ContactInfo, OperationStats, OperationCard } from "./golf-course";
 // 캐디 관련 타입
 export type {
   Caddie,
+  GolfCourse,
+  Group,
+  SpecialGroup,
+  EmploymentType,
+  Gender,
   FilterOption,
   CaddieFilters,
   CaddieSelection,
