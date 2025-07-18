@@ -82,7 +82,7 @@ export const useUserManagement = (): UseUserManagementReturn => {
     []
   );
 
-  // 사용자 삭제 처리
+  // 여러 사용자 삭제 처리
   const handleDeleteUsers = React.useCallback(async () => {
     if (selectedRowKeys.length === 0) return;
 
@@ -110,9 +110,11 @@ export const useUserManagement = (): UseUserManagementReturn => {
     async (userData: {
       username: string;
       password: string;
+      password_confirm: string;
       name: string;
       phone: string;
       email: string;
+      golf_course_id: string;
     }) => {
       try {
         await createUserMutation.mutateAsync(userData);

@@ -11,6 +11,7 @@ export interface User extends Record<string, unknown> {
   role_display: string;
   golf_course_id: string | null;
   golf_course_name: string | null;
+  created_at: string;
   no?: number; // 페이지네이션을 위한 번호 필드
   isEmpty?: boolean; // 빈 행 여부
 }
@@ -56,9 +57,11 @@ export interface UseUserManagementReturn {
   handleSubmitUser: (userData: {
     username: string;
     password: string;
+    password_confirm: string;
     name: string;
     phone: string;
     email: string;
+    golf_course_id: string;
   }) => void;
   handleRowClick: (user: User) => void;
   setSearchTerm: (term: string) => void;
