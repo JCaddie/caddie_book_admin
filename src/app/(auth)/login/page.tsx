@@ -11,16 +11,16 @@ import { tokenUtils } from "@/shared/lib/utils";
 const TEST_ACCOUNTS = [
   {
     id: "1",
-    name: "마스터 관리자",
-    email: "dev@example.com",
-    password: "dev123",
+    name: "master",
+    email: "master@caddiebook.com",
+    password: "master123!",
     role: "MASTER" as const,
   },
   {
     id: "2",
-    name: "골프장 관리자",
-    email: "golf@example.com",
-    password: "golf123",
+    name: "admin",
+    email: "admin@caddiebook.com",
+    password: "admin123!",
     role: "ADMIN" as const,
     golfCourseId: "golf-course-1",
   },
@@ -168,7 +168,7 @@ export default function LoginPage() {
           label="이메일"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="admin@example.com"
+          placeholder="master@caddiebook.com"
           disabled={isSubmitting}
         />
 
@@ -206,7 +206,9 @@ export default function LoginPage() {
                   <p className="text-sm text-gray-600">{account.email}</p>
                   <p className="text-xs text-gray-500">
                     비밀번호: {account.password} | 권한:{" "}
-                    {account.role === "MASTER" ? "마스터" : "관리자"}
+                    {account.role === "MASTER"
+                      ? "슈퍼관리자 (모든 권한)"
+                      : "스태프 (골프장 관리)"}
                   </p>
                 </div>
                 <button
