@@ -153,3 +153,6 @@ export const authUtils = {
     return allowedRoles.some((role) => userRole === role);
   },
 };
+
+// API 클라이언트 재export
+export { apiClient } from "./api-client";

@@ -33,8 +33,6 @@ const AnnouncementsPage: React.FC = () => {
     totalCount,
     realDataCount,
     totalPages,
-    filters,
-    updateSearchTerm,
     selection,
     updateSelection,
     deleteSelectedAnnouncements,
@@ -80,8 +78,6 @@ const AnnouncementsPage: React.FC = () => {
       <AnnouncementActionBar
         totalCount={totalCount}
         selectedCount={selection.selectedRowKeys.length}
-        searchTerm={filters.searchTerm}
-        onSearchChange={updateSearchTerm}
         onDeleteSelected={deleteSelectedAnnouncements}
         onCreateNew={handleCreateNew}
         isDeleting={isDeleting}

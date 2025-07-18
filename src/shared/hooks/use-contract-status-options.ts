@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiClient } from "@/shared/lib/api-client";
 
 export interface ContractStatusOption {
   label: string;
@@ -18,10 +19,11 @@ export function useContractStatusOptions() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/v1/golf-courses/constants/contract_status/`)
-      .then((res) => res.json())
+    apiClient
+      .get<ContractStatusApiResponse[]>(
+        "/api/v1/golf-courses/constants/contract_status/"
+      )
       .then((data: ContractStatusApiResponse[]) => {
         setOptions([
           { label: "계약현황", value: "" },

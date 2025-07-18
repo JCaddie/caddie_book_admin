@@ -9,19 +9,11 @@ import { EditableGolfCourse } from "@/modules/golf-course/types/golf-course";
 import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGolfCourseOptions } from "@/shared/hooks/use-golf-course-options";
+import { apiClient } from "@/shared/lib/api-client";
 
 // 골프장 생성 API 직접 구현 (POST)
 const createGolfCourse = async (data: EditableGolfCourse) => {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const res = await fetch(`${API_BASE_URL}/api/v1/golf-courses/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("골프장 등록에 실패했습니다.");
-  return res.json();
+  return apiClient.post("/api/v1/golf-courses/", data);
 };
 
 const EMPTY_FORM: EditableGolfCourse = {

@@ -5,22 +5,36 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { TextField } from "@/shared/components/ui";
 import { User } from "@/shared/types";
-import { tokenUtils } from "@/shared/lib/utils";
+import { apiClient } from "@/shared/lib/api-client";
+
+// 로그인 API 응답 타입
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    name: string;
+    role: string;
+    golf_course_id: string | null;
+  };
+}
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
   {
     id: "1",
-    name: "마스터 관리자",
-    email: "dev@example.com",
-    password: "dev123",
+    name: "master",
+    email: "master@caddiebook.com",
+    password: "master123!",
     role: "MASTER" as const,
   },
   {
     id: "2",
-    name: "골프장 관리자",
-    email: "golf@example.com",
-    password: "golf123",
+    name: "admin",
+    email: "admin@caddiebook.com",
+    password: "admin123!",
     role: "ADMIN" as const,
     golfCourseId: "golf-course-1",
   },
@@ -72,34 +86,39 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      // 테스트 계정 확인
-      const account = TEST_ACCOUNTS.find(
-        (acc) => acc.email === email && acc.password === password
+      // 실제 API 호출 (인증 토큰 불필요)
+      const data = await apiClient.post<LoginResponse>(
+        "/api/token/",
+        {
+          username: email,
+          password: password,
+        },
+        { skipAuth: true }
       );
 
-      if (account) {
-        // 통합된 토큰 유틸리티로 토큰 생성
-        const token = tokenUtils.generateMockToken(account.id);
+      // API 응답에서 토큰과 사용자 정보 추출
+      const accessToken = data.access_token;
 
-        // 사용자 정보 생성
-        const user: User = {
-          id: account.id,
-          name: account.name,
-          email: account.email,
-          role: account.role,
-          golfCourseId: account.golfCourseId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
+      // 실제 API 응답 구조에 맞게 사용자 정보 생성
+      const user: User = {
+        id: data.user.id,
+        name: data.user.name || data.user.username,
+        email: data.user.email,
+        role: data.user.role as "MASTER" | "ADMIN",
+        golfCourseId: data.user.golf_course_id || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-        // 로그인 함수 호출 (토큰과 사용자 정보 함께 전달)
-        login(token, user);
-      } else {
-        setError("이메일 또는 비밀번호가 잘못되었습니다.");
-      }
+      // 로그인 함수 호출
+      login(accessToken, user);
     } catch (error) {
-      console.error("로그인 에러:", error);
-      setError("로그인 중 오류가 발생했습니다.");
+      console.error("🚨 로그인 에러:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "로그인 중 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -115,32 +134,39 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const account = TEST_ACCOUNTS.find(
-        (acc) => acc.email === testEmail && acc.password === testPassword
+      // 실제 API 호출 (인증 토큰 불필요)
+      const data = await apiClient.post<LoginResponse>(
+        "/api/token/",
+        {
+          username: testEmail,
+          password: testPassword,
+        },
+        { skipAuth: true }
       );
 
-      if (account) {
-        const token = tokenUtils.generateMockToken(account.id);
+      // API 응답에서 토큰과 사용자 정보 추출
+      const accessToken = data.access_token;
 
-        // 사용자 정보 생성
-        const user: User = {
-          id: account.id,
-          name: account.name,
-          email: account.email,
-          role: account.role,
-          golfCourseId: account.golfCourseId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
+      // 실제 API 응답 구조에 맞게 사용자 정보 생성
+      const user: User = {
+        id: data.user.id,
+        name: data.user.name || data.user.username,
+        email: data.user.email,
+        role: data.user.role as "MASTER" | "ADMIN",
+        golfCourseId: data.user.golf_course_id || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-        // 로그인 함수 호출 (토큰과 사용자 정보 함께 전달)
-        login(token, user);
-      } else {
-        setError("계정 정보를 찾을 수 없습니다.");
-      }
+      // 로그인 함수 호출
+      login(accessToken, user);
     } catch (error) {
-      console.error("테스트 계정 로그인 에러:", error);
-      setError("로그인 중 오류가 발생했습니다.");
+      console.error("🚨 테스트 계정 로그인 에러:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "로그인 중 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -168,7 +194,7 @@ export default function LoginPage() {
           label="이메일"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="admin@example.com"
+          placeholder="master@caddiebook.com"
           disabled={isSubmitting}
         />
 
@@ -206,7 +232,9 @@ export default function LoginPage() {
                   <p className="text-sm text-gray-600">{account.email}</p>
                   <p className="text-xs text-gray-500">
                     비밀번호: {account.password} | 권한:{" "}
-                    {account.role === "MASTER" ? "마스터" : "관리자"}
+                    {account.role === "MASTER"
+                      ? "슈퍼관리자 (모든 권한)"
+                      : "스태프 (골프장 관리)"}
                   </p>
                 </div>
                 <button

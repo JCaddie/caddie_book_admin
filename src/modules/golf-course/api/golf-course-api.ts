@@ -4,8 +4,7 @@ import {
   GolfCourseFilters,
   GolfCourseListResponse,
 } from "../types/golf-course";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { apiClient } from "@/shared/lib/api-client";
 
 export const fetchGolfCourses = async ({
   page,
@@ -25,39 +24,25 @@ export const fetchGolfCourses = async ({
   if (filters.field_count) params.append("field_count", filters.field_count);
   // 기타 필터도 필요시 추가
 
-  const res = await fetch(`${API_BASE_URL}/api/v1/golf-courses/?${params}`);
-  if (!res.ok) throw new Error("골프장 데이터를 불러오지 못했습니다.");
-  return res.json();
+  return apiClient.get<GolfCourseListResponse>(
+    `/api/v1/golf-courses/?${params}`
+  );
 };
 
 export const fetchGolfCourseDetail = async (
   id: string
 ): Promise<GolfCourseDetail> => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/golf-courses/${id}/`);
-  if (!res.ok) throw new Error("골프장 상세 정보를 불러오지 못했습니다.");
-  return res.json();
+  return apiClient.get<GolfCourseDetail>(`/api/v1/golf-courses/${id}/`);
 };
 
 export const updateGolfCourse = async (
   id: string,
   data: Partial<GolfCourseDetail> | Partial<EditableGolfCourse>
 ): Promise<GolfCourseDetail> => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/golf-courses/${id}/`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("골프장 정보를 수정하지 못했습니다.");
-  return res.json();
+  return apiClient.patch<GolfCourseDetail>(`/api/v1/golf-courses/${id}/`, data);
 };
 
 export async function deleteGolfCourse(id: string) {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const res = await fetch(`${API_BASE_URL}/api/v1/golf-courses/${id}/`, {
-    method: "DELETE",
-  });
-  if (!res.ok) throw new Error("삭제 실패");
+  await apiClient.delete(`/api/v1/golf-courses/${id}/`);
   return true;
 }
