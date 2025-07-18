@@ -46,8 +46,10 @@ const SearchWithButton: React.FC<SearchWithButtonProps> = ({
     const params = new URLSearchParams(Array.from(searchParams.entries()));
 
     if (inputValue.trim()) {
+      // 검색어가 있으면 검색 파라미터 설정
       params.set(searchParam, inputValue.trim());
     } else {
+      // 검색어가 없으면 검색 파라미터 제거 (모든 데이터 조회)
       params.delete(searchParam);
     }
 
