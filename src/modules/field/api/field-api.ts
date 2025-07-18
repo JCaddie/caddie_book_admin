@@ -41,6 +41,14 @@ export const deleteField = async (id: string): Promise<boolean> => {
   return true;
 };
 
+// 필드 일괄 삭제
+export const deleteFieldsBulk = async (ids: string[]): Promise<boolean> => {
+  await apiClient.delete(`/api/v1/fields/bulk_delete/`, {
+    body: JSON.stringify({ ids }),
+  });
+  return true;
+};
+
 // 골프장 simple 리스트 조회 (id, name)
 export const fetchSimpleGolfCourses = async (): Promise<
   { id: string; name: string }[]

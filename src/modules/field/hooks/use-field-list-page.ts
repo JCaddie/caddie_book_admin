@@ -1,6 +1,10 @@
 import { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FieldTableRow, useDeleteField, useFieldList } from "@/modules/field";
+import {
+  FieldTableRow,
+  useDeleteFieldsBulk,
+  useFieldList,
+} from "@/modules/field";
 import { transformFieldsToTableRows } from "@/modules/field/utils";
 
 export function useFieldListPage() {
@@ -15,7 +19,7 @@ export function useFieldListPage() {
 
   // 삭제 모달/로딩 상태
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const deleteFieldMutation = useDeleteField();
+  const deleteFieldsBulkMutation = useDeleteFieldsBulk();
 
   // search 파라미터를 URL에서 읽어옴
   const searchParamValue = searchParams.get("search") || "";
@@ -72,16 +76,15 @@ export function useFieldListPage() {
   const handleConfirmDelete = useCallback(async () => {
     if (selectedRowKeys.length === 0) return;
     try {
-      await Promise.all(
-        selectedRowKeys.map((id) => deleteFieldMutation.mutateAsync(id))
-      );
+      // 일괄 삭제 API 사용
+      await deleteFieldsBulkMutation.mutateAsync(selectedRowKeys);
       setSelectedRowKeys([]);
       setIsDeleteModalOpen(false);
       queryResult.refetch();
     } catch {
       // 에러 처리 필요시 추가
     }
-  }, [selectedRowKeys, deleteFieldMutation, queryResult]);
+  }, [selectedRowKeys, deleteFieldsBulkMutation, queryResult]);
 
   return {
     currentPage,
@@ -90,7 +93,7 @@ export function useFieldListPage() {
     setSelectedRowKeys,
     isDeleteModalOpen,
     setIsDeleteModalOpen,
-    deleteFieldMutation,
+    deleteFieldsBulkMutation,
     searchInput,
     setSearchInput,
     queryResult,
