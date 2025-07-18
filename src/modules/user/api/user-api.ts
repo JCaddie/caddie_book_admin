@@ -37,9 +37,11 @@ export const getAdmins = async (): Promise<AdminsApiResponse> => {
 export const createUser = async (userData: {
   username: string;
   password: string;
+  password_confirm: string;
   name: string;
   phone: string;
   email: string;
+  golf_course_id: string;
 }): Promise<User> => {
   try {
     console.log("🔄 사용자 생성 시작:", userData);
@@ -56,17 +58,31 @@ export const createUser = async (userData: {
 };
 
 /**
- * 사용자 삭제
+ * 단일 사용자 삭제
+ */
+export const deleteUser = async (userId: string): Promise<void> => {
+  try {
+    console.log("🔄 사용자 삭제 시작:", userId);
+    await apiClient.delete(`/api/v1/auth/admins/${userId}/`);
+    console.log("✅ 사용자 삭제 성공");
+  } catch (error) {
+    console.error("❌ 사용자 삭제 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 여러 사용자 일괄 삭제 (실제 API 사용)
  */
 export const deleteUsers = async (userIds: string[]): Promise<void> => {
   try {
-    console.log("🔄 사용자 삭제 시작:", userIds);
-    // 여러 사용자 삭제를 위한 batch delete API 호출
-    // 실제 API 엔드포인트는 추후 확인 필요
-    await apiClient.delete(`/api/v1/auth/admins/batch`, {
-      body: JSON.stringify({ user_ids: userIds }),
+    console.log("🔄 여러 사용자 일괄 삭제 시작:", userIds);
+
+    await apiClient.delete("/api/v1/auth/admins/bulk_delete/", {
+      body: JSON.stringify({ ids: userIds }),
     });
-    console.log("✅ 사용자 삭제 성공");
+
+    console.log("✅ 모든 사용자 삭제 성공");
   } catch (error) {
     console.error("❌ 사용자 삭제 실패:", error);
     throw error;

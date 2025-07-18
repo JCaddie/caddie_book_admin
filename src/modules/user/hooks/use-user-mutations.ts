@@ -1,5 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createUser, deleteUsers, updateUser } from "../api/user-api";
+import {
+  createUser,
+  deleteUser,
+  deleteUsers,
+  updateUser,
+} from "../api/user-api";
 import { User } from "../types";
 import { ADMIN_LIST_QUERY_KEY } from "./use-admin-list";
 
@@ -22,7 +27,25 @@ export const useCreateUser = () => {
 };
 
 /**
- * 사용자 삭제 mutation 훅
+ * 단일 사용자 삭제 mutation 훅
+ */
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteUser,
+    onSuccess: () => {
+      // 관리자 목록 쿼리 무효화하여 재페치
+      queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
+    },
+    onError: (error) => {
+      console.error("사용자 삭제 중 오류 발생:", error);
+    },
+  });
+};
+
+/**
+ * 여러 사용자 삭제 mutation 훅
  */
 export const useDeleteUsers = () => {
   const queryClient = useQueryClient();
