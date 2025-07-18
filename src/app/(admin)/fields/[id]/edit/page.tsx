@@ -73,7 +73,7 @@ const FieldEditPage: React.FC = () => {
   };
 
   return (
-    <RoleGuard requiredRole="MASTER">
+    <RoleGuard requiredRoles={["MASTER", "ADMIN"]}>
       <FieldFormSection
         title="필드 수정"
         isSaving={updateFieldMutation.isPending}

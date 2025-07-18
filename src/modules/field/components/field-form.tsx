@@ -3,6 +3,7 @@ import TextField from "@/shared/components/ui/text-field";
 import Dropdown from "@/shared/components/ui/dropdown";
 import { FieldFormData } from "../types";
 import { useGolfCourseOptions } from "../hooks/use-golf-course-options";
+import { useAuth } from "@/shared/hooks";
 
 interface FieldFormProps {
   formData: FieldFormData;
@@ -18,6 +19,9 @@ const isActiveOptions = [
 ];
 
 const FieldForm: React.FC<FieldFormProps> = ({ formData, onInputChange }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
+
   const {
     options: golfCourseOptions,
     isLoading: golfCourseLoading,
@@ -26,25 +30,28 @@ const FieldForm: React.FC<FieldFormProps> = ({ formData, onInputChange }) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-800 mb-1">
-            골프장
-          </label>
-          <Dropdown
-            options={golfCourseOptions}
-            value={formData.golf_course_id}
-            onChange={(value) => onInputChange("golf_course_id", value)}
-            placeholder={
-              golfCourseLoading
-                ? "로딩 중..."
-                : golfCourseError
-                ? "불러오기 실패"
-                : "골프장 선택"
-            }
-            disabled={golfCourseLoading}
-          />
-        </div>
+      <div className={`grid ${isAdmin ? "grid-cols-3" : "grid-cols-2"} gap-6`}>
+        {/* ADMIN 권한이 아닐 때만 골프장 선택 드롭다운 표시 */}
+        {!isAdmin && (
+          <div>
+            <label className="block text-sm font-medium text-gray-800 mb-1">
+              골프장
+            </label>
+            <Dropdown
+              options={golfCourseOptions}
+              value={formData.golf_course_id}
+              onChange={(value) => onInputChange("golf_course_id", value)}
+              placeholder={
+                golfCourseLoading
+                  ? "로딩 중..."
+                  : golfCourseError
+                  ? "불러오기 실패"
+                  : "골프장 선택"
+              }
+              disabled={golfCourseLoading}
+            />
+          </div>
+        )}
         <TextField
           label="필드명"
           value={formData.name}

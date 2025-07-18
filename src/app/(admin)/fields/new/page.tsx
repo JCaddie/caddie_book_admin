@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import FieldForm from "../../../../modules/field/components/field-form";
 import { FieldFormData } from "@/modules/field/types";
 import FieldFormSection from "../../../../modules/field/components/field-form-section";
 import { useCreateField } from "@/modules/field/hooks";
+import { useAuth } from "@/shared/hooks";
 
 const EMPTY_FORM: FieldFormData = {
   name: "",
@@ -18,9 +19,20 @@ const EMPTY_FORM: FieldFormData = {
 
 const FieldCreatePage: React.FC = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<FieldFormData>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
   const createFieldMutation = useCreateField();
+
+  // ADMIN 권한일 때 자동으로 골프장 ID 설정
+  useEffect(() => {
+    if (user?.role === "ADMIN" && user.golfCourseId) {
+      setFormData((prev) => ({
+        ...prev,
+        golf_course_id: user.golfCourseId!,
+      }));
+    }
+  }, [user]);
 
   // 입력값 변경 핸들러
   const handleInputChange = (
@@ -47,7 +59,7 @@ const FieldCreatePage: React.FC = () => {
   };
 
   return (
-    <RoleGuard requiredRole="MASTER">
+    <RoleGuard requiredRoles={["MASTER", "ADMIN"]}>
       <FieldFormSection
         title="필드 등록"
         isSaving={createFieldMutation.isPending}
