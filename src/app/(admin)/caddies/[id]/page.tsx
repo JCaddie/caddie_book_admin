@@ -2,6 +2,7 @@
 
 import { use, useMemo, useState } from "react";
 import { DataTable, Dropdown, Pagination } from "@/shared/components/ui";
+import { useCaddieDetail } from "@/modules/caddie/hooks";
 
 interface CaddieDetailPageProps {
   params: Promise<{
@@ -40,13 +41,45 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
   const resolvedParams = use(params);
   const [selectedRole, setSelectedRole] = useState("캐디");
   const [selectedGroup, setSelectedGroup] = useState("1조");
-  const [selectedClass, setSelectedClass] = useState("2부");
 
-  // 샘플 캐디 데이터
-  const caddieData = useMemo(
-    () => ({
+  // 캐디 상세정보 API 연결
+  const { caddie, isLoading, error } = useCaddieDetail(resolvedParams.id);
+
+  // 캐디 데이터 (API 응답 또는 기본값)
+  const caddieData = useMemo(() => {
+    if (caddie) {
+      // 고용 형태 한글 변환
+      const employmentTypeMap: Record<string, string> = {
+        FULL_TIME: "정규직",
+        PART_TIME: "시간제",
+        CONTRACT: "계약직",
+        TEMPORARY: "임시직",
+      };
+
+      return {
+        id: caddie.id,
+        name: caddie.name,
+        contractType:
+          employmentTypeMap[caddie.employment_type] || caddie.employment_type,
+        workplace: `${caddie.golf_course.name} (${caddie.golf_course.region})`,
+        role: "캐디",
+        group: caddie.primary_group.name,
+        class: "2부", // API 응답에 없는 경우 기본값
+        phone: caddie.phone,
+        email: "abc@test.com", // API 응답에 없는 경우 기본값
+        address:
+          "충청북도 청주시 청원구 오창읍 양청송대길 10, 406호(청주미래누리터(지식산업센터))", // 기본값
+        specialGroups:
+          caddie.special_groups.map((g) => g.name).join(", ") || "없음",
+        workScore: caddie.work_score.toString(),
+        gender: caddie.gender === "M" ? "남" : "여",
+      };
+    }
+
+    // 로딩 중이거나 에러시 기본값
+    return {
       id: resolvedParams.id,
-      name: "홍길동",
+      name: isLoading ? "로딩 중..." : error ? "데이터 없음" : "홍길동",
       contractType: "정규직",
       workplace: "제이캐디 아카데미",
       role: "캐디",
@@ -56,9 +89,11 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
       email: "abc@test.com",
       address:
         "충청북도 청주시 청원구 오창읍 양청송대길 10, 406호(청주미래누리터(지식산업센터))",
-    }),
-    [resolvedParams.id]
-  );
+      specialGroups: "없음",
+      workScore: "0",
+      gender: "남",
+    };
+  }, [caddie, resolvedParams.id, isLoading, error]);
 
   // 근무 이력 샘플 데이터
   const workHistory: WorkHistory[] = useMemo(
@@ -140,11 +175,43 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
     { value: "4조", label: "4조" },
   ];
 
-  const classOptions = [
-    { value: "1부", label: "1부" },
-    { value: "2부", label: "2부" },
-    { value: "3부", label: "3부" },
-  ];
+  // 로딩 상태 처리
+  if (isLoading) {
+    return (
+      <div
+        className="min-h-screen bg-gray-50 flex items-center justify-center"
+        style={{ minWidth: "1600px" }}
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">캐디 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태 처리
+  if (error) {
+    return (
+      <div
+        className="min-h-screen bg-gray-50 flex items-center justify-center"
+        style={{ minWidth: "1600px" }}
+      >
+        <div className="text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p className="font-bold">오류가 발생했습니다</p>
+            <p>{error}</p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ minWidth: "1600px" }}>
@@ -213,6 +280,16 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
                   {/* 세 번째 행 */}
                   <div className="border-b border-gray-200 flex">
                     <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                      <span className="text-sm font-bold">성별</span>
+                    </div>
+                    <div className="flex-1 flex items-center px-4 py-3">
+                      <span className="text-sm text-black">
+                        {caddieData.gender}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="border-b border-gray-200 flex">
+                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
                       <span className="text-sm font-bold">그룹</span>
                     </div>
                     <div className="flex-1 flex items-center px-4 py-3">
@@ -226,23 +303,30 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
                       </div>
                     </div>
                   </div>
+
+                  {/* 네 번째 행 */}
                   <div className="border-b border-gray-200 flex">
                     <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">반</span>
+                      <span className="text-sm font-bold">특수반</span>
                     </div>
                     <div className="flex-1 flex items-center px-4 py-3">
-                      <div className="w-[106px]">
-                        <Dropdown
-                          options={classOptions}
-                          value={selectedClass}
-                          onChange={setSelectedClass}
-                          placeholder="반"
-                        />
-                      </div>
+                      <span className="text-sm text-black">
+                        {caddieData.specialGroups}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="border-b border-gray-200 flex">
+                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                      <span className="text-sm font-bold">근무점수</span>
+                    </div>
+                    <div className="flex-1 flex items-center px-4 py-3">
+                      <span className="text-sm text-black">
+                        {caddieData.workScore}
+                      </span>
                     </div>
                   </div>
 
-                  {/* 네 번째 행 */}
+                  {/* 다섯 번째 행 */}
                   <div className="border-b border-gray-200 flex">
                     <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
                       <span className="text-sm font-bold">연락처</span>
@@ -264,7 +348,7 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
                     </div>
                   </div>
 
-                  {/* 다섯 번째 행 */}
+                  {/* 여섯 번째 행 */}
                   <div className="col-span-2 flex">
                     <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
                       <span className="text-sm font-bold">거주지</span>
