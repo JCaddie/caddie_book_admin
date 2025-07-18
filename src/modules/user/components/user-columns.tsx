@@ -70,4 +70,31 @@ export const userColumns: Column<User>[] = [
     align: "center",
     render: renderRole, // 커스텀 라벨 매핑
   },
+  {
+    key: "created_at",
+    title: "생성일",
+    width: 160,
+    align: "center",
+    render: (value: unknown, record: User): React.ReactNode => {
+      if (record.isEmpty) return null;
+      const createdAt = value as string;
+      // ISO 날짜 문자열을 사용자 친화적 형태로 변환
+      const date = new Date(createdAt);
+      const formattedDate = date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      const formattedTime = date.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return (
+        <div className="text-sm">
+          <div className="text-gray-900">{formattedDate}</div>
+          <div className="text-gray-500 text-xs">{formattedTime}</div>
+        </div>
+      );
+    },
+  },
 ];
