@@ -26,10 +26,6 @@ export const useCaddieList = () => {
   // 필터 상태
   const [filters, setFilters] = useState<CaddieFilters>(DEFAULT_FILTERS);
 
-  // 골프장 필터 상태 (MASTER 권한용)
-  const [selectedGolfCourseId, setSelectedGolfCourseId] = useState<string>("");
-  const [golfCourseSearchTerm, setGolfCourseSearchTerm] = useState<string>("");
-
   // 선택 상태
   const [selection, setSelection] = useState<CaddieSelection>({
     selectedRowKeys: [],
@@ -69,11 +65,6 @@ export const useCaddieList = () => {
         params.special_team = filters.selectedSpecialTeam;
       }
 
-      // MASTER 권한일 때 골프장 필터 추가
-      if (isMaster && selectedGolfCourseId) {
-        params.golf_course_id = selectedGolfCourseId;
-      }
-
       const response = await getCaddieList(params);
 
       setCaddies(response.results);
@@ -88,7 +79,7 @@ export const useCaddieList = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filters, selectedGolfCourseId, isMaster]);
+  }, [currentPage, filters, isMaster]);
 
   // 데이터 로드 트리거
   useEffect(() => {
@@ -98,7 +89,7 @@ export const useCaddieList = () => {
   // 페이지 변경 시 첫 페이지로 리셋
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, selectedGolfCourseId]);
+  }, [filters]);
 
   // 필터 업데이트 함수들
   const updateSelectedGroup = (selectedGroup: string) => {
@@ -107,17 +98,6 @@ export const useCaddieList = () => {
 
   const updateSelectedSpecialTeam = (selectedSpecialTeam: string) => {
     setFilters((prev) => ({ ...prev, selectedSpecialTeam }));
-  };
-
-  // 골프장 필터 함수들 (MASTER 권한용)
-  const handleGolfCourseChange = (golfCourseId: string) => {
-    setSelectedGolfCourseId(golfCourseId);
-  };
-
-  const handleGolfCourseSearchChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setGolfCourseSearchTerm(e.target.value);
   };
 
   // 선택 상태 업데이트
@@ -181,12 +161,6 @@ export const useCaddieList = () => {
     filters,
     updateSelectedGroup,
     updateSelectedSpecialTeam,
-
-    // 골프장 필터링 (MASTER 권한용)
-    selectedGolfCourseId,
-    golfCourseSearchTerm,
-    handleGolfCourseChange,
-    handleGolfCourseSearchChange,
 
     // 선택 상태
     selection,

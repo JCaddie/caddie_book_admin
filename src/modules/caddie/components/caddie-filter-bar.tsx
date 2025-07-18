@@ -13,11 +13,6 @@ interface CaddieFilterBarProps {
   onGroupChange: (value: string) => void;
   onSpecialTeamChange: (value: string) => void;
   onDeleteSelected: () => void;
-  // 골프장 필터링 props (하위 호환성을 위해 유지)
-  selectedGolfCourseId?: string;
-  golfCourseSearchTerm?: string;
-  onGolfCourseChange?: (golfCourseId: string) => void;
-  onGolfCourseSearchChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({

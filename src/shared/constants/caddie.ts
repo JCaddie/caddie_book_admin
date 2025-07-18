@@ -2,7 +2,6 @@ import { FilterOption } from "@/shared/types/caddie";
 
 // 페이지네이션 상수
 export const ITEMS_PER_PAGE = 20;
-export const SAMPLE_DATA_COUNT = 78;
 
 // 테이블 컬럼 정의
 export const CADDIE_COLUMNS = [
@@ -24,29 +23,35 @@ export const CADDIE_COLUMNS = [
     title: "골프장",
     width: 200,
     align: "center" as const,
-    render: (value: { name: string; region: string }) =>
-      `${value.name} (${value.region})`,
+    render: (value: unknown) => {
+      const golf_course = value as { name: string; region: string };
+      return `${golf_course.name} (${golf_course.region})`;
+    },
   },
   {
     key: "gender",
     title: "성별",
     width: 100,
     align: "center" as const,
-    render: (value: string) => (value === "M" ? "남" : "여"),
+    render: (value: unknown) => {
+      const gender = value as string;
+      return gender === "M" ? "남" : "여";
+    },
   },
   {
     key: "employment_type",
     title: "근무형태",
     width: 120,
     align: "center" as const,
-    render: (value: string) => {
+    render: (value: unknown) => {
+      const employment_type = value as string;
       const typeMap: Record<string, string> = {
         FULL_TIME: "정규직",
         PART_TIME: "시간제",
         CONTRACT: "계약직",
         TEMPORARY: "임시직",
       };
-      return typeMap[value] || value;
+      return typeMap[employment_type] || employment_type;
     },
   },
   {
@@ -54,15 +59,20 @@ export const CADDIE_COLUMNS = [
     title: "그룹",
     width: 120,
     align: "center" as const,
-    render: (value: { name: string }) => value.name,
+    render: (value: unknown) => {
+      const group = value as { name: string };
+      return group.name;
+    },
   },
   {
     key: "special_groups",
     title: "특수반",
     width: 120,
     align: "center" as const,
-    render: (value: { name: string }[]) =>
-      value.length > 0 ? value.map((g) => g.name).join(", ") : "-",
+    render: (value: unknown) => {
+      const groups = value as { name: string }[];
+      return groups.length > 0 ? groups.map((g) => g.name).join(", ") : "-";
+    },
   },
   {
     key: "phone",
@@ -75,7 +85,10 @@ export const CADDIE_COLUMNS = [
     title: "근무점수",
     width: 120,
     align: "center" as const,
-    render: (value: number) => value.toString(),
+    render: (value: unknown) => {
+      const score = value as number;
+      return score.toString();
+    },
   },
 ];
 
