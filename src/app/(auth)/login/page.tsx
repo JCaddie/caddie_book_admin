@@ -5,6 +5,21 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { TextField } from "@/shared/components/ui";
 import { User } from "@/shared/types";
+import { apiClient } from "@/shared/lib/api-client";
+
+// 로그인 API 응답 타입
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    name: string;
+    role: string;
+    golf_course_id: string | null;
+  };
+}
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
@@ -71,56 +86,39 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      // 실제 API 호출
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const response = await fetch(`${API_BASE_URL}/api/token/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      // 실제 API 호출 (인증 토큰 불필요)
+      const data = await apiClient.post<LoginResponse>(
+        "/api/token/",
+        {
           username: email,
           password: password,
-        }),
-      });
+        },
+        { skipAuth: true }
+      );
 
-      if (response.ok) {
-        const data = await response.json();
+      // API 응답에서 토큰과 사용자 정보 추출
+      const accessToken = data.access_token;
 
-        // 로그인 API 응답 데이터 출력
-        console.log("🔍 로그인 API 응답 데이터:", data);
-        console.log("📋 응답 데이터 구조:", JSON.stringify(data, null, 2));
+      // 실제 API 응답 구조에 맞게 사용자 정보 생성
+      const user: User = {
+        id: data.user.id,
+        name: data.user.name || data.user.username,
+        email: data.user.email,
+        role: data.user.role as "MASTER" | "ADMIN",
+        golfCourseId: data.user.golf_course_id || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-        // API 응답에서 토큰과 사용자 정보 추출
-        const accessToken = data.access_token;
-        const refreshToken = data.refresh_token;
-        console.log("🔑 추출된 액세스 토큰:", accessToken);
-        console.log("🔄 추출된 리프레시 토큰:", refreshToken);
-
-        // 실제 API 응답 구조에 맞게 사용자 정보 생성
-        const user: User = {
-          id: data.user.id,
-          name: data.user.name || data.user.username,
-          email: data.user.email,
-          role: data.user.role,
-          golfCourseId: data.user.golf_course_id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-
-        console.log("👤 생성된 사용자 정보:", user);
-
-        // 로그인 함수 호출
-        login(accessToken, user);
-      } else {
-        const errorData = await response.json();
-        console.log("❌ 로그인 실패 - 응답 상태:", response.status);
-        console.log("❌ 로그인 실패 - 에러 데이터:", errorData);
-        setError(errorData.detail || "이메일 또는 비밀번호가 잘못되었습니다.");
-      }
+      // 로그인 함수 호출
+      login(accessToken, user);
     } catch (error) {
-      console.error("🚨 로그인 네트워크 에러:", error);
-      setError("서버에 연결할 수 없습니다. 네트워크를 확인해주세요.");
+      console.error("🚨 로그인 에러:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "로그인 중 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -136,59 +134,39 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      // 실제 API 호출
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const response = await fetch(`${API_BASE_URL}/api/token/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      // 실제 API 호출 (인증 토큰 불필요)
+      const data = await apiClient.post<LoginResponse>(
+        "/api/token/",
+        {
           username: testEmail,
           password: testPassword,
-        }),
-      });
+        },
+        { skipAuth: true }
+      );
 
-      if (response.ok) {
-        const data = await response.json();
+      // API 응답에서 토큰과 사용자 정보 추출
+      const accessToken = data.access_token;
 
-        // 테스트 계정 로그인 API 응답 데이터 출력
-        console.log("🧪 테스트 계정 로그인 API 응답 데이터:", data);
-        console.log(
-          "📋 테스트 응답 데이터 구조:",
-          JSON.stringify(data, null, 2)
-        );
+      // 실제 API 응답 구조에 맞게 사용자 정보 생성
+      const user: User = {
+        id: data.user.id,
+        name: data.user.name || data.user.username,
+        email: data.user.email,
+        role: data.user.role as "MASTER" | "ADMIN",
+        golfCourseId: data.user.golf_course_id || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-        // API 응답에서 토큰과 사용자 정보 추출
-        const accessToken = data.access_token;
-        const refreshToken = data.refresh_token;
-        console.log("🔑 테스트 계정 추출된 액세스 토큰:", accessToken);
-        console.log("🔄 테스트 계정 추출된 리프레시 토큰:", refreshToken);
-
-        // 실제 API 응답 구조에 맞게 사용자 정보 생성
-        const user: User = {
-          id: data.user.id,
-          name: data.user.name || data.user.username,
-          email: data.user.email,
-          role: data.user.role,
-          golfCourseId: data.user.golf_course_id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-
-        console.log("👤 테스트 계정 생성된 사용자 정보:", user);
-
-        // 로그인 함수 호출
-        login(accessToken, user);
-      } else {
-        const errorData = await response.json();
-        console.log("❌ 테스트 계정 로그인 실패 - 응답 상태:", response.status);
-        console.log("❌ 테스트 계정 로그인 실패 - 에러 데이터:", errorData);
-        setError(errorData.detail || "계정 정보를 찾을 수 없습니다.");
-      }
+      // 로그인 함수 호출
+      login(accessToken, user);
     } catch (error) {
-      console.error("🚨 테스트 계정 로그인 네트워크 에러:", error);
-      setError("서버에 연결할 수 없습니다. 네트워크를 확인해주세요.");
+      console.error("🚨 테스트 계정 로그인 에러:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "로그인 중 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
