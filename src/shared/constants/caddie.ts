@@ -11,6 +11,7 @@ export const CADDIE_COLUMNS = [
     title: "No.",
     width: 80,
     align: "center" as const,
+    render: (value: unknown, record: unknown, index: number) => index + 1,
   },
   {
     key: "name",
@@ -19,40 +20,49 @@ export const CADDIE_COLUMNS = [
     align: "center" as const,
   },
   {
-    key: "golfCourse",
+    key: "golf_course",
     title: "골프장",
     width: 200,
     align: "center" as const,
+    render: (value: { name: string; region: string }) =>
+      `${value.name} (${value.region})`,
   },
   {
     key: "gender",
     title: "성별",
     width: 100,
     align: "center" as const,
+    render: (value: string) => (value === "M" ? "남" : "여"),
   },
   {
-    key: "workStatus",
-    title: "근무",
+    key: "employment_type",
+    title: "근무형태",
     width: 120,
     align: "center" as const,
+    render: (value: string) => {
+      const typeMap: Record<string, string> = {
+        FULL_TIME: "정규직",
+        PART_TIME: "시간제",
+        CONTRACT: "계약직",
+        TEMPORARY: "임시직",
+      };
+      return typeMap[value] || value;
+    },
   },
   {
-    key: "group",
+    key: "primary_group",
     title: "그룹",
     width: 120,
     align: "center" as const,
+    render: (value: { name: string }) => value.name,
   },
   {
-    key: "groupOrder",
-    title: "그룹 순서",
-    width: 140,
-    align: "center" as const,
-  },
-  {
-    key: "specialTeam",
+    key: "special_groups",
     title: "특수반",
     width: 120,
     align: "center" as const,
+    render: (value: { name: string }[]) =>
+      value.length > 0 ? value.map((g) => g.name).join(", ") : "-",
   },
   {
     key: "phone",
@@ -61,10 +71,11 @@ export const CADDIE_COLUMNS = [
     align: "center" as const,
   },
   {
-    key: "workScore",
+    key: "work_score",
     title: "근무점수",
     width: 120,
     align: "center" as const,
+    render: (value: number) => value.toString(),
   },
 ];
 
