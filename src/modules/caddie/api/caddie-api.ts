@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/lib/api-client";
-import { Caddie } from "@/shared/types/caddie";
+import { Caddie, CaddieDetail } from "@/shared/types/caddie";
 
 /**
  * 캐디 목록 조회 API 응답 타입
@@ -65,12 +65,12 @@ export const getCaddieList = async (
  * 캐디 상세정보 조회
  * GET /api/v1/auth/caddies/{id}/
  */
-export const getCaddieDetail = async (id: string): Promise<Caddie> => {
+export const getCaddieDetail = async (id: string): Promise<CaddieDetail> => {
   const endpoint = `/api/v1/auth/caddies/${id}/`;
 
   console.log("🌐 캐디 상세정보 조회 API 호출:", endpoint);
 
-  return apiClient.get<Caddie>(endpoint);
+  return apiClient.get<CaddieDetail>(endpoint);
 };
 
 /**

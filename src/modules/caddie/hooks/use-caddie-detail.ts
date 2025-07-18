@@ -1,18 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Caddie } from "@/shared/types/caddie";
+import { CaddieDetail } from "@/shared/types/caddie";
 import { getCaddieDetail } from "../api/caddie-api";
 
 export interface UseCaddieDetailReturn {
-  caddie: Caddie | null;
+  caddie: CaddieDetail | null;
   isLoading: boolean;
   error: string | null;
   refreshData: () => Promise<void>;
 }
 
 export const useCaddieDetail = (id: string): UseCaddieDetailReturn => {
-  const [caddie, setCaddie] = useState<Caddie | null>(null);
+  const [caddie, setCaddie] = useState<CaddieDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
