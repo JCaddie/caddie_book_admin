@@ -6,6 +6,42 @@ import {
 } from "../types/golf-course";
 import { apiClient } from "@/shared/lib/api-client";
 
+/**
+ * 골프장 간소 목록 타입 정의 (드롭다운용)
+ */
+export interface GolfCourseSimple {
+  id: string;
+  name: string;
+}
+
+/**
+ * 골프장 간소 목록 API 응답 타입
+ */
+export interface GolfCourseSimpleResponse {
+  success: boolean;
+  message: string;
+  count: number;
+  results: GolfCourseSimple[];
+}
+
+/**
+ * 골프장 간소 목록 조회 (드롭다운용)
+ */
+export const fetchGolfCoursesSimple =
+  async (): Promise<GolfCourseSimpleResponse> => {
+    try {
+      console.log("🔄 골프장 간소 목록 조회 시작");
+      const response = await apiClient.get<GolfCourseSimpleResponse>(
+        "/api/v1/golf-courses/simple/"
+      );
+      console.log("✅ 골프장 간소 목록 조회 성공:", response);
+      return response;
+    } catch (error) {
+      console.error("❌ 골프장 간소 목록 조회 실패:", error);
+      throw error;
+    }
+  };
+
 export const fetchGolfCourses = async ({
   page,
   searchTerm,
