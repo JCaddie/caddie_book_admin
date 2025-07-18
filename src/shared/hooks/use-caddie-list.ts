@@ -1,30 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Caddie, CaddieFilters, CaddieSelection } from "@/shared/types/caddie";
-import { usePagination } from "@/shared/hooks";
 import {
-  filterCaddies,
-  generateSampleCaddies,
-} from "@/shared/lib/caddie-utils";
+  CaddieListParams,
+  deleteCaddies,
+  getCaddieList,
+} from "@/modules/caddie/api/caddie-api";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 import { useAuth } from "@/shared/hooks/use-auth";
-import { useGolfCourseFilter } from "@/shared/hooks/use-golf-course-filter";
 
 export const useCaddieList = () => {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const isMaster = user?.role === "MASTER";
 
-  // 골프장 필터링 (MASTER 권한에서만 사용)
-  const {
-    selectedGolfCourseId,
-    searchTerm: golfCourseSearchTerm,
-    handleGolfCourseChange,
-    handleSearchChange: handleGolfCourseSearchChange,
-    getFilteredData,
-  } = useGolfCourseFilter();
+  // 상태 관리
+  const [caddies, setCaddies] = useState<Caddie[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // 필터 상태
   const [filters, setFilters] = useState<CaddieFilters>(DEFAULT_FILTERS);
@@ -35,43 +32,66 @@ export const useCaddieList = () => {
     selectedRows: [],
   });
 
-  // URL 검색 파라미터로부터 초기 검색어 설정
+  // URL 검색 파라미터로부터 검색어 설정 (검색어가 없으면 빈 문자열로 초기화)
   useEffect(() => {
     const searchParam = searchParams.get("search");
-    if (searchParam) {
-      setFilters((prev) => ({
-        ...prev,
-        searchTerm: decodeURIComponent(searchParam),
-      }));
-    }
+    setFilters((prev) => ({
+      ...prev,
+      searchTerm: searchParam ? decodeURIComponent(searchParam) : "",
+    }));
   }, [searchParams]);
 
-  // 샘플 데이터 생성
-  const allCaddies = useMemo(() => generateSampleCaddies(), []);
+  // API 데이터 로드
+  const loadCaddies = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-  // 골프장 필터링 적용 (MASTER 권한에서만)
-  const golfCourseFilteredCaddies = useMemo(() => {
-    if (!isMaster) return allCaddies;
-    return getFilteredData(allCaddies);
-  }, [allCaddies, getFilteredData, isMaster]);
+    try {
+      const params: CaddieListParams = {
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
+      };
 
-  // 기존 필터링된 데이터
-  const filteredCaddies = useMemo(() => {
-    return filterCaddies(golfCourseFilteredCaddies, filters);
-  }, [golfCourseFilteredCaddies, filters]);
+      // 검색 조건 추가
+      if (filters.searchTerm.trim()) {
+        params.search = filters.searchTerm.trim();
+      }
 
-  // 페이지네이션
-  const { currentPage, totalPages, currentData, handlePageChange } =
-    usePagination({
-      data: filteredCaddies,
-      itemsPerPage: ITEMS_PER_PAGE,
-    });
+      if (filters.selectedGroup !== "그룹") {
+        params.group = filters.selectedGroup;
+      }
+
+      if (filters.selectedSpecialTeam !== "특수반") {
+        params.special_team = filters.selectedSpecialTeam;
+      }
+
+      const response = await getCaddieList(params);
+
+      setCaddies(response.results);
+      setTotalCount(response.count);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "캐디 목록을 불러오는데 실패했습니다.";
+      setError(errorMessage);
+      console.error("캐디 목록 로드 에러:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, filters, isMaster]);
+
+  // 데이터 로드 트리거
+  useEffect(() => {
+    loadCaddies();
+  }, [loadCaddies]);
+
+  // 페이지 변경 시 첫 페이지로 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   // 필터 업데이트 함수들
-  const updateSearchTerm = (searchTerm: string) => {
-    setFilters((prev) => ({ ...prev, searchTerm }));
-  };
-
   const updateSelectedGroup = (selectedGroup: string) => {
     setFilters((prev) => ({ ...prev, selectedGroup }));
   };
@@ -88,15 +108,29 @@ export const useCaddieList = () => {
     setSelection({ selectedRowKeys, selectedRows });
   };
 
-  // 선택된 항목 삭제 (모달 확인 없이 직접 실행)
-  const deleteSelectedItems = () => {
-    // 실제 삭제 API 호출 로직 구현
-    // TODO: API 호출
+  // 선택된 항목 삭제
+  const deleteSelectedItems = async () => {
+    if (selection.selectedRowKeys.length === 0) {
+      return Promise.resolve();
+    }
 
-    // 삭제 후 선택 상태 초기화
-    setSelection({ selectedRowKeys: [], selectedRows: [] });
+    try {
+      await deleteCaddies(selection.selectedRowKeys);
 
-    return Promise.resolve(); // 성공 시 resolve
+      // 삭제 후 데이터 새로고침
+      await loadCaddies();
+
+      // 선택 상태 초기화
+      setSelection({ selectedRowKeys: [], selectedRows: [] });
+
+      return Promise.resolve();
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "캐디 삭제에 실패했습니다.";
+      setError(errorMessage);
+      console.error("캐디 삭제 에러:", err);
+      return Promise.reject(err);
+    }
   };
 
   // 삭제 가능 여부
@@ -105,23 +139,28 @@ export const useCaddieList = () => {
   // 선택된 항목 수
   const selectedCount = selection.selectedRows.length;
 
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return {
     // 데이터
-    filteredCaddies,
-    currentData,
-    realDataCount: currentData.length, // 실제 데이터 개수 (빈 행 제외)
+    filteredCaddies: caddies, // API에서 이미 필터링된 데이터
+    currentData: caddies,
+    realDataCount: caddies.length,
+    totalCount,
+
+    // 상태
+    isLoading,
+    error,
 
     // 필터 상태
     filters,
-    updateSearchTerm,
     updateSelectedGroup,
     updateSelectedSpecialTeam,
-
-    // 골프장 필터링 (MASTER 권한용)
-    selectedGolfCourseId,
-    golfCourseSearchTerm,
-    handleGolfCourseChange,
-    handleGolfCourseSearchChange,
 
     // 선택 상태
     selection,
@@ -134,5 +173,8 @@ export const useCaddieList = () => {
     currentPage,
     totalPages,
     handlePageChange,
+
+    // 데이터 새로고침
+    refreshData: loadCaddies,
   };
 };
