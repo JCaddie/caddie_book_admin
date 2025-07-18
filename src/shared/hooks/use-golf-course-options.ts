@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiClient } from "@/shared/lib/api-client";
 
 export interface Option {
   label: string;
@@ -24,17 +25,16 @@ export function useGolfCourseOptions() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     setLoading(true);
     Promise.all([
-      fetch(
-        `${API_BASE_URL}/api/v1/golf-courses/constants/contract_status/`
-      ).then((res) => res.json()),
-      fetch(
-        `${API_BASE_URL}/api/v1/golf-courses/constants/membership_type/`
-      ).then((res) => res.json()),
-      fetch(`${API_BASE_URL}/api/v1/golf-courses/constants/is_active/`).then(
-        (res) => res.json()
+      apiClient.get<OptionApiResponse[]>(
+        "/api/v1/golf-courses/constants/contract_status/"
+      ),
+      apiClient.get<OptionApiResponse[]>(
+        "/api/v1/golf-courses/constants/membership_type/"
+      ),
+      apiClient.get<OptionApiResponse[]>(
+        "/api/v1/golf-courses/constants/is_active/"
       ),
     ])
       .then(
