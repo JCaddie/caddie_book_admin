@@ -25,11 +25,12 @@ const CaddieListPage: React.FC = () => {
 
   // 캐디 리스트 상태 관리
   const {
-    filteredCaddies,
     currentData,
     realDataCount,
+    totalCount,
+    isLoading,
+    error,
     filters,
-    updateSearchTerm,
     updateSelectedGroup,
     updateSelectedSpecialTeam,
     selectedGolfCourseId,
@@ -42,6 +43,7 @@ const CaddieListPage: React.FC = () => {
     canDelete,
     selectedCount,
     totalPages,
+    refreshData,
   } = useCaddieList();
 
   // 행 클릭 핸들러 (상세 페이지로 이동)
@@ -78,11 +80,28 @@ const CaddieListPage: React.FC = () => {
     <div className="bg-white rounded-xl p-8 space-y-6">
       <AdminPageHeader title="캐디" />
 
+      {/* 에러 상태 표시 */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="font-bold">오류가 발생했습니다</p>
+              <p>{error}</p>
+            </div>
+            <button
+              onClick={refreshData}
+              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+            >
+              다시 시도
+            </button>
+          </div>
+        </div>
+      )}
+
       <CaddieFilterBar
-        totalCount={filteredCaddies.length}
+        totalCount={totalCount}
         selectedCount={selectedCount}
         filters={filters}
-        onSearchChange={updateSearchTerm}
         onGroupChange={updateSelectedGroup}
         onSpecialTeamChange={updateSelectedSpecialTeam}
         onDeleteSelected={handleDeleteClick}
@@ -93,17 +112,25 @@ const CaddieListPage: React.FC = () => {
       />
 
       <div className="space-y-6">
-        <SelectableDataTable
-          columns={CADDIE_COLUMNS}
-          data={currentData}
-          realDataCount={realDataCount}
-          selectable={true}
-          selectedRowKeys={selection.selectedRowKeys}
-          onSelectChange={updateSelection}
-          onRowClick={handleRowClick}
-          rowKey="id"
-          layout="flexible"
-        />
+        {/* 로딩 상태 표시 */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+            <span className="text-gray-600">캐디 목록을 불러오는 중...</span>
+          </div>
+        ) : (
+          <SelectableDataTable
+            columns={CADDIE_COLUMNS}
+            data={currentData}
+            realDataCount={realDataCount}
+            selectable={true}
+            selectedRowKeys={selection.selectedRowKeys}
+            onSelectChange={updateSelection}
+            onRowClick={handleRowClick}
+            rowKey="id"
+            layout="flexible"
+          />
+        )}
 
         <Pagination totalPages={totalPages} />
       </div>
