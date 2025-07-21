@@ -119,7 +119,8 @@ export interface ApiCartListResponse {
 // API 카트 생성 요청
 export interface ApiCreateCartRequest {
   name: string;
-  golf_course_id: string;
+  golf_course: string;
+  battery_level: number;
   manager?: string;
 }
 
