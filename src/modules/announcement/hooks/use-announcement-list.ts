@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Announcement,
   AnnouncementFilters,
@@ -6,16 +8,16 @@ import {
   AnnouncementWithNo,
   CreateAnnouncementData,
 } from "../types";
-import { usePagination } from "@/shared/hooks";
-import { simulateApiDelay } from "@/shared/lib/data-utils";
 import { ANNOUNCEMENT_CONSTANTS } from "../constants";
 import {
   addNumberToAnnouncements,
-  filterAnnouncements,
-  generateSampleAnnouncements,
   isValidAnnouncement,
+  transformAnnouncementListResponse,
 } from "../utils";
-import { useAnnouncementUrlParams } from "./use-announcement-url-params";
+import {
+  deleteAnnouncements,
+  fetchAnnouncements,
+} from "../api/announcement-api";
 
 interface UseAnnouncementListReturn {
   // 데이터
@@ -56,10 +58,19 @@ interface UseAnnouncementListReturn {
  * 공지사항 리스트 관리를 위한 커스텀 훅
  */
 export const useAnnouncementList = (): UseAnnouncementListReturn => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // URL 파라미터에서 현재 페이지와 필터 정보 추출
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+
   // 필터 상태
   const [filters, setFilters] = useState<AnnouncementFilters>({
-    searchTerm: "",
-    isPublished: undefined,
+    searchTerm: searchParams.get("search") || "",
+    isPublished: searchParams.get("is_published")
+      ? searchParams.get("is_published") === "true"
+      : undefined,
   });
 
   // 선택 상태
@@ -68,48 +79,80 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
     selectedRows: [],
   });
 
-  // 로딩 상태
+  // 삭제 로딩 상태
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // 에러 관리 (간소화)
+  // 에러 관리
   const [error, setError] = useState<string | null>(null);
+
+  // URL 파라미터 업데이트 함수
+  const updateUrlParams = useCallback(
+    (params: Record<string, string>, resetParams?: string[]) => {
+      const newSearchParams = new URLSearchParams(searchParams);
+
+      // 리셋할 파라미터들 제거
+      resetParams?.forEach((param) => newSearchParams.delete(param));
+
+      // 새 파라미터들 추가/업데이트
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) {
+          newSearchParams.set(key, value);
+        } else {
+          newSearchParams.delete(key);
+        }
+      });
+
+      router.push(`?${newSearchParams.toString()}`);
+    },
+    [router, searchParams]
+  );
+
+  // API 데이터 조회
+  const { data: apiResponse, error: queryError } = useQuery({
+    queryKey: ["announcements", currentPage, filters],
+    queryFn: () =>
+      fetchAnnouncements(
+        filters,
+        currentPage,
+        ANNOUNCEMENT_CONSTANTS.PAGE_SIZE
+      ),
+    staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
+  });
 
   // 필터 업데이트 함수
   const updateFilters = useCallback(
     (newFilters: Partial<AnnouncementFilters>) => {
-      setFilters((prev) => ({ ...prev, ...newFilters }));
+      const updatedFilters = { ...filters, ...newFilters };
+      setFilters(updatedFilters);
+
+      // URL 파라미터 업데이트
+      const params: Record<string, string> = {};
+      if (updatedFilters.searchTerm) params.search = updatedFilters.searchTerm;
+      if (updatedFilters.isPublished !== undefined) {
+        params.is_published = updatedFilters.isPublished.toString();
+      }
+
+      updateUrlParams(params, ["page"]); // 필터 변경 시 첫 페이지로
     },
-    []
+    [filters, updateUrlParams]
   );
 
-  // URL 파라미터 처리
-  useAnnouncementUrlParams({ onFiltersChange: updateFilters });
-
-  // 샘플 데이터 생성 (메모이제이션)
-  const allAnnouncements = useMemo(() => {
-    return generateSampleAnnouncements(26);
-  }, []);
-
-  // 필터링된 데이터 (메모이제이션)
-  const filteredAnnouncements = useMemo(() => {
-    return filterAnnouncements(allAnnouncements, filters);
-  }, [allAnnouncements, filters]);
-
-  // 페이지네이션
-  const { currentPage, totalPages, currentData, handlePageChange } =
-    usePagination({
-      data: filteredAnnouncements,
-      itemsPerPage: ANNOUNCEMENT_CONSTANTS.PAGE_SIZE,
-    });
+  // 데이터 처리 (백엔드 응답을 프론트엔드 형태로 변환)
+  const transformedData = apiResponse
+    ? transformAnnouncementListResponse(apiResponse)
+    : null;
+  const announcements = transformedData?.items || [];
+  const totalCount = transformedData?.totalCount || 0;
+  const totalPages = transformedData?.totalPages || 0;
 
   // 번호가 추가된 현재 페이지 데이터
   const currentDataWithNo = useMemo(() => {
     return addNumberToAnnouncements(
-      currentData,
+      announcements,
       currentPage,
       ANNOUNCEMENT_CONSTANTS.PAGE_SIZE
     );
-  }, [currentData, currentPage]);
+  }, [announcements, currentPage]);
 
   // 필터 업데이트 함수들
   const updateSearchTerm = useCallback(
@@ -124,6 +167,14 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
       updateFilters({ isPublished });
     },
     [updateFilters]
+  );
+
+  // 페이지 변경 핸들러
+  const handlePageChange = useCallback(
+    (page: number) => {
+      updateUrlParams({ page: page.toString() });
+    },
+    [updateUrlParams]
   );
 
   // 선택 관련 함수들
@@ -154,12 +205,11 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
     setError(null);
 
     try {
-      // API 호출 시뮬레이션
-      await simulateApiDelay(1000);
+      const ids = selection.selectedRowKeys;
+      await deleteAnnouncements(ids);
 
-      // TODO: 실제 삭제 API 호출
-
-      // 성공 후 선택 상태 초기화
+      // 성공 후 캐시 무효화 및 선택 상태 초기화
+      await queryClient.invalidateQueries({ queryKey: ["announcements"] });
       clearSelection();
     } catch (err) {
       const errorMessage =
@@ -170,24 +220,22 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
     } finally {
       setIsDeleting(false);
     }
-  }, [selection.selectedRows, clearSelection]);
+  }, [
+    selection.selectedRows,
+    selection.selectedRowKeys,
+    clearSelection,
+    queryClient,
+  ]);
 
   // 새 공지사항 생성
   const createNewAnnouncement = useCallback(
-    async (announcementData: CreateAnnouncementData) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async (_announcementData: CreateAnnouncementData) => {
       setError(null);
 
       try {
-        // API 호출 시뮬레이션
-        await simulateApiDelay(1000);
-
-        // TODO: 실제 생성 API 호출
-        // await createAnnouncementAPI(announcementData);
-
-        // 개발 중에는 데이터 확인용
-        if (process.env.NODE_ENV === "development") {
-          console.log("공지사항 생성 데이터:", announcementData);
-        }
+        // 실제로는 별도 훅에서 처리하므로 여기서는 캐시 무효화만
+        await queryClient.invalidateQueries({ queryKey: ["announcements"] });
       } catch (err) {
         const errorMessage =
           err instanceof Error
@@ -197,7 +245,7 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
         throw err;
       }
     },
-    []
+    [queryClient]
   );
 
   // 에러 초기화
@@ -205,11 +253,20 @@ export const useAnnouncementList = (): UseAnnouncementListReturn => {
     setError(null);
   }, []);
 
+  // 쿼리 에러를 로컬 에러로 설정
+  if (queryError && !error) {
+    setError(
+      queryError instanceof Error
+        ? queryError.message
+        : "데이터를 불러오는 중 오류가 발생했습니다."
+    );
+  }
+
   return {
     // 데이터
     data: currentDataWithNo,
-    totalCount: filteredAnnouncements.length,
-    realDataCount: currentData.length,
+    totalCount,
+    realDataCount: announcements.length,
 
     // 페이지네이션
     currentPage,
