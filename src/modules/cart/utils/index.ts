@@ -1,4 +1,6 @@
 import {
+  ApiCartData,
+  ApiCartStatus,
   Cart,
   CartDetail,
   CartFilters,
@@ -58,6 +60,92 @@ const TIME_SLOTS = [
   "15:00",
   "16:00",
 ];
+
+// ===================== API 매핑 함수들 =====================
+
+/**
+ * API 카트 상태를 UI 카트 상태로 변환
+ */
+export const mapApiStatusToCartStatus = (
+  apiStatus: ApiCartStatus
+): CartStatus => {
+  switch (apiStatus) {
+    case "available":
+      return "대기";
+    case "in_use":
+      return "사용중";
+    case "maintenance":
+      return "점검중";
+    default:
+      return "대기";
+  }
+};
+
+/**
+ * UI 카트 상태를 API 카트 상태로 변환
+ */
+export const mapCartStatusToApiStatus = (
+  cartStatus: CartStatus
+): ApiCartStatus => {
+  switch (cartStatus) {
+    case "대기":
+      return "available";
+    case "사용중":
+      return "in_use";
+    case "점검중":
+    case "고장":
+    case "사용불가":
+      return "maintenance";
+    default:
+      return "available";
+  }
+};
+
+/**
+ * API 카트 데이터를 UI Cart 타입으로 변환
+ */
+export const mapApiCartToCart = (
+  apiCart: ApiCartData,
+  index: number = 0
+): Cart => {
+  return {
+    id: apiCart.id,
+    no: index + 1, // 순서 번호는 별도로 처리
+    name: apiCart.name,
+    status: mapApiStatusToCartStatus(apiCart.status),
+    fieldName: "일반", // API에 필드 정보가 없으므로 기본값
+    golfCourseName: apiCart.golf_course.name,
+    managerName: apiCart.assigned_caddie?.name || "미배정",
+    createdAt: apiCart.created_at || new Date().toISOString(),
+    updatedAt: apiCart.updated_at || new Date().toISOString(),
+  };
+};
+
+/**
+ * API 카트 배열을 UI Cart 배열로 변환
+ */
+export const mapApiCartsToCartList = (apiCarts: ApiCartData[]): Cart[] => {
+  return apiCarts.map((apiCart, index) => mapApiCartToCart(apiCart, index));
+};
+
+/**
+ * UI Cart를 API 생성 요청 데이터로 변환
+ */
+export const mapCartToApiCreateRequest = (
+  cart: Omit<Cart, "id" | "no" | "createdAt" | "updatedAt">
+): {
+  name: string;
+  golf_course_id: string;
+  assigned_caddie_id?: string;
+} => {
+  return {
+    name: cart.name,
+    golf_course_id: "1", // 실제로는 golfCourseName에서 ID를 매핑해야 함
+    assigned_caddie_id: undefined, // 실제로는 managerName에서 ID를 매핑해야 함
+  };
+};
+
+// ===================== 기존 샘플 데이터 함수들 =====================
 
 /**
  * 샘플 카트 데이터 생성
