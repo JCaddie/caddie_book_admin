@@ -5,6 +5,9 @@
 // 타입 정의
 export * from "./types";
 
+// API
+export * from "./api";
+
 // 상수 정의
 export * from "./constants";
 

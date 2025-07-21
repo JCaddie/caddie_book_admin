@@ -62,10 +62,10 @@ export const useAnnouncementColumns = (): Column<AnnouncementWithNo>[] => {
         render: basicRenderers.date, // 🎉 중복 제거!
       },
       {
-        key: "updatedAt",
-        title: "수정일자",
-        width: ANNOUNCEMENT_COLUMN_WIDTHS.updatedAt,
-        render: basicRenderers.date, // 🎉 중복 제거!
+        key: "authorName",
+        title: "작성자",
+        width: ANNOUNCEMENT_COLUMN_WIDTHS.author,
+        render: basicRenderers.text, // 🎉 중복 제거!
       },
     ],
     []

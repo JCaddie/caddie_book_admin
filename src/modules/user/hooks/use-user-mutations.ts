@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createUser,
+  deleteMultipleUsers,
   deleteUser,
-  deleteUsers,
   updateUser,
   updateUserPassword,
 } from "../api/user-api";
@@ -51,7 +51,7 @@ export const useDeleteUsers = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteUsers,
+    mutationFn: deleteMultipleUsers,
     onSuccess: () => {
       // 관리자 목록 쿼리 무효화하여 재페치
       queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
