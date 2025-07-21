@@ -11,9 +11,11 @@ export const useCartList = () => {
   const isMaster = user?.role === "MASTER";
   const router = useRouter();
 
-  // URL에서 현재 페이지 읽기
+  // URL에서 현재 페이지 및 필터 파라미터 읽기
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get("page") || 1);
+  const urlSearchTerm = searchParams.get("search") || "";
+  const urlStatus = searchParams.get("status") as CartStatus | undefined;
 
   // 골프장 필터링 (MASTER 권한에서만 사용)
   const {
@@ -31,13 +33,23 @@ export const useCartList = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 필터 상태
+  // 필터 상태 (URL과 동기화)
   const [filters, setFilters] = useState<CartFilters>({
-    searchTerm: "",
-    status: undefined,
+    searchTerm: urlSearchTerm,
+    status: urlStatus,
     golfCourseId: undefined,
     fieldId: undefined,
   });
+
+  // URL 파라미터 변경 시 필터 상태 동기화
+  useEffect(() => {
+    setFilters({
+      searchTerm: urlSearchTerm,
+      status: urlStatus,
+      golfCourseId: undefined,
+      fieldId: undefined,
+    });
+  }, [urlSearchTerm, urlStatus]);
 
   // 선택 상태
   const [selection, setSelection] = useState<CartSelection>({
@@ -51,14 +63,14 @@ export const useCartList = () => {
     setError(null);
 
     try {
-      const apiStatus = filters.status
-        ? mapCartStatusToApiStatus(filters.status)
+      const apiStatus = urlStatus
+        ? mapCartStatusToApiStatus(urlStatus)
         : undefined;
       const golfCourseId = isMaster ? selectedGolfCourseId : undefined;
 
       const response = await fetchCarts({
         page: currentPage,
-        searchTerm: filters.searchTerm || undefined,
+        searchTerm: urlSearchTerm || undefined,
         status: apiStatus,
         golfCourseId,
       });
@@ -86,13 +98,7 @@ export const useCartList = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [
-    currentPage,
-    filters.searchTerm,
-    filters.status,
-    selectedGolfCourseId,
-    isMaster,
-  ]);
+  }, [currentPage, urlSearchTerm, urlStatus, selectedGolfCourseId, isMaster]);
 
   // 페이지네이션된 데이터에 번호 추가
   const paginatedData = useMemo(() => {
@@ -116,13 +122,23 @@ export const useCartList = () => {
   // 필터 업데이트 함수들 (useCallback으로 최적화)
   const updateSearchTerm = useCallback(
     (searchTerm: string) => {
-      setFilters((prev) => ({ ...prev, searchTerm }));
-      // 필터 변경 시 첫 페이지로 이동
-      if (currentPage > 1) {
-        goToFirstPage();
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+
+      if (searchTerm) {
+        params.set("search", searchTerm);
+      } else {
+        params.delete("search");
       }
+
+      // 검색 시 첫 페이지로 이동
+      params.delete("page");
+
+      const newUrl = params.toString()
+        ? `?${params.toString()}`
+        : window.location.pathname;
+      router.replace(newUrl);
     },
-    [currentPage, goToFirstPage]
+    [router, searchParams]
   );
 
   const updateStatus = useCallback(
