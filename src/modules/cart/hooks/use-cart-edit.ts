@@ -12,24 +12,32 @@ import {
   ApiCartStatus,
   ApiStatusChoice,
 } from "../types";
+import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
+import { useCaddieOptions } from "@/shared/hooks/use-caddie-options";
 
 interface UseCartEditProps {
   cartId: string;
+  currentGolfCourseId?: string;
   onUpdate?: (updatedCart: ApiCartDetailResponse) => void;
 }
 
 interface UseCartEditReturn {
   statusChoices: Array<{ value: string; label: string }>;
   batteryLevelChoices: Array<{ value: number; label: string }>;
+  golfCourseChoices: Array<{ value: string; label: string }>;
+  caddieChoices: Array<{ value: string; label: string }>;
   updateName: (name: string) => Promise<void>;
   updateStatus: (status: string) => Promise<void>;
   updateBatteryLevel: (batteryLevel: number) => Promise<void>;
+  updateGolfCourse: (golfCourseId: string) => Promise<void>;
+  updateCaddie: (caddieId: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
 
 export const useCartEdit = ({
   cartId,
+  currentGolfCourseId,
   onUpdate,
 }: UseCartEditProps): UseCartEditReturn => {
   const [statusChoices, setStatusChoices] = useState<
@@ -40,6 +48,12 @@ export const useCartEdit = ({
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 골프장별 캐디 목록 가져오기
+  const { caddieOptions } = useCaddieOptions({
+    golfCourseId: currentGolfCourseId,
+    enabled: !!currentGolfCourseId,
+  });
 
   // 선택지 데이터 로드
   const loadChoices = useCallback(async () => {
@@ -141,6 +155,48 @@ export const useCartEdit = ({
     [cartId, onUpdate]
   );
 
+  // 골프장 수정
+  const updateGolfCourse = useCallback(
+    async (golfCourseId: string) => {
+      try {
+        const updatedCart = await updateCartField(
+          cartId,
+          "golf_course_id",
+          golfCourseId
+        );
+        onUpdate?.(updatedCart);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "골프장 수정 중 오류가 발생했습니다.";
+        throw new Error(errorMessage);
+      }
+    },
+    [cartId, onUpdate]
+  );
+
+  // 캐디 수정
+  const updateCaddie = useCallback(
+    async (caddieId: string) => {
+      try {
+        const updatedCart = await updateCartField(
+          cartId,
+          "assigned_caddie_id",
+          caddieId
+        );
+        onUpdate?.(updatedCart);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "캐디 수정 중 오류가 발생했습니다.";
+        throw new Error(errorMessage);
+      }
+    },
+    [cartId, onUpdate]
+  );
+
   // 컴포넌트 마운트 시 선택지 로드
   useEffect(() => {
     loadChoices();
@@ -149,9 +205,13 @@ export const useCartEdit = ({
   return {
     statusChoices,
     batteryLevelChoices,
+    golfCourseChoices: GOLF_COURSE_DROPDOWN_OPTIONS,
+    caddieChoices: caddieOptions,
     updateName,
     updateStatus,
     updateBatteryLevel,
+    updateGolfCourse,
+    updateCaddie,
     isLoading,
     error,
   };

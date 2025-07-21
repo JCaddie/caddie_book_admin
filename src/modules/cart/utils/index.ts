@@ -142,7 +142,9 @@ export const mapApiCartDetailToCartDetail = (
     status: mapApiStatusToCartStatus(apiCartDetail.status),
     fieldName: apiCartDetail.location || "일반", // location을 필드명으로 사용
     managerName: apiCartDetail.manager?.name || "미배정",
+    managerId: apiCartDetail.manager?.id,
     golfCourseName: apiCartDetail.golf_course.name,
+    golfCourseId: apiCartDetail.golf_course.id,
     createdAt: apiCartDetail.created_at,
     updatedAt: apiCartDetail.updated_at,
     batteryLevel: apiCartDetail.battery_level,

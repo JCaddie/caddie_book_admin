@@ -50,6 +50,8 @@ export interface CartDetail {
   fieldName: string;
   managerName: string;
   golfCourseName: string;
+  golfCourseId?: string;
+  managerId?: string;
   createdAt: string;
   updatedAt: string;
   batteryLevel?: number;
@@ -152,7 +154,7 @@ export interface ApiCartHistoryItem {
   created_at: string;
 }
 
-// API 카트 상세 응답
+// API 카트 기본 정보 응답
 export interface ApiCartDetailResponse {
   id: string;
   name: string;
@@ -162,12 +164,20 @@ export interface ApiCartDetailResponse {
   battery_status: string;
   location: string;
   golf_course: ApiGolfCourse;
-  assigned_caddie: ApiAssignedCaddie | null;
   manager: ApiManager;
-  histories: ApiCartHistoryItem[];
   is_available: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// API 카트 이력 응답
+export interface ApiCartHistoryResponse {
+  success: boolean;
+  count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  results: ApiCartHistoryItem[];
 }
 
 // ===================== 카트 수정 관련 타입들 =====================
