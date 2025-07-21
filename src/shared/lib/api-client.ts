@@ -64,7 +64,17 @@ class ApiClient {
     // 개발 환경에서만 로그 출력
     if (process.env.NODE_ENV === "development") {
       const method = restOptions.method || "GET";
-      console.log(`🌐 ${method} ${endpoint}`);
+      console.log(`🌐 ${method} ${url}`);
+
+      // 요청 헤더 출력 (인증 토큰은 마스킹)
+      const logHeaders: Record<string, string> = { ...mergedHeaders };
+      if (logHeaders["Authorization"]) {
+        logHeaders["Authorization"] = logHeaders["Authorization"].replace(
+          /Bearer .+/,
+          "Bearer ***"
+        );
+      }
+      console.log(`📋 요청 헤더:`, logHeaders);
 
       // POST, PATCH, DELETE 요청 시 요청 데이터 출력
       if (["POST", "PATCH", "DELETE"].includes(method) && restOptions.body) {
@@ -109,10 +119,31 @@ class ApiClient {
 
     const data = await response.json();
 
-    // POST, PATCH, DELETE 요청 시 응답 데이터 출력
+    // 개발 환경에서 응답 데이터 출력
     if (process.env.NODE_ENV === "development") {
       const method = restOptions.method || "GET";
-      if (["POST", "PATCH", "DELETE"].includes(method)) {
+      console.log(`✅ ${response.status} ${response.statusText}`);
+
+      // GET 요청은 데이터 크기에 따라 요약 출력
+      if (method === "GET") {
+        // 공지사항 목록 API 응답 형태 확인
+        if (Array.isArray(data?.results)) {
+          console.log(`📥 응답 데이터 (${data.results.length}개 항목):`, {
+            success: data.success,
+            message: data.message,
+            count: data.count,
+            page: data.page,
+            total_pages: data.total_pages,
+            results: data.results.slice(0, 3), // 처음 3개만 표시
+            ...(data.results.length > 3 && {
+              "...": `${data.results.length - 3}개 더`,
+            }),
+          });
+        } else {
+          console.log(`📥 응답 데이터:`, data);
+        }
+      } else {
+        // POST, PATCH, DELETE는 전체 응답 출력
         console.log(`📥 응답 데이터:`, data);
       }
     }
@@ -205,7 +236,18 @@ class ApiClient {
 
     // 개발 환경에서만 로그 출력
     if (process.env.NODE_ENV === "development") {
-      console.log(`🌐 POST ${endpoint} (FormData)`);
+      console.log(`🌐 POST ${url} (FormData)`);
+
+      // 요청 헤더 출력 (인증 토큰은 마스킹)
+      const logHeaders: Record<string, string> = {};
+      Object.entries(headers).forEach(([key, value]) => {
+        if (key === "Authorization" && typeof value === "string") {
+          logHeaders[key] = value.replace(/Bearer .+/, "Bearer ***");
+        } else {
+          logHeaders[key] = String(value);
+        }
+      });
+      console.log(`📋 요청 헤더:`, logHeaders);
 
       // FormData 내용 출력
       const formDataEntries: Record<string, string> = {};
@@ -250,6 +292,7 @@ class ApiClient {
 
     // FormData 요청 시 응답 데이터 출력
     if (process.env.NODE_ENV === "development") {
+      console.log(`✅ ${response.status} ${response.statusText}`);
       console.log(`📥 응답 데이터 (FormData):`, data);
     }
 
