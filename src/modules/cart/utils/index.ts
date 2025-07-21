@@ -134,12 +134,12 @@ export const mapApiCartsToCartList = (apiCarts: ApiCartData[]): Cart[] => {
 export const mapCartToApiCreateRequest = (
   cart: Omit<Cart, "id" | "no" | "createdAt" | "updatedAt">
 ): {
-  name: string;
+  cart_number: string;
   golf_course_id: string;
   assigned_caddie_id?: string;
 } => {
   return {
-    name: cart.name,
+    cart_number: cart.name as string,
     golf_course_id: "1", // 실제로는 golfCourseName에서 ID를 매핑해야 함
     assigned_caddie_id: undefined, // 실제로는 managerName에서 ID를 매핑해야 함
   };
