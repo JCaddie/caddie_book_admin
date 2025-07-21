@@ -211,6 +211,21 @@ class ApiClient {
   }
 
   /**
+   * DELETE 요청 (body 포함)
+   */
+  async deleteWithBody<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: ApiRequestOptions
+  ): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "DELETE",
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  }
+
+  /**
    * FormData 요청 (파일 업로드 등)
    */
   async postFormData<T>(
@@ -304,4 +319,12 @@ class ApiClient {
 export const apiClient = new ApiClient();
 
 // 편의를 위한 개별 함수들도 export
-export const { get, post, put, patch, delete: del, postFormData } = apiClient;
+export const {
+  get,
+  post,
+  put,
+  patch,
+  delete: del,
+  deleteWithBody,
+  postFormData,
+} = apiClient;

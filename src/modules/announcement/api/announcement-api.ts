@@ -54,6 +54,12 @@ export const fetchAnnouncements = async (
 
   const endpoint = `${API_ENDPOINTS.ANNOUNCEMENTS}?${params.toString()}`;
 
+  // 개발 환경에서 검색 파라미터 로그 출력
+  if (process.env.NODE_ENV === "development") {
+    console.log(`🔍 검색 필터:`, filters);
+    console.log(`📄 페이지 정보: ${page}페이지, ${limit}개씩`);
+  }
+
   return apiClient.get<AnnouncementListApiResponse>(endpoint);
 };
 
@@ -212,9 +218,12 @@ export const deleteAnnouncement = async (id: string): Promise<void> => {
  * 공지사항 일괄 삭제 API
  */
 export const deleteAnnouncements = async (ids: string[]): Promise<void> => {
-  return apiClient.post<void>(`${API_ENDPOINTS.ANNOUNCEMENTS}/bulk-delete`, {
-    ids,
-  });
+  return apiClient.deleteWithBody<void>(
+    `${API_ENDPOINTS.ANNOUNCEMENTS}bulk-delete`,
+    {
+      ids,
+    }
+  );
 };
 
 /**
