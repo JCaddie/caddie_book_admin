@@ -117,7 +117,7 @@ export const mapApiCartToCart = (
     status: mapApiStatusToCartStatus(apiCart.status),
     fieldName: "일반", // API에 필드 정보가 없으므로 기본값
     golfCourseName: apiCart.golf_course.name,
-    managerName: apiCart.assigned_caddie?.name || "미배정",
+    managerName: apiCart.manager?.name || "미배정",
     createdAt: apiCart.created_at || new Date().toISOString(),
     updatedAt: apiCart.updated_at || new Date().toISOString(),
   };
@@ -203,12 +203,12 @@ export const mapCartToApiCreateRequest = (
 ): {
   name: string;
   golf_course_id: string;
-  assigned_caddie_id?: string;
+  manager?: string;
 } => {
   return {
     name: cart.name as string,
     golf_course_id: "1", // 실제로는 golfCourseName에서 ID를 매핑해야 함
-    assigned_caddie_id: undefined, // 실제로는 managerName에서 ID를 매핑해야 함
+    manager: undefined, // 실제로는 managerName에서 ID를 매핑해야 함
   };
 };
 

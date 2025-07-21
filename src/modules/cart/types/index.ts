@@ -84,7 +84,7 @@ export interface ApiGolfCourse {
 }
 
 // API 담당 캐디 정보
-export interface ApiAssignedCaddie {
+export interface Manger {
   id: string;
   name: string;
   phone: string;
@@ -99,7 +99,7 @@ export interface ApiCartData {
   battery_level: number; // 0, 20, 40, 60, 80, 100
   battery_status: string;
   golf_course: ApiGolfCourse;
-  assigned_caddie: ApiAssignedCaddie | null;
+  manager: ApiManager | null;
   is_available: boolean;
   created_at?: string;
   updated_at?: string;
@@ -120,7 +120,7 @@ export interface ApiCartListResponse {
 export interface ApiCreateCartRequest {
   name: string;
   golf_course_id: string;
-  assigned_caddie_id?: string;
+  manager?: string;
 }
 
 // API 카트 수정 요청
@@ -128,7 +128,7 @@ export interface ApiUpdateCartRequest {
   name?: string;
   status?: ApiCartStatus;
   golf_course_id?: string;
-  assigned_caddie_id?: string;
+  manager?: string;
   battery_level?: number;
 }
 
@@ -144,7 +144,7 @@ export interface ApiManager {
 // API 카트 이력 아이템
 export interface ApiCartHistoryItem {
   id: string;
-  caddie: ApiAssignedCaddie | null;
+  caddie: ApiManager | null;
   usage_date: string;
   start_time: string;
   end_time: string | null;

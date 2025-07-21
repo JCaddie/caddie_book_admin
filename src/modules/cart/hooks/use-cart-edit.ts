@@ -30,7 +30,7 @@ interface UseCartEditReturn {
   updateStatus: (status: string) => Promise<void>;
   updateBatteryLevel: (batteryLevel: number) => Promise<void>;
   updateGolfCourse: (golfCourseId: string) => Promise<void>;
-  updateCaddie: (caddieId: string) => Promise<void>;
+  updateManager: (caddieId: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
@@ -176,21 +176,17 @@ export const useCartEdit = ({
     [cartId, onUpdate]
   );
 
-  // 캐디 수정
-  const updateCaddie = useCallback(
+  // 관리자(캐디) 수정
+  const updateManager = useCallback(
     async (caddieId: string) => {
       try {
-        const updatedCart = await updateCartField(
-          cartId,
-          "assigned_caddie_id",
-          caddieId
-        );
+        const updatedCart = await updateCartField(cartId, "manager", caddieId);
         onUpdate?.(updatedCart);
       } catch (err) {
         const errorMessage =
           err instanceof Error
             ? err.message
-            : "캐디 수정 중 오류가 발생했습니다.";
+            : "관리자 수정 중 오류가 발생했습니다.";
         throw new Error(errorMessage);
       }
     },
@@ -211,7 +207,7 @@ export const useCartEdit = ({
     updateStatus,
     updateBatteryLevel,
     updateGolfCourse,
-    updateCaddie,
+    updateManager,
     isLoading,
     error,
   };

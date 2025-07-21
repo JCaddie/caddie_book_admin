@@ -43,7 +43,7 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
     updateStatus,
     updateBatteryLevel,
     updateGolfCourse,
-    updateCaddie,
+    updateManager,
     isLoading: isEditLoading,
     error: editError,
   } = useCartEdit({
@@ -72,8 +72,8 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
     await updateGolfCourse(String(value));
   };
 
-  const handleCaddieUpdate = async (value: string | number) => {
-    await updateCaddie(String(value));
+  const handleManagerUpdate = async (value: string | number) => {
+    await updateManager(String(value));
   };
 
   // 테이블 컬럼 생성
@@ -158,9 +158,9 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
             </div>
             <div>
               <EditableCartField
-                label="캐디"
-                value={cartDetail.managerId || ""}
-                onSave={handleCaddieUpdate}
+                label="관리자"
+                value={cartDetail.managerName || ""}
+                onSave={handleManagerUpdate}
                 type="select"
                 options={caddieChoices}
                 disabled={isEditLoading}
