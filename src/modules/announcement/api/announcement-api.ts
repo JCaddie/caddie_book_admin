@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/lib/api-client";
-import {
+import type {
   Announcement,
   AnnouncementDetailApiData,
   AnnouncementFilters,
@@ -7,7 +7,9 @@ import {
   CreateAnnouncementData,
   UpdateAnnouncementData,
 } from "../types";
-import { API_ENDPOINTS } from "../constants";
+import { ANNOUNCEMENT_CONSTANTS } from "../constants";
+import { createApiParams } from "../utils/api-params-builder";
+import { transformAnnouncementDetailApiData } from "../utils/data-transform";
 
 /**
  * 공지사항 목록 조회 API
@@ -15,44 +17,15 @@ import { API_ENDPOINTS } from "../constants";
 export const fetchAnnouncements = async (
   filters?: AnnouncementFilters,
   page: number = 1,
-  limit: number = 20
+  limit: number = ANNOUNCEMENT_CONSTANTS.UI.PAGE_SIZE
 ): Promise<AnnouncementListApiResponse> => {
-  const params = new URLSearchParams();
+  // API 파라미터 빌더 사용
+  const queryString = createApiParams()
+    .withPagination(page, limit)
+    .withFilters(filters)
+    .toString();
 
-  // 페이지네이션 파라미터
-  params.append("page", page.toString());
-  params.append("limit", limit.toString());
-
-  // 필터 파라미터
-  if (filters?.searchTerm) {
-    params.append("search", filters.searchTerm);
-  }
-  if (filters?.isPublished !== undefined) {
-    params.append("is_published", filters.isPublished.toString());
-  }
-  if (filters?.category) {
-    params.append("category", filters.category);
-  }
-  if (filters?.priority) {
-    params.append("priority", filters.priority);
-  }
-  if (filters?.isPinned !== undefined) {
-    params.append("is_pinned", filters.isPinned.toString());
-  }
-  if (filters?.startDate) {
-    params.append("start_date", filters.startDate);
-  }
-  if (filters?.endDate) {
-    params.append("end_date", filters.endDate);
-  }
-  if (filters?.authorId) {
-    params.append("author_id", filters.authorId);
-  }
-  if (filters?.type) {
-    params.append("type", filters.type);
-  }
-
-  const endpoint = `${API_ENDPOINTS.ANNOUNCEMENTS}?${params.toString()}`;
+  const endpoint = `${ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENTS}?${queryString}`;
 
   // 개발 환경에서 검색 파라미터 로그 출력
   if (process.env.NODE_ENV === "development") {
@@ -70,7 +43,7 @@ export const fetchAnnouncementDetail = async (
   id: string
 ): Promise<AnnouncementDetailApiData> => {
   return apiClient.get<AnnouncementDetailApiData>(
-    API_ENDPOINTS.ANNOUNCEMENT_DETAIL(id)
+    ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_DETAIL(id)
   );
 };
 
@@ -80,12 +53,7 @@ export const fetchAnnouncementDetail = async (
 export const createAnnouncement = async (
   data: CreateAnnouncementData
 ): Promise<Announcement> => {
-  // TODO: 첨부파일 기능 추후 활성화 시 FormData 사용 예정
-  // const formData = new FormData();
-  // formData.append("title", data.title);
-  // formData.append("content", data.content);
-  // formData.append("is_published", data.isPublished.toString());
-
+  // camelCase to snake_case 변환
   const requestData = {
     title: data.title,
     content: data.content,
@@ -97,31 +65,13 @@ export const createAnnouncement = async (
     ...(data.validUntil && { valid_until: data.validUntil }),
   };
 
-  // TODO: 첨부파일 기능 추후 활성화 예정
-  // if (data.category) {
-  //   formData.append("category", data.category);
-  // }
-  // if (data.priority) {
-  //   formData.append("priority", data.priority);
-  // }
-  // if (data.isPinned !== undefined) {
-  //   formData.append("is_pinned", data.isPinned.toString());
-  // }
-  // if (data.validFrom) {
-  //   formData.append("valid_from", data.validFrom);
-  // }
-  // if (data.validUntil) {
-  //   formData.append("valid_until", data.validUntil);
-  // }
+  const response = await apiClient.post<AnnouncementDetailApiData>(
+    ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENTS,
+    requestData
+  );
 
-  // TODO: 파일 첨부 기능 추후 활성화 예정
-  // data.files.forEach((file) => {
-  //   formData.append("files", file);
-  // });
-
-  // TODO: 첨부파일 기능 활성화 시 postFormData 사용
-  // return apiClient.postFormData<Announcement>(API_ENDPOINTS.ANNOUNCEMENTS, formData);
-  return apiClient.post<Announcement>(API_ENDPOINTS.ANNOUNCEMENTS, requestData);
+  // 응답 데이터를 프론트엔드 형식으로 변환
+  return transformAnnouncementDetailApiData(response);
 };
 
 /**
@@ -131,87 +81,35 @@ export const updateAnnouncement = async (
   id: string,
   data: UpdateAnnouncementData
 ): Promise<Announcement> => {
-  // TODO: 첨부파일 기능 추후 활성화 시 FormData 사용 예정
-  // const formData = new FormData();
-
+  // camelCase to snake_case 변환 (정의된 값만)
   const requestData: Record<string, string | boolean | undefined> = {};
 
-  if (data.title !== undefined) {
-    requestData.title = data.title;
-  }
-  if (data.content !== undefined) {
-    requestData.content = data.content;
-  }
-  if (data.isPublished !== undefined) {
+  if (data.title !== undefined) requestData.title = data.title;
+  if (data.content !== undefined) requestData.content = data.content;
+  if (data.isPublished !== undefined)
     requestData.is_published = data.isPublished;
-  }
-  if (data.category !== undefined) {
-    requestData.category = data.category;
-  }
-  if (data.priority !== undefined) {
-    requestData.priority = data.priority;
-  }
-  if (data.isPinned !== undefined) {
-    requestData.is_pinned = data.isPinned;
-  }
-  if (data.validFrom !== undefined) {
-    requestData.valid_from = data.validFrom;
-  }
-  if (data.validUntil !== undefined) {
-    requestData.valid_until = data.validUntil;
-  }
+  if (data.category !== undefined) requestData.category = data.category;
+  if (data.priority !== undefined) requestData.priority = data.priority;
+  if (data.isPinned !== undefined) requestData.is_pinned = data.isPinned;
+  if (data.validFrom !== undefined) requestData.valid_from = data.validFrom;
+  if (data.validUntil !== undefined) requestData.valid_until = data.validUntil;
 
-  // TODO: 첨부파일 기능 추후 활성화 예정
-  // if (data.title !== undefined) {
-  //   formData.append("title", data.title);
-  // }
-  // if (data.content !== undefined) {
-  //   formData.append("content", data.content);
-  // }
-  // if (data.isPublished !== undefined) {
-  //   formData.append("is_published", data.isPublished.toString());
-  // }
-  // if (data.category !== undefined) {
-  //   formData.append("category", data.category);
-  // }
-  // if (data.priority !== undefined) {
-  //   formData.append("priority", data.priority);
-  // }
-  // if (data.isPinned !== undefined) {
-  //   formData.append("is_pinned", data.isPinned.toString());
-  // }
-  // if (data.validFrom !== undefined) {
-  //   formData.append("valid_from", data.validFrom);
-  // }
-  // if (data.validUntil !== undefined) {
-  //   formData.append("valid_until", data.validUntil);
-  // }
-
-  // TODO: 새 파일 첨부 기능 추후 활성화 예정
-  // if (data.files) {
-  //   data.files.forEach((file) => {
-  //     formData.append("files", file);
-  //   });
-  // }
-
-  // TODO: 삭제할 파일 ID들 기능 추후 활성화 예정
-  // if (data.removeFileIds && data.removeFileIds.length > 0) {
-  //   formData.append("remove_file_ids", JSON.stringify(data.removeFileIds));
-  // }
-
-  // TODO: 첨부파일 기능 활성화 시 postFormData 사용
-  // return apiClient.postFormData<Announcement>(API_ENDPOINTS.ANNOUNCEMENT_DETAIL(id), formData);
-  return apiClient.patch<Announcement>(
-    API_ENDPOINTS.ANNOUNCEMENT_DETAIL(id),
+  const response = await apiClient.patch<AnnouncementDetailApiData>(
+    ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_DETAIL(id),
     requestData
   );
+
+  // 응답 데이터를 프론트엔드 형식으로 변환
+  return transformAnnouncementDetailApiData(response);
 };
 
 /**
  * 공지사항 삭제 API
  */
 export const deleteAnnouncement = async (id: string): Promise<void> => {
-  return apiClient.delete<void>(API_ENDPOINTS.ANNOUNCEMENT_DETAIL(id));
+  return apiClient.delete<void>(
+    ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_DETAIL(id)
+  );
 };
 
 /**
@@ -219,24 +117,33 @@ export const deleteAnnouncement = async (id: string): Promise<void> => {
  */
 export const deleteAnnouncements = async (ids: string[]): Promise<void> => {
   return apiClient.deleteWithBody<void>(
-    `${API_ENDPOINTS.ANNOUNCEMENTS}bulk-delete`,
-    {
-      ids,
-    }
+    `${ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENTS}bulk-delete`,
+    { ids }
   );
 };
 
 /**
- * 공지사항 게시/게시중단 API
+ * 공지사항 게시 API
  */
 export const publishAnnouncement = async (
   id: string
 ): Promise<Announcement> => {
-  return apiClient.post<Announcement>(API_ENDPOINTS.ANNOUNCEMENT_PUBLISH(id));
+  const response = await apiClient.post<AnnouncementDetailApiData>(
+    ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_PUBLISH(id)
+  );
+
+  return transformAnnouncementDetailApiData(response);
 };
 
+/**
+ * 공지사항 게시 중단 API
+ */
 export const unpublishAnnouncement = async (
   id: string
 ): Promise<Announcement> => {
-  return apiClient.post<Announcement>(API_ENDPOINTS.ANNOUNCEMENT_UNPUBLISH(id));
+  const response = await apiClient.post<AnnouncementDetailApiData>(
+    ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_UNPUBLISH(id)
+  );
+
+  return transformAnnouncementDetailApiData(response);
 };
