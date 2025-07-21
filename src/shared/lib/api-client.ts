@@ -61,12 +61,20 @@ class ApiClient {
     const defaultHeaders = this.getDefaultHeaders(skipAuth);
     const mergedHeaders = { ...defaultHeaders, ...headers };
 
-    console.log(`🌐 API 요청: ${restOptions.method || "GET"} ${url}`);
-    const authHeader = (mergedHeaders as Record<string, string>)[
-      "Authorization"
-    ];
-    if (authHeader) {
-      console.log("🔑 인증 토큰 포함:", authHeader);
+    // 개발 환경에서만 로그 출력
+    if (process.env.NODE_ENV === "development") {
+      const method = restOptions.method || "GET";
+      console.log(`🌐 ${method} ${endpoint}`);
+
+      // POST, PATCH, DELETE 요청 시 요청 데이터 출력
+      if (["POST", "PATCH", "DELETE"].includes(method) && restOptions.body) {
+        try {
+          const requestData = JSON.parse(restOptions.body as string);
+          console.log(`📤 요청 데이터:`, requestData);
+        } catch {
+          console.log(`📤 요청 데이터:`, restOptions.body);
+        }
+      }
     }
 
     const response = await fetch(url, {
@@ -100,7 +108,15 @@ class ApiClient {
     }
 
     const data = await response.json();
-    console.log("✅ API 응답:", data);
+
+    // POST, PATCH, DELETE 요청 시 응답 데이터 출력
+    if (process.env.NODE_ENV === "development") {
+      const method = restOptions.method || "GET";
+      if (["POST", "PATCH", "DELETE"].includes(method)) {
+        console.log(`📥 응답 데이터:`, data);
+      }
+    }
+
     return data;
   }
 
@@ -187,9 +203,20 @@ class ApiClient {
       }
     }
 
-    console.log(`🌐 FormData 요청: POST ${url}`);
-    if (headers["Authorization"]) {
-      console.log("🔑 인증 토큰 포함:", headers["Authorization"]);
+    // 개발 환경에서만 로그 출력
+    if (process.env.NODE_ENV === "development") {
+      console.log(`🌐 POST ${endpoint} (FormData)`);
+
+      // FormData 내용 출력
+      const formDataEntries: Record<string, string> = {};
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          formDataEntries[key] = `[File: ${value.name}, ${value.size} bytes]`;
+        } else {
+          formDataEntries[key] = String(value);
+        }
+      }
+      console.log(`📤 FormData:`, formDataEntries);
     }
 
     const response = await fetch(url, {
@@ -220,7 +247,12 @@ class ApiClient {
     }
 
     const data = await response.json();
-    console.log("✅ FormData API 응답:", data);
+
+    // FormData 요청 시 응답 데이터 출력
+    if (process.env.NODE_ENV === "development") {
+      console.log(`📥 응답 데이터 (FormData):`, data);
+    }
+
     return data;
   }
 }

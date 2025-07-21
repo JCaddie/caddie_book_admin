@@ -112,4 +112,5 @@ export const DEFAULT_FILTERS = {
   searchTerm: "",
   selectedGroup: "그룹",
   selectedSpecialTeam: "특수반",
+  selectedGolfCourseId: "",
 } as const;

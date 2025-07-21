@@ -33,6 +33,7 @@ const CaddieListPage: React.FC = () => {
     filters,
     updateSelectedGroup,
     updateSelectedSpecialTeam,
+    updateSelectedGolfCourse,
 
     selection,
     updateSelection,
@@ -101,6 +102,7 @@ const CaddieListPage: React.FC = () => {
         filters={filters}
         onGroupChange={updateSelectedGroup}
         onSpecialTeamChange={updateSelectedSpecialTeam}
+        onGolfCourseChange={updateSelectedGolfCourse}
         onDeleteSelected={handleDeleteClick}
       />
 

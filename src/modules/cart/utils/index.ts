@@ -1,4 +1,8 @@
 import {
+  ApiCartData,
+  ApiCartDetailResponse,
+  ApiCartHistoryItem,
+  ApiCartStatus,
   Cart,
   CartDetail,
   CartFilters,
@@ -58,6 +62,157 @@ const TIME_SLOTS = [
   "15:00",
   "16:00",
 ];
+
+// ===================== API 매핑 함수들 =====================
+
+/**
+ * API 카트 상태를 UI 카트 상태로 변환
+ */
+export const mapApiStatusToCartStatus = (
+  apiStatus: ApiCartStatus
+): CartStatus => {
+  switch (apiStatus) {
+    case "available":
+      return "대기";
+    case "in_use":
+      return "사용중";
+    case "maintenance":
+      return "점검중";
+    default:
+      return "대기";
+  }
+};
+
+/**
+ * UI 카트 상태를 API 카트 상태로 변환
+ */
+export const mapCartStatusToApiStatus = (
+  cartStatus: CartStatus
+): ApiCartStatus => {
+  switch (cartStatus) {
+    case "대기":
+      return "available";
+    case "사용중":
+      return "in_use";
+    case "점검중":
+    case "고장":
+    case "사용불가":
+      return "maintenance";
+    default:
+      return "available";
+  }
+};
+
+/**
+ * API 카트 데이터를 UI Cart 타입으로 변환
+ */
+export const mapApiCartToCart = (
+  apiCart: ApiCartData,
+  index: number = 0
+): Cart => {
+  return {
+    id: apiCart.id,
+    no: index + 1, // 순서 번호는 별도로 처리
+    name: apiCart.name,
+    status: mapApiStatusToCartStatus(apiCart.status),
+    fieldName: "일반", // API에 필드 정보가 없으므로 기본값
+    golfCourseName: apiCart.golf_course.name,
+    managerName: apiCart.manager?.name || "미배정",
+    createdAt: apiCart.created_at || new Date().toISOString(),
+    updatedAt: apiCart.updated_at || new Date().toISOString(),
+  };
+};
+
+/**
+ * API 카트 배열을 UI Cart 배열로 변환
+ */
+export const mapApiCartsToCartList = (apiCarts: ApiCartData[]): Cart[] => {
+  return apiCarts.map((apiCart, index) => mapApiCartToCart(apiCart, index));
+};
+
+/**
+ * API 카트 상세 응답을 UI CartDetail 타입으로 변환
+ */
+export const mapApiCartDetailToCartDetail = (
+  apiCartDetail: ApiCartDetailResponse
+): CartDetail => {
+  return {
+    id: apiCartDetail.id,
+    name: apiCartDetail.name,
+    status: mapApiStatusToCartStatus(apiCartDetail.status),
+    fieldName: apiCartDetail.location || "일반", // location을 필드명으로 사용
+    managerName: apiCartDetail.manager?.name || "미배정",
+    managerId: apiCartDetail.manager?.id,
+    golfCourseName: apiCartDetail.golf_course.name,
+    golfCourseId: apiCartDetail.golf_course.id,
+    createdAt: apiCartDetail.created_at,
+    updatedAt: apiCartDetail.updated_at,
+    batteryLevel: apiCartDetail.battery_level,
+    batteryStatus: apiCartDetail.battery_status,
+  };
+};
+
+/**
+ * API 카트 이력 아이템을 UI CartHistoryItem으로 변환
+ */
+export const mapApiCartHistoryToCartHistory = (
+  apiHistory: ApiCartHistoryItem,
+  index: number = 0
+): CartHistoryItem => {
+  // 날짜 포맷 변환 (2025-01-21 -> 2025.01.21.(화))
+  const date = new Date(apiHistory.usage_date);
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+  const formattedDate = `${apiHistory.usage_date.replace(/-/g, ".")}.(${
+    weekdays[date.getDay()]
+  })`;
+
+  return {
+    id: apiHistory.id,
+    no: index + 1,
+    date: formattedDate,
+    time: apiHistory.start_time.slice(0, 5), // HH:MM 형태로 변환
+    cartName: "카트", // API에 카트명이 별도로 없으므로 기본값
+    group: apiHistory.is_ongoing ? "진행중" : "완료",
+    personInCharge: apiHistory.caddie?.name || "셀프",
+    fieldName: "일반", // API에 필드명이 없으므로 기본값
+    managerName: apiHistory.caddie?.name || "없음",
+    // 추가 정보는 Record<string, unknown>에 저장
+    duration: apiHistory.duration,
+    endTime: apiHistory.end_time,
+    isOngoing: apiHistory.is_ongoing,
+    notes: apiHistory.notes,
+  } as CartHistoryItem;
+};
+
+/**
+ * API 카트 이력 배열을 UI CartHistoryItem 배열로 변환
+ */
+export const mapApiCartHistoriesToCartHistories = (
+  apiHistories: ApiCartHistoryItem[]
+): CartHistoryItem[] => {
+  return apiHistories.map((apiHistory, index) =>
+    mapApiCartHistoryToCartHistory(apiHistory, index)
+  );
+};
+
+/**
+ * UI Cart를 API 생성 요청 데이터로 변환
+ */
+export const mapCartToApiCreateRequest = (
+  cart: Omit<Cart, "id" | "no" | "createdAt" | "updatedAt">
+): {
+  name: string;
+  golf_course_id: string;
+  manager?: string;
+} => {
+  return {
+    name: cart.name as string,
+    golf_course_id: "1", // 실제로는 golfCourseName에서 ID를 매핑해야 함
+    manager: undefined, // 실제로는 managerName에서 ID를 매핑해야 함
+  };
+};
+
+// ===================== 기존 샘플 데이터 함수들 =====================
 
 /**
  * 샘플 카트 데이터 생성

@@ -56,8 +56,6 @@ export const getCaddieList = async (
     queryString ? `?${queryString}` : ""
   }`;
 
-  console.log("🌐 캐디 목록 조회 API 호출:", endpoint);
-
   return apiClient.get<CaddieListResponse>(endpoint);
 };
 
@@ -67,9 +65,6 @@ export const getCaddieList = async (
  */
 export const getCaddieDetail = async (id: string): Promise<CaddieDetail> => {
   const endpoint = `/api/v1/auth/caddies/${id}/`;
-
-  console.log("🌐 캐디 상세정보 조회 API 호출:", endpoint);
-
   return apiClient.get<CaddieDetail>(endpoint);
 };
 
@@ -79,9 +74,6 @@ export const getCaddieDetail = async (id: string): Promise<CaddieDetail> => {
  */
 export const deleteCaddie = async (id: string): Promise<void> => {
   const endpoint = `/api/v1/auth/caddies/${id}/`;
-
-  console.log("🌐 캐디 삭제 API 호출:", endpoint);
-
   return apiClient.delete<void>(endpoint);
 };
 
@@ -89,8 +81,6 @@ export const deleteCaddie = async (id: string): Promise<void> => {
  * 복수 캐디 삭제
  */
 export const deleteCaddies = async (ids: string[]): Promise<void> => {
-  console.log("🌐 복수 캐디 삭제 API 호출:", ids);
-
   // 각 캐디를 개별적으로 삭제
   await Promise.all(ids.map((id) => deleteCaddie(id)));
 };

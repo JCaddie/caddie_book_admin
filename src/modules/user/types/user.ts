@@ -16,6 +16,23 @@ export interface User extends Record<string, unknown> {
   isEmpty?: boolean; // 빈 행 여부
 }
 
+// API 응답 타입들
+export interface AdminsApiResponse {
+  success: boolean;
+  message: string;
+  count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  results: User[];
+}
+
+export interface UserDetailApiResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+
 // 액션바 Props 타입
 export interface UserActionBarProps {
   totalCount: number;

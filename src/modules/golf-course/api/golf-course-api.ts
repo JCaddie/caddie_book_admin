@@ -30,14 +30,12 @@ export interface GolfCourseSimpleResponse {
 export const fetchGolfCoursesSimple =
   async (): Promise<GolfCourseSimpleResponse> => {
     try {
-      console.log("🔄 골프장 간소 목록 조회 시작");
       const response = await apiClient.get<GolfCourseSimpleResponse>(
         "/api/v1/golf-courses/simple/"
       );
-      console.log("✅ 골프장 간소 목록 조회 성공:", response);
       return response;
     } catch (error) {
-      console.error("❌ 골프장 간소 목록 조회 실패:", error);
+      console.error("골프장 간소 목록 조회 실패:", error);
       throw error;
     }
   };

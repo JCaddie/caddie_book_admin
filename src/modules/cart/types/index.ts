@@ -1,69 +1,18 @@
-// 카트 타입 정의
-export interface Cart extends Record<string, unknown> {
-  id: string;
-  no: number;
-  name: string;
-  status: CartStatus;
-  fieldName: string;
-  golfCourseName: string;
-  managerName: string;
-  createdAt: string;
-  updatedAt: string;
-  isEmpty?: boolean; // 빈 행 여부
-}
+// ===================== 타입 Re-exports =====================
 
-// 카트 상태
-export type CartStatus = "사용중" | "대기" | "점검중" | "고장" | "사용불가";
+// API 타입들
+export * from "./api";
 
-// 카트 필터
-export interface CartFilters {
-  searchTerm: string;
-  status?: CartStatus;
-  golfCourseId?: string;
-  fieldId?: string;
-}
+// 도메인 모델 타입들
+export * from "./domain";
 
-// 카트 선택 상태
-export interface CartSelection {
-  selectedRowKeys: string[];
-  selectedRows: Cart[];
-}
+// UI 관련 타입들
+export * from "./ui";
 
-// 새 카트 생성 데이터
-export interface CreateCartData {
-  name: string;
-  golfCourseId: string;
-  fieldId: string;
-  managerName: string;
-}
+// ===================== 추가 타입들 =====================
 
-// 카트 수정 데이터
-export interface UpdateCartData extends Partial<CreateCartData> {
-  status?: CartStatus;
-}
-
-// 카트 상세 정보
-export interface CartDetail {
-  id: string;
-  name: string;
-  status: CartStatus;
-  fieldName: string;
-  managerName: string;
-  golfCourseName: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// 카트 사용 이력 아이템
-export interface CartHistoryItem extends Record<string, unknown> {
-  id: string;
-  no: number;
-  date: string;
-  time: string;
-  cartName: string;
-  group: string;
-  personInCharge: string;
-  fieldName: string;
-  managerName: string;
-  isEmpty?: boolean;
+// 업데이트 카트 데이터
+export interface UpdateCartData {
+  name?: string;
+  status?: import("./domain").CartStatus;
 }

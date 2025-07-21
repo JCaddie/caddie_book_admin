@@ -4,6 +4,7 @@ import React from "react";
 import { Button, Dropdown, SearchWithButton } from "@/shared/components/ui";
 import { CaddieFilters } from "@/shared/types/caddie";
 import { GROUP_OPTIONS, SPECIAL_TEAM_OPTIONS } from "@/shared/constants/caddie";
+import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
 import { useAuth } from "@/shared/hooks/use-auth";
 
 interface CaddieFilterBarProps {
@@ -12,6 +13,7 @@ interface CaddieFilterBarProps {
   filters: CaddieFilters;
   onGroupChange: (value: string) => void;
   onSpecialTeamChange: (value: string) => void;
+  onGolfCourseChange: (value: string) => void;
   onDeleteSelected: () => void;
 }
 
@@ -21,10 +23,12 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
   filters,
   onGroupChange,
   onSpecialTeamChange,
+  onGolfCourseChange,
   onDeleteSelected,
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
+  const canViewAllGolfCourses = user?.role === "MASTER" || user?.role === "DEV";
   return (
     <div className="space-y-4">
       {/* 기존 필터 영역 */}
@@ -40,7 +44,17 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
         <div className="flex items-center gap-8">
           {/* 필터 컨트롤들 */}
           <div className="flex items-center gap-8">
-            {/* ADMIN 권한일 때만 드롭다운 표시 */}
+            {/* MASTER, DEV 권한일 때는 골프장 선택 드롭다운 표시 */}
+            {canViewAllGolfCourses && (
+              <Dropdown
+                options={GOLF_COURSE_DROPDOWN_OPTIONS}
+                value={filters.selectedGolfCourseId}
+                onChange={onGolfCourseChange}
+                placeholder="골프장 선택"
+              />
+            )}
+
+            {/* ADMIN 권한일 때만 그룹/특수반 드롭다운 표시 */}
             {isAdmin && (
               <>
                 <Dropdown

@@ -1,15 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { Pagination, SelectableDataTable } from "@/shared/components/ui";
-import { useCartList } from "@/modules/cart/hooks";
-import { CartActionBar, useCartColumns } from "@/modules/cart/components";
+import { useCartCreate, useCartList } from "@/modules/cart/hooks";
+import {
+  CartActionBar,
+  CartCreateModal,
+  useCartColumns,
+} from "@/modules/cart/components";
 import { Cart } from "@/modules/cart/types";
 
 const CartsPage: React.FC = () => {
   const router = useRouter();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // 컬럼 정의 (메모이제이션)
   const columns = useCartColumns();
@@ -33,9 +38,29 @@ const CartsPage: React.FC = () => {
     error,
   } = useCartList();
 
-  // 새 카트 생성 페이지로 이동
+  // 카트 생성 로직
+  const { createNewCart, isLoading: isCreating } = useCartCreate(() => {
+    setIsCreateModalOpen(false);
+    // 페이지 새로고침으로 목록 업데이트
+    window.location.reload();
+  });
+
+  // 새 카트 생성 모달 열기
   const handleCreateNew = () => {
-    router.push("/carts/new");
+    setIsCreateModalOpen(true);
+  };
+
+  // 카트 생성 처리
+  const handleCartCreate = async (data: {
+    name: string;
+    golf_course_id: string;
+  }) => {
+    try {
+      await createNewCart(data);
+    } catch (error) {
+      // 에러는 useCartCreate에서 처리됨
+      console.error("카트 생성 실패:", error);
+    }
   };
 
   // 카트 상세 페이지로 이동
@@ -98,6 +123,14 @@ const CartsPage: React.FC = () => {
 
         {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
+
+      {/* 카트 생성 모달 */}
+      <CartCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCartCreate}
+        isLoading={isCreating}
+      />
     </div>
   );
 };

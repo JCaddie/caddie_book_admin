@@ -92,6 +92,7 @@ export interface CaddieFilters {
   searchTerm: string;
   selectedGroup: string;
   selectedSpecialTeam: string;
+  selectedGolfCourseId: string;
 }
 
 // 캐디 선택 상태 타입

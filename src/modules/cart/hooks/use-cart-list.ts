@@ -1,13 +1,21 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Cart, CartFilters, CartSelection, CartStatus } from "../types";
-import { generateSampleCarts } from "../utils";
+import { mapApiCartsToCartList, mapCartStatusToApiStatus } from "../utils";
+import { deleteCartsBulk, fetchCartList } from "../api/cart-api";
 import { CART_ITEMS_PER_PAGE } from "../constants";
-import { useAuth, useGolfCourseFilter, usePagination } from "@/shared/hooks";
-import { simulateApiDelay } from "@/shared/lib/data-utils";
+import { useAuth, useGolfCourseFilter } from "@/shared/hooks";
 
 export const useCartList = () => {
   const { user } = useAuth();
   const isMaster = user?.role === "MASTER";
+  const router = useRouter();
+
+  // URL에서 현재 페이지 및 필터 파라미터 읽기
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get("page") || 1);
+  const urlSearchTerm = searchParams.get("search") || "";
+  const urlStatus = searchParams.get("status") as CartStatus | undefined;
 
   // 골프장 필터링 (MASTER 권한에서만 사용)
   const {
@@ -15,16 +23,33 @@ export const useCartList = () => {
     searchTerm: golfCourseSearchTerm,
     handleGolfCourseChange,
     handleSearchChange: handleGolfCourseSearchChange,
-    getFilteredData,
   } = useGolfCourseFilter();
 
-  // 필터 상태
+  // 상태 관리
+  const [carts, setCarts] = useState<Cart[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 필터 상태 (URL과 동기화)
   const [filters, setFilters] = useState<CartFilters>({
-    searchTerm: "",
-    status: undefined,
+    searchTerm: urlSearchTerm,
+    status: urlStatus,
     golfCourseId: undefined,
     fieldId: undefined,
   });
+
+  // URL 파라미터 변경 시 필터 상태 동기화
+  useEffect(() => {
+    setFilters({
+      searchTerm: urlSearchTerm,
+      status: urlStatus,
+      golfCourseId: undefined,
+      fieldId: undefined,
+    });
+  }, [urlSearchTerm, urlStatus]);
 
   // 선택 상태
   const [selection, setSelection] = useState<CartSelection>({
@@ -32,73 +57,123 @@ export const useCartList = () => {
     selectedRows: [],
   });
 
-  // 로딩 상태
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // API 호출 함수
+  const loadCarts = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-  // 전체 카트 데이터 생성 (메모이제이션)
-  const allCarts = useMemo(() => generateSampleCarts(), []);
+    try {
+      const apiStatus = urlStatus
+        ? mapCartStatusToApiStatus(urlStatus)
+        : undefined;
+      const golfCourseId = isMaster ? selectedGolfCourseId : undefined;
 
-  // 골프장 필터링 적용 (MASTER 권한에서만)
-  const golfCourseFilteredCarts = useMemo(() => {
-    if (!isMaster) return allCarts;
-    return getFilteredData(allCarts);
-  }, [allCarts, getFilteredData, isMaster]);
-
-  // 기존 필터링된 카트 데이터 (메모이제이션)
-  const filteredCarts = useMemo(() => {
-    return golfCourseFilteredCarts.filter((cart) => {
-      const matchesSearch =
-        !filters.searchTerm ||
-        cart.name.includes(filters.searchTerm) ||
-        cart.golfCourseName
-          .toLowerCase()
-          .includes(filters.searchTerm.toLowerCase());
-
-      const matchesStatus = !filters.status || cart.status === filters.status;
-      const matchesGolfCourse =
-        !filters.golfCourseId || cart.golfCourseName === filters.golfCourseId;
-      const matchesField =
-        !filters.fieldId || cart.fieldName === filters.fieldId;
-
-      return (
-        matchesSearch && matchesStatus && matchesGolfCourse && matchesField
+      const response = await fetchCartList(
+        currentPage,
+        CART_ITEMS_PER_PAGE,
+        urlSearchTerm || undefined,
+        apiStatus,
+        golfCourseId
       );
-    });
-  }, [golfCourseFilteredCarts, filters]);
 
-  // 페이지네이션 처리
-  const { currentPage, totalPages, currentData, handlePageChange } =
-    usePagination({
-      data: filteredCarts,
-      itemsPerPage: CART_ITEMS_PER_PAGE,
-    });
+      // API 응답 구조 검증
+      if (!response.results || !Array.isArray(response.results)) {
+        console.warn("⚠️ 예상과 다른 API 응답 구조:", response);
+        setCarts([]);
+        setTotalCount(0);
+        setTotalPages(1);
+        return;
+      }
+
+      const mappedCarts = mapApiCartsToCartList(response.results);
+      setCarts(mappedCarts);
+      setTotalCount(response.count || 0);
+      setTotalPages(response.total_pages || 1);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "카트 목록 조회 중 오류가 발생했습니다.";
+      setError(errorMessage);
+      console.error("카트 목록 조회 중 오류 발생:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, urlSearchTerm, urlStatus, selectedGolfCourseId, isMaster]);
 
   // 페이지네이션된 데이터에 번호 추가
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * CART_ITEMS_PER_PAGE;
-    return currentData.map((cart, index) => ({
+    return carts.map((cart, index) => ({
       ...cart,
       no: startIndex + index + 1,
     }));
-  }, [currentData, currentPage]);
+  }, [carts, currentPage]);
+
+  // 첫 페이지로 이동하는 헬퍼 함수
+  const goToFirstPage = useCallback(() => {
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    params.delete("page"); // page 파라미터 제거하여 기본값(1)으로 설정
+    const newUrl = params.toString()
+      ? `?${params.toString()}`
+      : window.location.pathname;
+    router.replace(newUrl);
+  }, [router, searchParams]);
 
   // 필터 업데이트 함수들 (useCallback으로 최적화)
-  const updateSearchTerm = useCallback((searchTerm: string) => {
-    setFilters((prev) => ({ ...prev, searchTerm }));
-  }, []);
+  const updateSearchTerm = useCallback(
+    (searchTerm: string) => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
 
-  const updateStatus = useCallback((status: CartStatus | undefined) => {
-    setFilters((prev) => ({ ...prev, status }));
-  }, []);
+      if (searchTerm) {
+        params.set("search", searchTerm);
+      } else {
+        params.delete("search");
+      }
 
-  const updateGolfCourse = useCallback((golfCourseId: string | undefined) => {
-    setFilters((prev) => ({ ...prev, golfCourseId }));
-  }, []);
+      // 검색 시 첫 페이지로 이동
+      params.delete("page");
 
-  const updateField = useCallback((fieldId: string | undefined) => {
-    setFilters((prev) => ({ ...prev, fieldId }));
-  }, []);
+      const newUrl = params.toString()
+        ? `?${params.toString()}`
+        : window.location.pathname;
+      router.replace(newUrl);
+    },
+    [router, searchParams]
+  );
+
+  const updateStatus = useCallback(
+    (status: CartStatus | undefined) => {
+      setFilters((prev) => ({ ...prev, status }));
+      // 필터 변경 시 첫 페이지로 이동
+      if (currentPage > 1) {
+        goToFirstPage();
+      }
+    },
+    [currentPage, goToFirstPage]
+  );
+
+  const updateGolfCourse = useCallback(
+    (golfCourseId: string | undefined) => {
+      setFilters((prev) => ({ ...prev, golfCourseId }));
+      // 필터 변경 시 첫 페이지로 이동
+      if (currentPage > 1) {
+        goToFirstPage();
+      }
+    },
+    [currentPage, goToFirstPage]
+  );
+
+  const updateField = useCallback(
+    (fieldId: string | undefined) => {
+      setFilters((prev) => ({ ...prev, fieldId }));
+      // 필터 변경 시 첫 페이지로 이동
+      if (currentPage > 1) {
+        goToFirstPage();
+      }
+    },
+    [currentPage, goToFirstPage]
+  );
 
   // 선택 관련 함수들 (useCallback으로 최적화)
   const updateSelection = useCallback(
@@ -129,15 +204,11 @@ export const useCartList = () => {
     setError(null);
 
     try {
-      // API 호출 시뮬레이션
-      await simulateApiDelay(1000);
+      const cartIds = selection.selectedRows.map((cart) => cart.id);
+      await deleteCartsBulk(cartIds);
 
-      // TODO: 실제 삭제 API 호출
-      if (process.env.NODE_ENV === "development") {
-        console.log("삭제할 카트들:", selection.selectedRows);
-      }
-
-      // 성공 후 선택 상태 초기화
+      // 성공 후 목록 새로고침 및 선택 상태 초기화
+      await loadCarts();
       clearSelection();
     } catch (err) {
       const errorMessage =
@@ -149,29 +220,35 @@ export const useCartList = () => {
     } finally {
       setIsDeleting(false);
     }
-  }, [selection.selectedRows, clearSelection]);
+  }, [selection.selectedRows, loadCarts, clearSelection]);
 
   // 새 카트 생성
   const createNewCart = useCallback(
     (cartData: Omit<Cart, "id" | "no" | "createdAt" | "updatedAt">) => {
-      // TODO: 실제 생성 API 호출
+      // TODO: 실제 생성 API 호출 후 목록 새로고침
       if (process.env.NODE_ENV === "development") {
         console.log("새 카트 생성:", cartData);
       }
+      // 생성 후 목록 새로고침
+      loadCarts();
     },
-    []
+    [loadCarts]
   );
+
+  // 필터나 페이지 변경 시 데이터 로드
+  useEffect(() => {
+    loadCarts();
+  }, [loadCarts]);
 
   return {
     // 데이터
     data: paginatedData,
-    totalCount: filteredCarts.length,
-    realDataCount: currentData.length,
+    totalCount,
+    realDataCount: carts.length,
 
     // 페이지네이션
     currentPage,
     totalPages,
-    handlePageChange,
 
     // 필터
     filters,
@@ -196,6 +273,7 @@ export const useCartList = () => {
     createNewCart,
 
     // 상태
+    isLoading,
     isDeleting,
     error,
   };
