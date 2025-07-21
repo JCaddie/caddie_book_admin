@@ -73,8 +73,9 @@ export interface AnnouncementFormData {
   title: string;
   content: string;
   isPublished: boolean;
-  files: File[];
-  removeFileIds: string[];
+  // TODO: 첨부파일 기능 추후 활성화 예정
+  // files: File[];
+  // removeFileIds: string[];
   category?: AnnouncementCategory;
   priority?: AnnouncementPriority;
   isPinned?: boolean;
@@ -125,7 +126,44 @@ export interface AnnouncementSort {
   order: AnnouncementSortOrder;
 }
 
-// API 응답 타입들
+// API 응답 타입들 (백엔드 실제 응답 형태)
+export interface AnnouncementListApiResponse {
+  success: boolean;
+  message: string;
+  count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  results: AnnouncementApiData[];
+}
+
+// 백엔드 API 데이터 형태 (snake_case) - 목록용
+export interface AnnouncementApiData {
+  id: string;
+  title: string;
+  views: number;
+  created_at: string;
+  author_name: string;
+  golf_course_name: string;
+  is_published: boolean;
+}
+
+// 백엔드 API 상세 데이터 형태 (snake_case) - 상세 조회용
+export interface AnnouncementDetailApiData {
+  id: string;
+  title: string;
+  content: string;
+  views: number;
+  is_published: boolean;
+  author: string;
+  author_name: string;
+  golf_course: string;
+  golf_course_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 기존 타입 (호환성을 위해 유지)
 export type AnnouncementListResponse = ApiResponse<{
   items: Announcement[];
   totalCount: number;
@@ -139,7 +177,8 @@ export interface CreateAnnouncementData {
   title: string;
   content: string;
   isPublished: boolean;
-  files: File[];
+  // TODO: 첨부파일 기능 추후 활성화 예정
+  // files: File[];
   category?: AnnouncementCategory;
   priority?: AnnouncementPriority;
   isPinned?: boolean;
@@ -151,8 +190,9 @@ export interface UpdateAnnouncementData {
   title?: string;
   content?: string;
   isPublished?: boolean;
-  files?: File[];
-  removeFileIds?: string[];
+  // TODO: 첨부파일 기능 추후 활성화 예정
+  // files?: File[];
+  // removeFileIds?: string[];
   category?: AnnouncementCategory;
   priority?: AnnouncementPriority;
   isPinned?: boolean;

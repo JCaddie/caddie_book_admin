@@ -30,23 +30,24 @@ export const validateAnnouncementForm = (
     errors.content = ANNOUNCEMENT_FORM_ERRORS.CONTENT_TOO_LONG;
   }
 
+  // TODO: 첨부파일 기능 추후 활성화 예정
   // 파일 개수 검사
-  if (
-    formData.files &&
-    formData.files.length > ANNOUNCEMENT_FORM_RULES.MAX_FILES
-  ) {
-    errors.files = ANNOUNCEMENT_FORM_ERRORS.FILES_TOO_MANY;
-  }
+  // if (
+  //   formData.files &&
+  //   formData.files.length > ANNOUNCEMENT_FORM_RULES.MAX_FILES
+  // ) {
+  //   errors.files = ANNOUNCEMENT_FORM_ERRORS.FILES_TOO_MANY;
+  // }
 
   // 파일 크기 검사
-  if (formData.files) {
-    const oversizedFile = formData.files.find(
-      (file) => file.size > ANNOUNCEMENT_FORM_RULES.MAX_FILE_SIZE
-    );
-    if (oversizedFile) {
-      errors.files = ANNOUNCEMENT_FORM_ERRORS.FILE_TOO_LARGE;
-    }
-  }
+  // if (formData.files) {
+  //   const oversizedFile = formData.files.find(
+  //     (file) => file.size > ANNOUNCEMENT_FORM_RULES.MAX_FILE_SIZE
+  //   );
+  //   if (oversizedFile) {
+  //     errors.files = ANNOUNCEMENT_FORM_ERRORS.FILE_TOO_LARGE;
+  //   }
+  // }
 
   return {
     isValid: Object.keys(errors).length === 0,

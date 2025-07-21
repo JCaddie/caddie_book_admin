@@ -6,9 +6,10 @@ import { Save } from "lucide-react";
 import {
   Button,
   ConfirmationModal,
-  type ExistingFile,
-  FileUpload,
-  type UploadedFile,
+  // TODO: 첨부파일 기능 추후 활성화 예정
+  // type ExistingFile,
+  // FileUpload,
+  // type UploadedFile,
 } from "@/shared/components/ui";
 import {
   Announcement,
@@ -16,7 +17,11 @@ import {
   AnnouncementFormErrors,
   AnnouncementFormMode,
 } from "../types";
-import { ANNOUNCEMENT_FORM_RULES, FILE_UPLOAD_CONFIG } from "../constants";
+import {
+  ANNOUNCEMENT_FORM_RULES,
+  // TODO: 첨부파일 기능 추후 활성화 예정
+  // FILE_UPLOAD_CONFIG
+} from "../constants";
 import {
   validateAnnouncementForm,
   validateContent,
@@ -52,8 +57,9 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
     title: announcement?.title || "",
     content: announcement?.content || "",
     isPublished: announcement?.isPublished || false,
-    files: [],
-    removeFileIds: [],
+    // TODO: 첨부파일 기능 추후 활성화 예정
+    // files: [],
+    // removeFileIds: [],
   });
 
   // 읽기 전용 모드 체크
@@ -86,24 +92,25 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
     setFormData((prev) => ({ ...prev, isPublished: !prev.isPublished }));
   }, []);
 
+  // TODO: 첨부파일 기능 추후 활성화 예정
   // 새 파일 추가 핸들러
-  const handleFilesChange = useCallback((files: UploadedFile[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      files: files.map((f) => f.file),
-    }));
+  // const handleFilesChange = useCallback((files: UploadedFile[]) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     files: files.map((f) => f.file),
+  //   }));
 
-    // 파일 관련 에러 초기화
-    setErrors((prev) => ({ ...prev, files: undefined }));
-  }, []);
+  //   // 파일 관련 에러 초기화
+  //   setErrors((prev) => ({ ...prev, files: undefined }));
+  // }, []);
 
   // 기존 파일 삭제 핸들러
-  const handleExistingFileRemove = useCallback((fileId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      removeFileIds: [...prev.removeFileIds, fileId],
-    }));
-  }, []);
+  // const handleExistingFileRemove = useCallback((fileId: string) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     removeFileIds: [...prev.removeFileIds, fileId],
+  //   }));
+  // }, []);
 
   // 폼 저장 핸들러
   const handleSave = useCallback(async () => {
@@ -158,17 +165,18 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
     }
   }, [announcement?.id, router]);
 
+  // TODO: 첨부파일 기능 추후 활성화 예정
   // 기존 파일 목록 생성 (삭제 예정 파일 제외)
-  const existingFiles: ExistingFile[] =
-    announcement?.files
-      ?.filter((file) => !formData.removeFileIds.includes(file.id))
-      .map((file) => ({
-        id: file.id,
-        filename: file.filename,
-        originalName: file.originalName,
-        size: file.size,
-        url: file.url,
-      })) || [];
+  // const existingFiles: ExistingFile[] =
+  //   announcement?.files
+  //     ?.filter((file) => !formData.removeFileIds.includes(file.id))
+  //     .map((file) => ({
+  //       id: file.id,
+  //       filename: file.filename,
+  //       originalName: file.originalName,
+  //       size: file.size,
+  //       url: file.url,
+  //     })) || [];
 
   return (
     <div className={`space-y-8 ${className}`}>
@@ -240,8 +248,9 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
         </div>
       </div>
 
+      {/* TODO: 첨부파일 기능 추후 활성화 예정 */}
       {/* 첨부 파일 */}
-      <div className="flex gap-2">
+      {/* <div className="flex gap-2">
         <div className="flex items-start gap-2 w-20 pt-2">
           <label className="text-sm font-semibold text-gray-800">
             첨부 파일
@@ -262,7 +271,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
             <p className="text-sm text-red-500 mt-1">{errors.files}</p>
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* 게시 상태 */}
       <div className="flex items-center space-x-3">
