@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CartDetail, CartHistoryItem } from "../types";
-import { fetchCartDetailWithHistory } from "../api/cart-api";
+import { ApiCartDetailResponse, CartDetail, CartHistoryItem } from "../types";
+import { fetchCartDetail, fetchCartHistories } from "../api/cart-api";
 import {
   mapApiCartDetailToCartDetail,
   mapApiCartHistoriesToCartHistories,
@@ -49,10 +49,11 @@ export const useCartDetail = ({
     updatedAt: "",
   });
   const [historyData, setHistoryData] = useState<CartHistoryItem[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // API 호출 함수
+  // 카트 기본 정보 로드
   const loadCartDetail = useCallback(async () => {
     if (!cartId) return;
 
@@ -60,55 +61,74 @@ export const useCartDetail = ({
     setError(null);
 
     try {
-      console.log("🔄 카트 상세 정보 로딩 시작:", cartId);
+      console.log("🔄 카트 기본 정보 로딩 시작:", cartId);
 
-      const response = await fetchCartDetailWithHistory(cartId);
+      const response = await fetchCartDetail(cartId);
 
       // 카트 상세 정보 매핑
-      const mappedCartDetail = mapApiCartDetailToCartDetail(response);
+      const mappedCartDetail = mapApiCartDetailToCartDetail(
+        response as unknown as ApiCartDetailResponse
+      );
       setCartDetail(mappedCartDetail);
 
-      // 이력 데이터 매핑
-      const mappedHistories = mapApiCartHistoriesToCartHistories(
-        response.histories
-      );
-      setHistoryData(mappedHistories);
-
-      console.log("✅ 카트 상세 정보 로딩 완료:", {
-        cartDetail: mappedCartDetail,
-        historiesCount: mappedHistories.length,
-      });
+      console.log("✅ 카트 기본 정보 로딩 완료:", mappedCartDetail);
     } catch (err) {
       const errorMessage =
         err instanceof Error
           ? err.message
-          : "카트 상세 정보 조회 중 오류가 발생했습니다.";
+          : "카트 기본 정보 조회 중 오류가 발생했습니다.";
       setError(errorMessage);
-      console.error("❌ 카트 상세 정보 로딩 중 오류 발생:", err);
+      console.error("❌ 카트 기본 정보 로딩 에러:", err);
     } finally {
       setIsLoading(false);
     }
   }, [cartId]);
 
-  // 페이지네이션 계산
-  const { currentHistoryData, totalPages, realDataCount } = useMemo(() => {
-    const totalItems = historyData.length;
-    const totalPages = Math.ceil(totalItems / CART_ITEMS_PER_PAGE);
+  // 카트 이력 로드
+  const loadCartHistories = useCallback(async () => {
+    if (!cartId) return;
 
-    const startIndex = (currentPage - 1) * CART_ITEMS_PER_PAGE;
-    const endIndex = startIndex + CART_ITEMS_PER_PAGE;
-    const currentData = historyData.slice(startIndex, endIndex);
+    try {
+      console.log("🔄 카트 이력 로딩 시작:", { cartId, currentPage });
 
-    // 페이지네이션된 데이터에 번호 추가
-    const dataWithNumbers = currentData.map((item, index) => ({
+      const response = await fetchCartHistories(
+        cartId,
+        currentPage,
+        CART_ITEMS_PER_PAGE
+      );
+
+      // 이력 데이터 매핑
+      const mappedHistories = mapApiCartHistoriesToCartHistories(
+        response.results
+      );
+      setHistoryData(mappedHistories);
+      setTotalPages(response.total_pages);
+
+      console.log("✅ 카트 이력 로딩 완료:", {
+        historiesCount: mappedHistories.length,
+        totalPages: response.total_pages,
+      });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "카트 이력 조회 중 오류가 발생했습니다.";
+      setError(errorMessage);
+      console.error("❌ 카트 이력 로딩 에러:", err);
+    }
+  }, [cartId, currentPage]);
+
+  // 현재 페이지 데이터 계산
+  const { currentHistoryData, realDataCount } = useMemo(() => {
+    // API에서 이미 페이지네이션된 데이터를 받으므로 그대로 사용
+    const dataWithNumbers = historyData.map((item, index) => ({
       ...item,
-      no: startIndex + index + 1,
+      no: (currentPage - 1) * CART_ITEMS_PER_PAGE + index + 1,
     }));
 
     return {
       currentHistoryData: dataWithNumbers,
-      totalPages: Math.max(totalPages, 1),
-      realDataCount: currentData.length,
+      realDataCount: dataWithNumbers.length,
     };
   }, [historyData, currentPage]);
 
@@ -116,6 +136,11 @@ export const useCartDetail = ({
   useEffect(() => {
     loadCartDetail();
   }, [loadCartDetail]);
+
+  // 페이지 변경 시 이력 데이터 로드
+  useEffect(() => {
+    loadCartHistories();
+  }, [loadCartHistories]);
 
   return {
     cartDetail,

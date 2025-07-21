@@ -3,6 +3,7 @@ import {
   ApiBatteryLevelChoicesResponse,
   ApiCartData,
   ApiCartDetailResponse,
+  ApiCartHistoryResponse,
   ApiCartListResponse,
   ApiCreateCartRequest,
   ApiStatusChoicesResponse,
@@ -65,20 +66,22 @@ export const fetchCartDetail = async (id: string): Promise<ApiCartData> => {
 };
 
 /**
- * 카트 상세 조회 (상세 정보 + 이력 포함)
+ * 카트 사용 이력 조회
  */
-export const fetchCartDetailWithHistory = async (
-  id: string
-): Promise<ApiCartDetailResponse> => {
+export const fetchCartHistories = async (
+  id: string,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<ApiCartHistoryResponse> => {
   try {
-    console.log("🔄 카트 상세 정보 조회 시작:", id);
-    const response = await apiClient.get<ApiCartDetailResponse>(
-      `/api/v1/carts/${id}/`
+    console.log("🔄 카트 사용 이력 조회 시작:", { id, page, pageSize });
+    const response = await apiClient.get<ApiCartHistoryResponse>(
+      `/api/v1/carts/${id}/histories/?page=${page}&page_size=${pageSize}`
     );
-    console.log("✅ 카트 상세 정보 조회 성공:", response);
+    console.log("✅ 카트 사용 이력 조회 성공:", response);
     return response;
   } catch (error) {
-    console.error("❌ 카트 상세 정보 조회 실패:", error);
+    console.error("❌ 카트 사용 이력 조회 실패:", error);
     throw error;
   }
 };
