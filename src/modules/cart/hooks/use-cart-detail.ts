@@ -61,8 +61,6 @@ export const useCartDetail = ({
     setError(null);
 
     try {
-      console.log("🔄 카트 기본 정보 로딩 시작:", cartId);
-
       const response = await fetchCartDetail(cartId);
 
       // 카트 상세 정보 매핑
@@ -70,15 +68,13 @@ export const useCartDetail = ({
         response as unknown as ApiCartDetailResponse
       );
       setCartDetail(mappedCartDetail);
-
-      console.log("✅ 카트 기본 정보 로딩 완료:", mappedCartDetail);
     } catch (err) {
       const errorMessage =
         err instanceof Error
           ? err.message
           : "카트 기본 정보 조회 중 오류가 발생했습니다.";
       setError(errorMessage);
-      console.error("❌ 카트 기본 정보 로딩 에러:", err);
+      console.error("카트 기본 정보 로딩 에러:", err);
     } finally {
       setIsLoading(false);
     }
@@ -89,8 +85,6 @@ export const useCartDetail = ({
     if (!cartId) return;
 
     try {
-      console.log("🔄 카트 이력 로딩 시작:", { cartId, currentPage });
-
       const response = await fetchCartHistories(
         cartId,
         currentPage,
@@ -103,18 +97,13 @@ export const useCartDetail = ({
       );
       setHistoryData(mappedHistories);
       setTotalPages(response.total_pages);
-
-      console.log("✅ 카트 이력 로딩 완료:", {
-        historiesCount: mappedHistories.length,
-        totalPages: response.total_pages,
-      });
     } catch (err) {
       const errorMessage =
         err instanceof Error
           ? err.message
           : "카트 이력 조회 중 오류가 발생했습니다.";
       setError(errorMessage);
-      console.error("❌ 카트 이력 로딩 에러:", err);
+      console.error("카트 이력 로딩 에러:", err);
     }
   }, [cartId, currentPage]);
 

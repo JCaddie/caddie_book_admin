@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Cart, CartFilters, CartSelection, CartStatus } from "../types";
 import { mapApiCartsToCartList, mapCartStatusToApiStatus } from "../utils";
-import { deleteCartsBulk, fetchCarts } from "../api/cart-api";
+import { deleteCartsBulk, fetchCartList } from "../api/cart-api";
 import { CART_ITEMS_PER_PAGE } from "../constants";
 import { useAuth, useGolfCourseFilter } from "@/shared/hooks";
 
@@ -68,12 +68,13 @@ export const useCartList = () => {
         : undefined;
       const golfCourseId = isMaster ? selectedGolfCourseId : undefined;
 
-      const response = await fetchCarts({
-        page: currentPage,
-        searchTerm: urlSearchTerm || undefined,
-        status: apiStatus,
-        golfCourseId,
-      });
+      const response = await fetchCartList(
+        currentPage,
+        CART_ITEMS_PER_PAGE,
+        urlSearchTerm || undefined,
+        apiStatus,
+        golfCourseId
+      );
 
       // API 응답 구조 검증
       if (!response.results || !Array.isArray(response.results)) {
