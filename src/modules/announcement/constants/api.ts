@@ -4,12 +4,13 @@
 
 // API 엔드포인트
 export const API_ENDPOINTS = {
-  ANNOUNCEMENTS: "/api/announcements",
-  ANNOUNCEMENT_DETAIL: (id: string) => `/api/announcements/${id}`,
-  ANNOUNCEMENT_PUBLISH: (id: string) => `/api/announcements/${id}/publish`,
-  ANNOUNCEMENT_UNPUBLISH: (id: string) => `/api/announcements/${id}/unpublish`,
-  FILE_UPLOAD: "/api/files/upload",
-  FILE_DELETE: (id: string) => `/api/files/${id}`,
+  ANNOUNCEMENTS: "/api/v1/announcements/",
+  ANNOUNCEMENT_DETAIL: (id: string) => `/api/v1/announcements/${id}/`,
+  ANNOUNCEMENT_PUBLISH: (id: string) => `/api/v1/announcements/${id}/publish/`,
+  ANNOUNCEMENT_UNPUBLISH: (id: string) =>
+    `/api/v1/announcements/${id}/unpublish/`,
+  FILE_UPLOAD: "/api/v1/files/upload/",
+  FILE_DELETE: (id: string) => `/api/v1/files/${id}/`,
 } as const;
 
 // HTTP 메서드
