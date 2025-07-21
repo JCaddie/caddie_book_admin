@@ -65,6 +65,10 @@ export const useCaddieList = () => {
         params.special_team = filters.selectedSpecialTeam;
       }
 
+      if (filters.selectedGolfCourseId) {
+        params.golf_course_id = filters.selectedGolfCourseId;
+      }
+
       const response = await getCaddieList(params);
 
       setCaddies(response.results);
@@ -98,6 +102,10 @@ export const useCaddieList = () => {
 
   const updateSelectedSpecialTeam = (selectedSpecialTeam: string) => {
     setFilters((prev) => ({ ...prev, selectedSpecialTeam }));
+  };
+
+  const updateSelectedGolfCourse = (selectedGolfCourseId: string) => {
+    setFilters((prev) => ({ ...prev, selectedGolfCourseId }));
   };
 
   // 선택 상태 업데이트
@@ -161,6 +169,7 @@ export const useCaddieList = () => {
     filters,
     updateSelectedGroup,
     updateSelectedSpecialTeam,
+    updateSelectedGolfCourse,
 
     // 선택 상태
     selection,
