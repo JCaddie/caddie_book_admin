@@ -2,7 +2,7 @@ export { default as Badge } from "./badge";
 export { default as BaseTable } from "./base-table";
 export { default as BaseSettingModal } from "./base-setting-modal";
 export { default as Button } from "./button";
-export { default as CaddieAssignmentModal } from "./caddie-assignment-modal";
+
 export { default as ConfirmationModal } from "./confirmation-modal";
 export { default as DataTable } from "./data-table";
 export { default as DeleteButton } from "./delete-button";
@@ -22,5 +22,5 @@ export * from "./table-renderers";
 
 // 타입 export
 export type { ButtonProps } from "./button";
-export type { CaddieAssignmentModalProps } from "./caddie-assignment-modal";
+
 export type { UploadedFile, ExistingFile } from "./file-upload";
