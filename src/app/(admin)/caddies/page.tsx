@@ -11,7 +11,7 @@ import { AdminPageHeader } from "@/shared/components/layout";
 import { PAGE_TITLES, useCaddieList, useDocumentTitle } from "@/shared/hooks";
 import { CADDIE_COLUMNS } from "@/shared/constants/caddie";
 import { Caddie } from "@/shared/types/caddie";
-import CaddieFilterBar from "../../../modules/caddie/components/caddie-filter-bar";
+import { CaddieFilterBar } from "@/modules/caddie/components";
 
 const CaddieListPage: React.FC = () => {
   const router = useRouter();

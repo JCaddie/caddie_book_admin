@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CaddieDetail } from "@/shared/types/caddie";
-import { getCaddieDetail } from "../api/caddie-api";
+import type { CaddieDetail } from "../../types";
+import { getCaddieDetail } from "../../api";
 
 export interface UseCaddieDetailReturn {
   caddie: CaddieDetail | null;

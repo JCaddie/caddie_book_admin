@@ -29,7 +29,7 @@ const SearchWithButton: React.FC<SearchWithButtonProps> = ({
   // 로컬 입력 상태
   const [inputValue, setInputValue] = useState(currentSearchTerm);
 
-  // URL 파라미터 변경 시 입력값 동기화
+  // URL 파라미터가 변경되면 로컬 상태 업데이트
   useEffect(() => {
     setInputValue(currentSearchTerm);
   }, [currentSearchTerm]);
@@ -41,61 +41,69 @@ const SearchWithButton: React.FC<SearchWithButtonProps> = ({
 
   // 검색 실행 핸들러
   const handleSearch = () => {
-    if (disabled) return;
-
-    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    const params = new URLSearchParams(searchParams.toString());
 
     if (inputValue.trim()) {
-      // 검색어가 있으면 검색 파라미터 설정
       params.set(searchParam, inputValue.trim());
     } else {
-      // 검색어가 없으면 검색 파라미터 제거 (모든 데이터 조회)
       params.delete(searchParam);
     }
 
-    // 검색 시 페이지를 1로 리셋
-    params.set("page", "1");
+    // 검색 시 페이지를 1로 리셋 (page 파라미터가 있는 경우)
+    if (params.has("page")) {
+      params.set("page", "1");
+    }
 
-    router.push(`?${params.toString()}`);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    router.push(newUrl);
   };
 
-  // 클리어 핸들러
-  const handleClear = () => {
-    setInputValue("");
-
-    const params = new URLSearchParams(Array.from(searchParams.entries()));
-    params.delete(searchParam);
-    params.set("page", "1");
-
-    router.push(`?${params.toString()}`);
-
-    onClear?.();
-  };
-
-  // Enter 키 핸들러
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  // 엔터 키 처리
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !disabled) {
       handleSearch();
     }
   };
 
+  // 검색 초기화 핸들러
+  const handleClear = () => {
+    setInputValue("");
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete(searchParam);
+
+    // 검색 초기화 시 페이지를 1로 리셋
+    if (params.has("page")) {
+      params.set("page", "1");
+    }
+
+    const newUrl = params.toString()
+      ? `${window.location.pathname}?${params.toString()}`
+      : window.location.pathname;
+
+    router.push(newUrl);
+
+    // 외부 클리어 핸들러 호출
+    if (onClear) {
+      onClear();
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2 w-[340px]">
+    <div className="flex items-center gap-2 w-full max-w-md">
       <Search
         value={inputValue}
         onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         onClear={handleClear}
         placeholder={placeholder}
-        className="w-[180px]"
-        onKeyPress={handleKeyPress}
+        className="flex-[2] min-w-[300px]" // Increased width
         disabled={disabled}
       />
       <Button
-        variant="primary"
-        size="md"
         onClick={handleSearch}
         disabled={disabled}
-        className="w-24"
+        className="px-4 py-2 whitespace-nowrap flex-shrink-0" // Prevent shrinking
       >
         {buttonText}
       </Button>

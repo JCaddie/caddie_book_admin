@@ -1,19 +1,64 @@
+import { REGISTRATION_STATUS } from "../constants/new-caddie";
+
 // ================================
 // 신규 캐디 도메인 타입
 // ================================
 
-// 신규 캐디 신청 상태
+// 등록 상태 타입
+export type RegistrationStatus =
+  (typeof REGISTRATION_STATUS)[keyof typeof REGISTRATION_STATUS];
+
+// 신규 캐디 신청 상태 (기존 호환성)
 export type NewCaddieStatus = "pending" | "approved" | "rejected";
 
-// 신규 캐디 신청 데이터 타입
+// 골프장 정보 타입 (caddie.ts에서 import)
+import type { GolfCourse } from "./caddie";
+
+// 신규 캐디 신청 데이터 타입 (API 응답 기준)
 export interface NewCaddieApplication extends Record<string, unknown> {
   id: string;
   name: string;
   phone: string;
   email: string;
-  requestDate: string;
-  status: NewCaddieStatus;
+  created_at: string;
+  registration_status: RegistrationStatus;
+  registration_status_display: string;
+  golf_course: GolfCourse;
   isEmpty?: boolean;
+  // 기존 호환성을 위해 유지
+  requestDate?: string;
+  status?: NewCaddieStatus;
+}
+
+// ================================
+// API 관련 타입
+// ================================
+
+// 신규 캐디 목록 API 응답
+export interface NewCaddieListResponse {
+  success: boolean;
+  message?: string;
+  count: number;
+  page: number;
+  total_pages: number;
+  results: NewCaddieApplication[];
+}
+
+// 일괄 승인 요청
+export interface BulkApproveRequest {
+  user_ids: string[];
+}
+
+// 일괄 거절 요청
+export interface BulkRejectRequest {
+  user_ids: string[];
+  rejection_reason: string;
+}
+
+// API 응답 기본 형태
+export interface ApiResponse {
+  success: boolean;
+  message?: string;
 }
 
 // ================================
@@ -39,6 +84,8 @@ export interface NewCaddieState {
   isIndividualRejectModalOpen: boolean;
   selectedCaddieId: string;
   selectedCaddieName: string;
+  isLoading: boolean;
+  error: string | null;
 }
 
 // 신규 캐디 액션 타입

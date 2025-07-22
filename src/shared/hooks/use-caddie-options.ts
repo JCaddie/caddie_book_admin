@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getCaddieList } from "@/modules/caddie/api/caddie-api";
-import { Caddie } from "@/shared/types/caddie";
+import { getCaddieList } from "@/modules/caddie/api";
+import type { Caddie } from "@/modules/caddie/types";
 
 export interface CaddieOption {
   value: string;
@@ -78,7 +78,7 @@ export const useCaddieOptions = ({
     if (enabled) {
       loadCaddieOptions();
     }
-  }, [loadCaddieOptions]);
+  }, [loadCaddieOptions, enabled]);
 
   return {
     caddieOptions,

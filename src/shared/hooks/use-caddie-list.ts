@@ -2,19 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Caddie, CaddieFilters, CaddieSelection } from "@/shared/types/caddie";
-import {
+import type {
+  Caddie,
+  CaddieFilters,
   CaddieListParams,
-  deleteCaddies,
-  getCaddieList,
-} from "@/modules/caddie/api/caddie-api";
+  CaddieSelection,
+} from "@/modules/caddie/types";
+import { deleteCaddies, getCaddieList } from "@/modules/caddie/api";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
-import { useAuth } from "@/shared/hooks/use-auth";
 
 export const useCaddieList = () => {
   const searchParams = useSearchParams();
-  const { user } = useAuth();
-  const isMaster = user?.role === "MASTER";
 
   // 상태 관리
   const [caddies, setCaddies] = useState<Caddie[]>([]);
@@ -83,7 +81,7 @@ export const useCaddieList = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filters, isMaster]);
+  }, [currentPage, filters]);
 
   // 데이터 로드 트리거
   useEffect(() => {
