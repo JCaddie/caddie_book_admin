@@ -89,3 +89,23 @@ export interface UseUserManagementReturn {
   error?: Error | null;
   refetch?: () => void;
 }
+
+// 사용자 배정 API 응답 타입
+export interface SpecialGroup {
+  id: number;
+  name: string;
+  order: number;
+}
+
+export interface UserAssignment {
+  id: string;
+  name: string;
+  special_groups: SpecialGroup[];
+}
+
+export interface UserAssignmentResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: UserAssignment[];
+}

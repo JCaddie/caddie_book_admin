@@ -1,5 +1,10 @@
 import { apiClient } from "@/shared/lib/api-client";
-import { AdminsApiResponse, User, UserDetailApiResponse } from "../types";
+import {
+  AdminsApiResponse,
+  User,
+  UserAssignmentResponse,
+  UserDetailApiResponse,
+} from "../types";
 
 /**
  * 관리자 사용자 목록 조회 (간소화된 정보)
@@ -123,6 +128,27 @@ export const updateUserPassword = async (
     return response.data;
   } catch (error) {
     console.error("사용자 비밀번호 수정 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 사용자 배정 정보 조회
+ */
+export const getUserAssignments = async (
+  golfCourseId?: string
+): Promise<UserAssignmentResponse> => {
+  try {
+    let endpoint = "/api/v1/auth/assignment/";
+
+    if (golfCourseId) {
+      endpoint += `?golf_course_id=${golfCourseId}`;
+    }
+
+    const response = await apiClient.get<UserAssignmentResponse>(endpoint);
+    return response;
+  } catch (error) {
+    console.error("사용자 배정 정보 조회 실패:", error);
     throw error;
   }
 };

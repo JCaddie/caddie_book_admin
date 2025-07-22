@@ -83,3 +83,64 @@ export interface GroupListResponse {
   previous: string | null;
   results: CreateGroupResponse[];
 }
+
+// 캐디 그룹 배정 관련 타입들
+export interface AssignPrimaryRequest {
+  caddie_ids: string[];
+  orders: number[];
+}
+
+export interface AssignedCaddie {
+  id: string;
+  name: string;
+  order: number;
+}
+
+export interface AssignPrimaryResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: number;
+    assigned_count: number;
+    assigned_caddies: AssignedCaddie[];
+  };
+}
+
+export interface ReorderRequest {
+  reorders: {
+    caddie_id: string;
+    new_order: number;
+  }[];
+}
+
+export interface ReorderResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: number;
+    updated_count: number;
+    updated_orders: {
+      caddie_id: string;
+      name: string;
+      old_order: number;
+      new_order: number;
+    }[];
+  };
+}
+
+export interface RemovePrimaryRequest {
+  caddie_ids: string[];
+}
+
+export interface RemovePrimaryResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: number;
+    removed_count: number;
+    removed_caddies: {
+      caddie_id: string;
+      name: string;
+    }[];
+  };
+}

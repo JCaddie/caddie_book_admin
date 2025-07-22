@@ -1,9 +1,15 @@
 import { apiClient } from "@/shared/lib/api-client";
 import {
+  AssignPrimaryRequest,
+  AssignPrimaryResponse,
   CreateGroupRequest,
   CreateGroupResponse,
   GroupListResponse,
-} from "../types";
+  ReorderRequest,
+  ReorderResponse,
+  RemovePrimaryRequest,
+  RemovePrimaryResponse,
+} from "../types/group-status";
 
 /**
  * 그룹 목록 조회
@@ -60,4 +66,43 @@ export const updateGroup = async (
  */
 export const deleteGroup = async (groupId: number): Promise<void> => {
   return apiClient.delete(`/api/v1/caddie-groups/groups/${groupId}/`);
+};
+
+/**
+ * 조 배정 API
+ */
+export const assignPrimaryGroup = async (
+  groupId: number,
+  data: AssignPrimaryRequest
+): Promise<AssignPrimaryResponse> => {
+  return apiClient.put<AssignPrimaryResponse>(
+    `/api/v1/caddie-groups/groups/${groupId}/assign_primary/`,
+    data
+  );
+};
+
+/**
+ * 조 순서 변경 API
+ */
+export const reorderPrimaryGroup = async (
+  groupId: number,
+  data: ReorderRequest
+): Promise<ReorderResponse> => {
+  return apiClient.patch<ReorderResponse>(
+    `/api/v1/caddie-groups/groups/${groupId}/reorder_primary/`,
+    data
+  );
+};
+
+/**
+ * 조 배정 해제 API
+ */
+export const removePrimaryGroup = async (
+  groupId: number,
+  data: RemovePrimaryRequest
+): Promise<RemovePrimaryResponse> => {
+  return apiClient.deleteWithBody<RemovePrimaryResponse>(
+    `/api/v1/caddie-groups/groups/${groupId}/remove_primary/`,
+    data
+  );
 };
