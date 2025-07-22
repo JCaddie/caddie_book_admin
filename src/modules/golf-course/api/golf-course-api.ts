@@ -2,6 +2,7 @@ import {
   EditableGolfCourse,
   GolfCourseDetail,
   GolfCourseFilters,
+  GolfCourseGroupDetailResponse,
   GolfCourseGroupStatusResponse,
   GolfCourseListResponse,
 } from "../types/golf-course";
@@ -105,4 +106,15 @@ export const getGolfCourseGroupStatus = async (params?: {
   }`;
 
   return apiClient.get<GolfCourseGroupStatusResponse>(endpoint);
+};
+
+/**
+ * 골프장 그룹 상세 조회
+ */
+export const getGolfCourseGroupDetail = async (
+  golfCourseId: string
+): Promise<GolfCourseGroupDetailResponse> => {
+  return apiClient.get<GolfCourseGroupDetailResponse>(
+    `/api/v1/golf-courses/group-status/${golfCourseId}/`
+  );
 };
