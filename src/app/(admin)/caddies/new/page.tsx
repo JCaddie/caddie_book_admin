@@ -18,6 +18,7 @@ export default function NewCaddiePage() {
   // 커스텀 훅으로 상태 관리 및 로직 위임
   const {
     selectedRowKeys,
+    searchTerm,
     isApprovalModalOpen,
     isRejectModalOpen,
     isIndividualApprovalModalOpen,
@@ -36,6 +37,9 @@ export default function NewCaddiePage() {
     handleIndividualReject,
     handleSelectChange,
     handleRowClick,
+    handleSearchChange,
+    handleSearchClear,
+    handleSearch,
     setIsApprovalModalOpen,
     setIsRejectModalOpen,
     setIsIndividualApprovalModalOpen,
@@ -71,8 +75,12 @@ export default function NewCaddiePage() {
       <NewCaddieActionBar
         pendingCount={pendingCount}
         selectedCount={selectedRowKeys.length}
+        searchTerm={searchTerm}
         onRejectSelected={openRejectModal}
         onApproveSelected={openApprovalModal}
+        onSearchChange={handleSearchChange}
+        onSearchClear={handleSearchClear}
+        onSearch={handleSearch}
       />
 
       <div className="space-y-6">

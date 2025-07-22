@@ -7,15 +7,23 @@ import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
 interface NewCaddieActionBarProps {
   pendingCount: number;
   selectedCount: number;
+  searchTerm: string;
   onRejectSelected: () => void;
   onApproveSelected: () => void;
+  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearchClear: () => void;
+  onSearch: (searchTerm: string) => void;
 }
 
 const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
   pendingCount,
   selectedCount,
+  searchTerm,
   onRejectSelected,
   onApproveSelected,
+  onSearchChange,
+  onSearchClear,
+  onSearch,
 }) => {
   return (
     <div className="flex items-center justify-between">
@@ -32,6 +40,10 @@ const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
         <div className="w-[460px]">
           <SearchWithButton
             placeholder={NEW_CADDIE_CONSTANTS.SEARCH_PLACEHOLDER}
+            value={searchTerm}
+            onChange={onSearchChange}
+            onClear={onSearchClear}
+            onSearch={onSearch}
           />
         </div>
 

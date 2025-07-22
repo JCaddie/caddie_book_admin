@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { NewCaddieApplication } from "../types";
 import { REGISTRATION_STATUS } from "../constants/new-caddie";
 import {
@@ -37,6 +38,7 @@ export interface UseNewCaddieManagementReturn {
   handleIndividualReject: () => void;
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSearchClear: () => void;
+  handleSearch: (searchTerm: string) => void;
   handleSelectChange: (selectedRowKeys: string[]) => void;
   handleRowClick: (application: NewCaddieApplication) => void;
   handlePageChange: (page: number) => void;
@@ -73,8 +75,11 @@ const transformApiData = (
 };
 
 export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
+  const router = useRouter();
+
   // 상태 관리
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeSearchTerm, setActiveSearchTerm] = useState(""); // 실제 검색에 사용되는 검색어
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [applications, setApplications] = useState<NewCaddieApplication[]>([]);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
@@ -98,7 +103,7 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
         setError(null);
 
         const response = await getNewCaddieList({
-          search: searchTerm || undefined,
+          search: activeSearchTerm || undefined,
           page: page,
           page_size: PAGE_SIZE,
         });
@@ -116,7 +121,7 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
         setIsLoading(false);
       }
     },
-    [searchTerm]
+    [activeSearchTerm]
   );
 
   // 데이터 새로고침 함수
@@ -132,10 +137,10 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     [loadData]
   );
 
-  // 초기 데이터 로딩 및 검색어 변경 시 재로딩
+  // 초기 데이터 로딩
   useEffect(() => {
-    loadData(1); // 검색어 변경 시 첫 페이지로 이동
-  }, [searchTerm]); // loadData 의존성 제거 (무한 루프 방지)
+    loadData(1);
+  }, [activeSearchTerm]); // activeSearchTerm 변경 시 재로딩
 
   // 승인 대기 및 거부된 캐디 표시 (승인된 것은 제외)
   const filteredApplications = applications.filter(
@@ -294,14 +299,22 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     }
   };
 
-  // 검색 변경 핸들러 (debounce 적용하면 더 좋음)
+  // 검색 변경 핸들러 (입력 값만 변경, 실제 검색은 안함)
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+
+  // 검색 실행 핸들러 (검색 버튼 클릭 시)
+  const handleSearch = (searchValue: string) => {
+    setActiveSearchTerm(searchValue);
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
   };
 
   // 검색 초기화 핸들러
   const handleSearchClear = () => {
     setSearchTerm("");
+    setActiveSearchTerm("");
+    setCurrentPage(1);
   };
 
   // 선택 변경 핸들러
@@ -314,8 +327,9 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     if (process.env.NODE_ENV === "development") {
       console.log("행 클릭:", application);
     }
-    // 필요시 상세 페이지로 이동
-    // router.push(`/caddies/new/${application.id}`);
+
+    // 캐디 상세 페이지로 이동
+    router.push(`/caddies/${application.id}`);
   };
 
   return {
@@ -345,6 +359,7 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     handleIndividualReject,
     handleSearchChange,
     handleSearchClear,
+    handleSearch,
     handleSelectChange,
     handleRowClick,
     handlePageChange,
