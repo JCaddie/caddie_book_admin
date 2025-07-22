@@ -8,14 +8,14 @@ interface NewCaddieActionBarProps {
   pendingCount: number;
   selectedCount: number;
   onRejectSelected: () => void;
-  onApproveAll: () => void;
+  onApproveSelected: () => void;
 }
 
 const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
   pendingCount,
   selectedCount,
   onRejectSelected,
-  onApproveAll,
+  onApproveSelected,
 }) => {
   return (
     <div className="flex items-center justify-between">
@@ -29,11 +29,11 @@ const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
       {/* 오른쪽: 검색 + 버튼들 */}
       <div className="flex items-center gap-8">
         {/* 검색 */}
-        <SearchWithButton
-          placeholder={NEW_CADDIE_CONSTANTS.SEARCH_PLACEHOLDER}
-          containerClassName="w-[460px]"
-          searchClassName="w-[400px]"
-        />
+        <div className="w-[460px]">
+          <SearchWithButton
+            placeholder={NEW_CADDIE_CONSTANTS.SEARCH_PLACEHOLDER}
+          />
+        </div>
 
         {/* 버튼 그룹 */}
         <div className="flex items-center gap-2">
@@ -45,7 +45,11 @@ const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
           >
             {NEW_CADDIE_CONSTANTS.REJECT_BUTTON_TEXT}
           </Button>
-          <Button onClick={onApproveAll} className="w-24">
+          <Button
+            onClick={onApproveSelected}
+            disabled={selectedCount === 0}
+            className="w-24"
+          >
             {NEW_CADDIE_CONSTANTS.BULK_APPROVE_BUTTON_TEXT}
           </Button>
         </div>
