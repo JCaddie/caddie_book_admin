@@ -72,3 +72,20 @@ export interface EditableGolfCourse {
     email: string;
   };
 }
+
+// 골프장 그룹 현황 API 응답 타입
+export interface GolfCourseGroupStatus {
+  id: string;
+  name: string;
+  location: string;
+  primary_group_count: number;
+  special_group_count: number;
+  total_caddies: number;
+}
+
+export interface GolfCourseGroupStatusResponse {
+  results: GolfCourseGroupStatus[];
+  count: number;
+  page: number;
+  total_pages: number;
+}

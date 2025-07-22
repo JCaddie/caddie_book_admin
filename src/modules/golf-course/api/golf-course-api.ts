@@ -2,6 +2,7 @@ import {
   EditableGolfCourse,
   GolfCourseDetail,
   GolfCourseFilters,
+  GolfCourseGroupStatusResponse,
   GolfCourseListResponse,
 } from "../types/golf-course";
 import { apiClient } from "@/shared/lib/api-client";
@@ -80,3 +81,28 @@ export async function deleteGolfCourse(id: string) {
   await apiClient.delete(`/api/v1/golf-courses/${id}/`);
   return true;
 }
+
+/**
+ * 골프장 그룹 현황 조회
+ */
+export const getGolfCourseGroupStatus = async (params?: {
+  page?: number;
+  search?: string;
+}): Promise<GolfCourseGroupStatusResponse> => {
+  const searchParams = new URLSearchParams();
+
+  if (params?.page) {
+    searchParams.append("page", params.page.toString());
+  }
+
+  if (params?.search) {
+    searchParams.append("search", params.search);
+  }
+
+  const queryString = searchParams.toString();
+  const endpoint = `/api/v1/golf-courses/group-status/${
+    queryString ? `?${queryString}` : ""
+  }`;
+
+  return apiClient.get<GolfCourseGroupStatusResponse>(endpoint);
+};
