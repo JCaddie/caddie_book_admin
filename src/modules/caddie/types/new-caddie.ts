@@ -11,6 +11,13 @@ export type RegistrationStatus =
 // 신규 캐디 신청 상태 (기존 호환성)
 export type NewCaddieStatus = "pending" | "approved" | "rejected";
 
+// 골프장 정보 타입
+export interface GolfCourse {
+  id: string;
+  name: string;
+  region: string;
+}
+
 // 신규 캐디 신청 데이터 타입 (API 응답 기준)
 export interface NewCaddieApplication extends Record<string, unknown> {
   id: string;
@@ -20,6 +27,7 @@ export interface NewCaddieApplication extends Record<string, unknown> {
   created_at: string;
   registration_status: RegistrationStatus;
   registration_status_display: string;
+  golf_course: GolfCourse;
   isEmpty?: boolean;
   // 기존 호환성을 위해 유지
   requestDate?: string;

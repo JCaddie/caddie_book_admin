@@ -40,6 +40,15 @@ export const useNewCaddieColumns = (): Column<NewCaddieApplication>[] => {
         render: basicRenderers.email,
       },
       {
+        key: "golf_course",
+        title: "골프장",
+        width: 150,
+        render: (value: unknown, record: NewCaddieApplication) => {
+          if (!record.golf_course) return "-";
+          return record.golf_course.name;
+        },
+      },
+      {
         key: "created_at",
         title: "신청일자",
         width: 140,
