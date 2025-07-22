@@ -19,6 +19,14 @@ import {
   GolfCourseGroupDetailResponse,
   GroupMember,
 } from "@/modules/golf-course/types/golf-course";
+import { getUserAssignments } from "@/modules/user/api/user-api";
+import { UserAssignment } from "@/modules/user/types/user";
+import { CaddieCard } from "@/modules/work/components";
+import { CaddieData } from "@/modules/work/types";
+import {
+  assignPrimaryGroup,
+  removePrimaryGroup,
+} from "@/modules/group/api/group-api";
 
 interface GroupManagementPageProps {
   params: Promise<{
@@ -41,6 +49,29 @@ const transformApiGroupToGroupSection = (apiGroup: ApiGroup) => ({
   })),
 });
 
+// UserAssignment를 CaddieData 형식으로 변환하는 함수
+const transformUserAssignmentToCaddieData = (
+  assignment: UserAssignment
+): CaddieData & { originalId: string } => {
+  const specialGroupNames = assignment.special_groups
+    .map((group) => group.name)
+    .join(", ");
+
+  return {
+    id: parseInt(assignment.id),
+    originalId: assignment.id, // 원본 UUID string 보존
+    name: assignment.name,
+    group:
+      assignment.special_groups.length > 0
+        ? assignment.special_groups[0].id
+        : 0,
+    badge: assignment.special_groups.length > 0 ? "특수반" : "일반",
+    status: "active",
+    specialBadge:
+      assignment.special_groups.length > 0 ? specialGroupNames : undefined,
+  };
+};
+
 const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   params,
 }) => {
@@ -54,6 +85,13 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 캐디 배정 데이터 상태
+  const [caddieAssignments, setCaddieAssignments] = useState<UserAssignment[]>(
+    []
+  );
+  const [caddieLoading, setCaddieLoading] = useState(true);
+  const [caddieError, setCaddieError] = useState<string | null>(null);
+
   // 필터 상태
   const [filters, setFilters] = useState({
     selectedGroup: "전체",
@@ -63,6 +101,11 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   // 모달 상태
   const [isGroupCreateModalOpen, setIsGroupCreateModalOpen] = useState(false);
 
+  // 드래그 앤 드롭 상태
+  const [draggedCaddie, setDraggedCaddie] = useState<
+    (CaddieData & { originalId: string }) | null
+  >(null);
+
   // 페이지 타이틀 설정
   const pageTitle = isOwnGolfCourse
     ? "내 골프장 그룹현황"
@@ -71,7 +114,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     : "그룹현황";
   useDocumentTitle({ title: pageTitle });
 
-  // 데이터 로드 함수
+  // 골프장 그룹 데이터 로드 함수
   const loadData = useCallback(async () => {
     if (isOwnGolfCourse) {
       // TODO: 현재 사용자의 골프장 ID를 가져오는 로직 필요
@@ -93,10 +136,29 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     }
   }, [id, isOwnGolfCourse]);
 
+  // 캐디 배정 데이터 로드 함수
+  const loadCaddieAssignments = useCallback(async () => {
+    setCaddieLoading(true);
+    setCaddieError(null);
+
+    try {
+      // MASTER 권한일 때는 golf_course_id 파라미터 전달
+      const golfCourseId = isOwnGolfCourse ? undefined : id;
+      const response = await getUserAssignments(golfCourseId);
+      setCaddieAssignments(response.results);
+    } catch (err) {
+      console.error("캐디 배정 정보 조회 실패:", err);
+      setCaddieError("캐디 정보를 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setCaddieLoading(false);
+    }
+  }, [id, isOwnGolfCourse]);
+
   // 초기 데이터 로드
   useEffect(() => {
     loadData();
-  }, [id, loadData]);
+    loadCaddieAssignments();
+  }, [id, loadData, loadCaddieAssignments]);
 
   // API 데이터를 GroupSection 형식으로 변환 (주그룹만)
   const transformedGroups = data
@@ -134,17 +196,52 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     await loadData();
   };
 
-  // 드래그 앤 드롭 핸들러들 (기본 구현)
-  const handleDragStart = (caddie: unknown, groupId: string) => {
+  // 드래그 앤 드롭 핸들러들 (API 연동)
+  const handleDragStart = (
+    caddie: CaddieData | (CaddieData & { originalId: string }),
+    groupId: string
+  ) => {
     console.log("드래그 시작", caddie, groupId);
+    setDraggedCaddie(caddie as CaddieData & { originalId: string });
   };
 
   const handleDragEnd = () => {
     console.log("드래그 종료");
+    setDraggedCaddie(null);
   };
 
-  const handleDrop = (targetGroupId: string, insertIndex?: number) => {
-    console.log("드롭", targetGroupId, insertIndex);
+  const handleDrop = async (targetGroupId: string, insertIndex?: number) => {
+    try {
+      console.log("드롭", targetGroupId, insertIndex);
+
+      if (draggedCaddie) {
+        if (targetGroupId === "unassigned") {
+          // 캐디 배정 해제 (빈 영역으로 드래그)
+          const currentGroupId = draggedCaddie.group;
+          if (currentGroupId > 0) {
+            await removePrimaryGroup(currentGroupId, {
+              caddie_ids: [draggedCaddie.originalId],
+            });
+            console.log("캐디 그룹 배정 해제 완료");
+          }
+        } else {
+          // 캐디를 새로운 그룹에 배정
+          await assignPrimaryGroup(parseInt(targetGroupId), {
+            caddie_ids: [draggedCaddie.originalId],
+            orders: [insertIndex || 1],
+          });
+          console.log("캐디 그룹 배정 완료");
+        }
+
+        // 데이터 새로고침
+        await loadData();
+        await loadCaddieAssignments();
+      }
+    } catch (error) {
+      console.error("캐디 그룹 배정/해제 실패:", error);
+    } finally {
+      setDraggedCaddie(null);
+    }
   };
 
   // 로딩 상태
@@ -249,7 +346,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       {/* 메인 콘텐츠 */}
       <div className="flex gap-8">
         {/* 왼쪽: 그룹 관리 */}
-        <div className="flex-1">
+        <div className="w-[calc(3*320px+2*16px)]">
           {/* 그룹이 없을 때 빈 상태 화면 */}
           {filteredGroups.length === 0 ? (
             <EmptyGroupsState onCreateGroup={openGroupCreateModal} />
@@ -298,25 +395,31 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
                 </div>
               </div>
 
-              {/* 그룹들 - 세로 배치 */}
-              <div className="space-y-4">
-                {filteredGroups.map((group) => (
-                  <GroupSection
-                    key={group.id}
-                    group={group}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onDrop={handleDrop}
-                    draggedCaddie={null}
-                  />
-                ))}
+              {/* 그룹들 - 최대 3개 고정 너비 + 스크롤 */}
+              <div className="overflow-x-auto">
+                <div
+                  className="flex gap-4"
+                  style={{ width: "max-content", minWidth: "100%" }}
+                >
+                  {filteredGroups.map((group) => (
+                    <div key={group.id} className="w-80 flex-shrink-0">
+                      <GroupSection
+                        group={group}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onDrop={handleDrop}
+                        draggedCaddie={draggedCaddie}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </>
           )}
         </div>
 
         {/* 오른쪽: 캐디 현황 */}
-        <div className="w-80">
+        <div className="w-96">
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               캐디 현황
@@ -346,32 +449,46 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           {/* 캐디 카드들 */}
           <div className="space-y-3">
             <h4 className="text-md font-medium text-gray-900">캐디 목록</h4>
-            {data.primary_groups.flatMap((group) =>
-              group.members.map((member) => (
-                <div
-                  key={member.id}
-                  className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {member.name}
-                      </div>
-                      <div className="text-sm text-gray-500">{group.name}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {member.is_team_leader && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                          팀장
-                        </span>
-                      )}
-                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                        활성
-                      </span>
-                    </div>
-                  </div>
+            {caddieLoading ? (
+              <div className="text-sm text-gray-500">
+                캐디 정보를 불러오는 중...
+              </div>
+            ) : caddieError ? (
+              <div className="text-sm text-red-500">{caddieError}</div>
+            ) : caddieAssignments.length === 0 ? (
+              <div className="text-sm text-gray-500">
+                등록된 캐디가 없습니다.
+              </div>
+            ) : (
+              <div
+                className="space-y-2 min-h-[200px] p-2 border-2 border-dashed border-gray-300 rounded-lg"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                }}
+                onDrop={() => handleDrop("unassigned")}
+              >
+                <div className="text-xs text-gray-500 mb-2 text-center">
+                  캐디를 여기로 드래그하여 배정 해제
                 </div>
-              ))
+                {caddieAssignments.map((assignment) => {
+                  const caddieData =
+                    transformUserAssignmentToCaddieData(assignment);
+                  return (
+                    <div
+                      key={assignment.id}
+                      draggable
+                      onDragStart={() => handleDragStart(caddieData, "")}
+                      onDragEnd={handleDragEnd}
+                      className={`cursor-move ${
+                        draggedCaddie?.id === caddieData.id ? "opacity-50" : ""
+                      }`}
+                    >
+                      <CaddieCard caddie={caddieData} />
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
