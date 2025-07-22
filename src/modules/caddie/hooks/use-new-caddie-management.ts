@@ -1,101 +1,68 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { NewCaddieApplication } from "../types";
-import { REGISTRATION_STATUS } from "../constants/new-caddie";
+import { REGISTRATION_STATUS } from "../constants";
 import {
   bulkApproveNewCaddies,
   bulkRejectNewCaddies,
   getNewCaddieList,
 } from "../api/caddie-api";
 
-// 페이지 사이즈 상수 정의
 const PAGE_SIZE = 20;
 
-export interface UseNewCaddieManagementReturn {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  selectedRowKeys: string[];
-  applications: NewCaddieApplication[];
-  isApprovalModalOpen: boolean;
-  isRejectModalOpen: boolean;
-  isIndividualApprovalModalOpen: boolean;
-  isIndividualRejectModalOpen: boolean;
-  selectedCaddieId: string;
-  selectedCaddieName: string;
-  currentPage: number;
-  totalPages: number;
-  currentData: NewCaddieApplication[];
-  pendingCount: number;
-  isLoading: boolean;
-  error: string | null;
-  openApprovalModal: () => void;
-  openRejectModal: () => void;
-  openIndividualApprovalModal: (caddieId: string, caddieName: string) => void;
-  openIndividualRejectModal: (caddieId: string, caddieName: string) => void;
-  handleBulkApprove: () => void;
-  handleBulkReject: () => void;
-  handleIndividualApprove: () => void;
-  handleIndividualReject: () => void;
-  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSearchClear: () => void;
-  handleSearch: (searchTerm: string) => void;
-  handleSelectChange: (selectedRowKeys: string[]) => void;
-  handleRowClick: (application: NewCaddieApplication) => void;
-  handlePageChange: (page: number) => void;
-  setIsApprovalModalOpen: (open: boolean) => void;
-  setIsRejectModalOpen: (open: boolean) => void;
-  setIsIndividualApprovalModalOpen: (open: boolean) => void;
-  setIsIndividualRejectModalOpen: (open: boolean) => void;
-  refreshData: () => void;
-}
-
-/**
- * API 응답 데이터를 기존 형태로 변환하는 함수
- */
-const transformApiData = (
-  apiData: NewCaddieApplication
-): NewCaddieApplication => {
-  return {
-    ...apiData,
-    // 기존 호환성을 위한 변환
-    requestDate: apiData.created_at
-      ? new Date(apiData.created_at)
-          .toLocaleDateString("ko-KR")
-          .replace(/\./g, ".")
-      : "",
-    status:
-      apiData.registration_status === REGISTRATION_STATUS.PENDING
-        ? "pending"
-        : apiData.registration_status === REGISTRATION_STATUS.APPROVED
-        ? "approved"
-        : apiData.registration_status === REGISTRATION_STATUS.REJECTED
-        ? "rejected"
-        : "pending",
-  };
-};
-
-export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
+export const useNewCaddieManagement = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // URL에서 검색어 읽기
+  const searchTerm = searchParams.get("search") || "";
 
   // 상태 관리
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeSearchTerm, setActiveSearchTerm] = useState(""); // 실제 검색에 사용되는 검색어
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [applications, setApplications] = useState<NewCaddieApplication[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isIndividualApprovalModalOpen, setIsIndividualApprovalModalOpen] =
     useState(false);
   const [isIndividualRejectModalOpen, setIsIndividualRejectModalOpen] =
     useState(false);
-  const [selectedCaddieId, setSelectedCaddieId] = useState<string>("");
-  const [selectedCaddieName, setSelectedCaddieName] = useState<string>("");
+  const [selectedCaddieId, setSelectedCaddieId] = useState("");
+  const [selectedCaddieName, setSelectedCaddieName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // 데이터 로딩 함수
+  // API 응답 데이터를 UI 형태로 변환
+  const transformApiData = useCallback(
+    (apiData: NewCaddieApplication[]): NewCaddieApplication[] => {
+      return apiData.map((item) => ({
+        ...item,
+        // 기존 호환성을 위해 추가 필드 매핑
+        requestDate: item.created_at
+          ? new Date(item.created_at)
+              .toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              })
+              .replace(/\./g, ".")
+              .replace(/\s/g, "")
+          : "",
+        status:
+          item.registration_status === REGISTRATION_STATUS.PENDING
+            ? ("pending" as const)
+            : item.registration_status === REGISTRATION_STATUS.APPROVED
+            ? ("approved" as const)
+            : ("rejected" as const),
+      }));
+    },
+    []
+  );
+
+  // 데이터 로드 함수
   const loadData = useCallback(
     async (page: number = 1) => {
       try {
@@ -103,61 +70,56 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
         setError(null);
 
         const response = await getNewCaddieList({
-          search: activeSearchTerm || undefined,
+          search: searchTerm || undefined,
           page: page,
           page_size: PAGE_SIZE,
         });
 
-        const transformedData = response.results.map(transformApiData);
-        setApplications(transformedData);
-        setTotalPages(response.total_pages);
-        setCurrentPage(page);
-      } catch (err) {
-        console.error("신규 캐디 목록 로딩 실패:", err);
-        setError(
-          err instanceof Error ? err.message : "데이터 로딩에 실패했습니다."
-        );
+        if (response.success && response.results) {
+          const transformedData = transformApiData(response.results);
+          setApplications(transformedData);
+          setCurrentPage(response.page);
+          setTotalPages(response.total_pages);
+        } else {
+          console.error("신규 캐디 목록 조회 실패:", response);
+          setError("데이터를 불러오는데 실패했습니다.");
+        }
+      } catch (error) {
+        console.error("API 호출 에러:", error);
+        setError("데이터를 불러오는데 실패했습니다.");
       } finally {
         setIsLoading(false);
       }
     },
-    [activeSearchTerm]
+    [searchTerm, transformApiData]
   );
 
-  // 데이터 새로고침 함수
+  // URL 파라미터 변경 시 데이터 리로드
+  useEffect(() => {
+    loadData(1);
+  }, [loadData]);
+
+  // 새로고침 함수
   const refreshData = useCallback(() => {
     loadData(currentPage);
   }, [loadData, currentPage]);
 
-  // 페이지 변경 핸들러
-  const handlePageChange = useCallback(
-    (page: number) => {
-      loadData(page);
-    },
-    [loadData]
-  );
+  // 현재 화면에 표시할 데이터
+  const currentData = applications;
 
-  // 초기 데이터 로딩
-  useEffect(() => {
-    loadData(1);
-  }, [activeSearchTerm]); // activeSearchTerm 변경 시 재로딩
-
-  // 승인 대기 및 거부된 캐디 표시 (승인된 것은 제외)
+  // 필터링된 데이터 (승인 대기 + 거부된 캐디들)
   const filteredApplications = applications.filter(
     (app) =>
       app.registration_status === REGISTRATION_STATUS.PENDING ||
       app.registration_status === REGISTRATION_STATUS.REJECTED
   );
 
-  // 페이지네이션 (서버 페이지네이션 사용하므로 클라이언트 페이지네이션 사용 안함)
-  const currentData = filteredApplications;
-
-  // 대기 중인 신청 수 (PENDING 상태만 카운트)
+  // 승인 대기 개수
   const pendingCount = applications.filter(
     (app) => app.registration_status === REGISTRATION_STATUS.PENDING
   ).length;
 
-  // 모달 관리 함수들
+  // 모달 열기 함수들
   const openApprovalModal = () => {
     setIsApprovalModalOpen(true);
   };
@@ -166,189 +128,130 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     setIsRejectModalOpen(true);
   };
 
-  const openIndividualApprovalModal = (
-    caddieId: string,
-    caddieName: string
-  ) => {
-    setSelectedCaddieId(caddieId);
-    setSelectedCaddieName(caddieName);
+  const openIndividualApprovalModal = (id: string, name: string) => {
+    setSelectedCaddieId(id);
+    setSelectedCaddieName(name);
     setIsIndividualApprovalModalOpen(true);
   };
 
-  const openIndividualRejectModal = (caddieId: string, caddieName: string) => {
-    setSelectedCaddieId(caddieId);
-    setSelectedCaddieName(caddieName);
+  const openIndividualRejectModal = (id: string, name: string) => {
+    setSelectedCaddieId(id);
+    setSelectedCaddieName(name);
     setIsIndividualRejectModalOpen(true);
   };
 
-  // 일괄 승인 핸들러 - 이제 항상 선택된 캐디만 처리
+  // 일괄 승인 처리
   const handleBulkApprove = async () => {
     try {
-      setIsLoading(true);
-
-      // 선택된 캐디만 승인
-      const userIds = selectedRowKeys;
-
-      if (userIds.length > 0) {
-        await bulkApproveNewCaddies({ user_ids: userIds });
-
-        if (process.env.NODE_ENV === "development") {
-          console.log("선택된 신청 승인 완료:", userIds);
-        }
-
-        // 데이터 새로고침
-        await refreshData();
-      }
-    } catch (err) {
-      console.error("승인 처리 실패:", err);
-      setError(
-        err instanceof Error ? err.message : "승인 처리에 실패했습니다."
-      );
-    } finally {
-      setIsLoading(false);
-      setIsApprovalModalOpen(false);
-      setSelectedRowKeys([]);
-    }
-  };
-
-  // 일괄 거절 핸들러 - 이제 항상 선택된 캐디만 처리
-  const handleBulkReject = async () => {
-    try {
-      setIsLoading(true);
-
-      // 선택된 캐디만 거절
-      const userIds = selectedRowKeys;
-
-      if (userIds.length > 0) {
-        await bulkRejectNewCaddies({
-          user_ids: userIds,
-          rejection_reason: "관리자 승인 거절",
-        });
-
-        if (process.env.NODE_ENV === "development") {
-          console.log("선택된 신청 거절 완료:", userIds);
-        }
-
-        // 데이터 새로고침
-        await refreshData();
-      }
-    } catch (err) {
-      console.error("거절 처리 실패:", err);
-      setError(
-        err instanceof Error ? err.message : "거절 처리에 실패했습니다."
-      );
-    } finally {
-      setIsLoading(false);
-      setIsRejectModalOpen(false);
-      setSelectedRowKeys([]);
-    }
-  };
-
-  // 개별 승인 핸들러
-  const handleIndividualApprove = async () => {
-    try {
-      setIsLoading(true);
-
-      await bulkApproveNewCaddies({ user_ids: [selectedCaddieId] });
-
-      if (process.env.NODE_ENV === "development") {
-        console.log("개별 승인 완료:", selectedCaddieId, selectedCaddieName);
-      }
-
-      // 데이터 새로고침
-      await refreshData();
-    } catch (err) {
-      console.error("개별 승인 실패:", err);
-      setError(
-        err instanceof Error ? err.message : "승인 처리에 실패했습니다."
-      );
-    } finally {
-      setIsLoading(false);
-      setIsIndividualApprovalModalOpen(false);
-      setSelectedCaddieId("");
-      setSelectedCaddieName("");
-    }
-  };
-
-  // 개별 거절 핸들러
-  const handleIndividualReject = async () => {
-    try {
-      setIsLoading(true);
-
-      await bulkRejectNewCaddies({
-        user_ids: [selectedCaddieId],
-        rejection_reason: "관리자 개별 거절",
+      const response = await bulkApproveNewCaddies({
+        user_ids: selectedRowKeys,
       });
 
-      if (process.env.NODE_ENV === "development") {
-        console.log("개별 거절 완료:", selectedCaddieId, selectedCaddieName);
+      if (response.success) {
+        console.log("일괄 승인 성공");
+        setSelectedRowKeys([]);
+        setIsApprovalModalOpen(false);
+        refreshData();
+      } else {
+        console.error("일괄 승인 실패:", response);
       }
-
-      // 데이터 새로고침
-      await refreshData();
-    } catch (err) {
-      console.error("개별 거절 실패:", err);
-      setError(
-        err instanceof Error ? err.message : "거절 처리에 실패했습니다."
-      );
-    } finally {
-      setIsLoading(false);
-      setIsIndividualRejectModalOpen(false);
-      setSelectedCaddieId("");
-      setSelectedCaddieName("");
+    } catch (error) {
+      console.error("일괄 승인 에러:", error);
     }
   };
 
-  // 검색 변경 핸들러 (입력 값만 변경, 실제 검색은 안함)
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  // 일괄 거절 처리
+  const handleBulkReject = async () => {
+    try {
+      const response = await bulkRejectNewCaddies({
+        user_ids: selectedRowKeys,
+        rejection_reason: "서류 미비",
+      });
+
+      if (response.success) {
+        console.log("일괄 거절 성공");
+        setSelectedRowKeys([]);
+        setIsRejectModalOpen(false);
+        refreshData();
+      } else {
+        console.error("일괄 거절 실패:", response);
+      }
+    } catch (error) {
+      console.error("일괄 거절 에러:", error);
+    }
   };
 
-  // 검색 실행 핸들러 (검색 버튼 클릭 시)
-  const handleSearch = (searchValue: string) => {
-    setActiveSearchTerm(searchValue);
-    setCurrentPage(1); // 검색 시 첫 페이지로 이동
+  // 개별 승인 처리
+  const handleIndividualApprove = async () => {
+    try {
+      const response = await bulkApproveNewCaddies({
+        user_ids: [selectedCaddieId],
+      });
+
+      if (response.success) {
+        console.log("개별 승인 성공");
+        setIsIndividualApprovalModalOpen(false);
+        refreshData();
+      } else {
+        console.error("개별 승인 실패:", response);
+      }
+    } catch (error) {
+      console.error("개별 승인 에러:", error);
+    }
   };
 
-  // 검색 초기화 핸들러
-  const handleSearchClear = () => {
-    setSearchTerm("");
-    setActiveSearchTerm("");
-    setCurrentPage(1);
+  // 개별 거절 처리
+  const handleIndividualReject = async () => {
+    try {
+      const response = await bulkRejectNewCaddies({
+        user_ids: [selectedCaddieId],
+        rejection_reason: "서류 미비",
+      });
+
+      if (response.success) {
+        console.log("개별 거절 성공");
+        setIsIndividualRejectModalOpen(false);
+        refreshData();
+      } else {
+        console.error("개별 거절 실패:", response);
+      }
+    } catch (error) {
+      console.error("개별 거절 에러:", error);
+    }
   };
 
-  // 선택 변경 핸들러
-  const handleSelectChange = (selectedRowKeys: string[]) => {
-    setSelectedRowKeys(selectedRowKeys);
+  // 선택 변경 처리
+  const handleSelectChange = (keys: string[]) => {
+    setSelectedRowKeys(keys);
   };
 
-  // 행 클릭 핸들러
+  // 행 클릭 처리
   const handleRowClick = (application: NewCaddieApplication) => {
     if (process.env.NODE_ENV === "development") {
       console.log("행 클릭:", application);
     }
-
     // 캐디 상세 페이지로 이동
     router.push(`/caddies/${application.id}`);
   };
 
   return {
-    searchTerm,
-    setSearchTerm,
+    // 상태
     selectedRowKeys,
-    applications,
-    isApprovalModalOpen,
-    isRejectModalOpen,
-    isIndividualApprovalModalOpen,
-    isIndividualRejectModalOpen,
-    selectedCaddieId,
-    selectedCaddieName,
-    currentPage,
-    totalPages,
+    applications: filteredApplications,
     currentData,
     pendingCount,
     isLoading,
     error,
+    totalPages,
+
+    // 모달 상태
+    isApprovalModalOpen,
+    isRejectModalOpen,
+    isIndividualApprovalModalOpen,
+    isIndividualRejectModalOpen,
+    selectedCaddieName,
+
+    // 액션 함수들
     openApprovalModal,
     openRejectModal,
     openIndividualApprovalModal,
@@ -357,16 +260,14 @@ export const useNewCaddieManagement = (): UseNewCaddieManagementReturn => {
     handleBulkReject,
     handleIndividualApprove,
     handleIndividualReject,
-    handleSearchChange,
-    handleSearchClear,
-    handleSearch,
     handleSelectChange,
     handleRowClick,
-    handlePageChange,
+    refreshData,
+
+    // 모달 상태 변경
     setIsApprovalModalOpen,
     setIsRejectModalOpen,
     setIsIndividualApprovalModalOpen,
     setIsIndividualRejectModalOpen,
-    refreshData,
   };
 };

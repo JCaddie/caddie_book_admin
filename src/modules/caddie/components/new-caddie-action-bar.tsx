@@ -2,36 +2,32 @@
 
 import React from "react";
 import { Button, SearchWithButton } from "@/shared/components/ui";
-import { NEW_CADDIE_CONSTANTS } from "@/modules/caddie/constants";
+import { NEW_CADDIE_CONSTANTS } from "../constants";
 
 interface NewCaddieActionBarProps {
   pendingCount: number;
   selectedCount: number;
-  searchTerm: string;
-  onRejectSelected: () => void;
   onApproveSelected: () => void;
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSearchClear: () => void;
-  onSearch: (searchTerm: string) => void;
+  onRejectSelected: () => void;
 }
 
 const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
   pendingCount,
   selectedCount,
-  searchTerm,
-  onRejectSelected,
   onApproveSelected,
-  onSearchChange,
-  onSearchClear,
-  onSearch,
+  onRejectSelected,
 }) => {
   return (
-    <div className="flex items-center justify-between">
-      {/* 왼쪽: 총 건수 */}
-      <div className="flex items-center gap-3">
-        <span className="text-base font-bold text-black">
-          총 {pendingCount}건
-        </span>
+    <div className="flex justify-between items-center">
+      {/* 왼쪽: 승인 대기 개수 */}
+      <div className="flex items-center space-x-4">
+        <div className="text-sm text-gray-600">
+          <span className="font-medium text-blue-600">{pendingCount}명</span>의
+          캐디가 승인을 기다리고 있습니다.
+        </div>
+        {selectedCount > 0 && (
+          <div className="text-sm text-gray-500">{selectedCount}명 선택됨</div>
+        )}
       </div>
 
       {/* 오른쪽: 검색 + 버튼들 */}
@@ -40,29 +36,28 @@ const NewCaddieActionBar: React.FC<NewCaddieActionBarProps> = ({
         <div className="w-[460px]">
           <SearchWithButton
             placeholder={NEW_CADDIE_CONSTANTS.SEARCH_PLACEHOLDER}
-            value={searchTerm}
-            onChange={onSearchChange}
-            onClear={onSearchClear}
-            onSearch={onSearch}
           />
         </div>
 
         {/* 버튼 그룹 */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={onRejectSelected}
-            disabled={selectedCount === 0}
-            className="w-24"
-          >
-            {NEW_CADDIE_CONSTANTS.REJECT_BUTTON_TEXT}
-          </Button>
+          {/* 승인 버튼 */}
           <Button
             onClick={onApproveSelected}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             disabled={selectedCount === 0}
-            className="w-24"
           >
             {NEW_CADDIE_CONSTANTS.BULK_APPROVE_BUTTON_TEXT}
+          </Button>
+
+          {/* 거절 버튼 */}
+          <Button
+            onClick={onRejectSelected}
+            variant="secondary"
+            className="px-6 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+            disabled={selectedCount === 0}
+          >
+            {NEW_CADDIE_CONSTANTS.REJECT_BUTTON_TEXT}
           </Button>
         </div>
       </div>
