@@ -8,7 +8,7 @@ import {
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
-import { Plus } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import {
   EmptyGroupsState,
   GROUP_OPTIONS,
@@ -200,7 +200,26 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
-      <AdminPageHeader title={pageTitle} />
+      <div className="flex items-center justify-between">
+        <AdminPageHeader title={pageTitle} />
+        <div className="flex items-center gap-2">
+          <Button
+            className="bg-yellow-400 hover:bg-yellow-500 text-white flex items-center gap-1"
+            onClick={openGroupCreateModal}
+          >
+            <Plus className="w-4 h-4" />
+            그룹 생성
+          </Button>
+          <Button
+            variant="outline"
+            className="border-blue-400 text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+            onClick={openCaddieAssignmentModal}
+          >
+            <Settings className="w-4 h-4" />
+            캐디 배정
+          </Button>
+        </div>
+      </div>
 
       {/* 골프장 정보 */}
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
@@ -250,85 +269,136 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         </div>
       </div>
 
-      {/* 그룹이 없을 때 빈 상태 화면 */}
-      {filteredGroups.length === 0 ? (
-        <EmptyGroupsState onCreateGroup={openGroupCreateModal} />
-      ) : (
-        <>
-          {/* 필터 및 액션바 */}
-          <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">
-                  총 {totalCaddieCount}명
-                </span>
+      {/* 메인 콘텐츠 */}
+      <div className="flex gap-8">
+        {/* 왼쪽: 그룹 관리 */}
+        <div className="flex-1">
+          {/* 그룹이 없을 때 빈 상태 화면 */}
+          {filteredGroups.length === 0 ? (
+            <EmptyGroupsState onCreateGroup={openGroupCreateModal} />
+          ) : (
+            <>
+              {/* 필터 및 액션바 */}
+              <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      총 {totalCaddieCount}명
+                    </span>
+                  </div>
+
+                  {/* 필터 드롭다운들 */}
+                  <select
+                    value={filters.selectedGroup}
+                    onChange={(e) =>
+                      updateFilter("selectedGroup", e.target.value)
+                    }
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm w-24"
+                  >
+                    {GROUP_OPTIONS.map((option: GroupFilterOption) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={filters.selectedStatus}
+                    onChange={(e) =>
+                      updateFilter("selectedStatus", e.target.value)
+                    }
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm w-28"
+                  >
+                    {STATUS_OPTIONS.map((option: GroupFilterOption) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* 검색창 */}
+                  <SearchWithButton placeholder="캐디 검색" />
+                </div>
               </div>
 
-              {/* 필터 드롭다운들 */}
-              <select
-                value={filters.selectedGroup}
-                onChange={(e) => updateFilter("selectedGroup", e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-24"
-              >
-                {GROUP_OPTIONS.map((option: GroupFilterOption) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
+              {/* 그룹들 - 세로 배치 */}
+              <div className="space-y-4">
+                {filteredGroups.map((group) => (
+                  <GroupSection
+                    key={group.id}
+                    group={group}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDrop={handleDrop}
+                    draggedCaddie={null}
+                  />
                 ))}
-              </select>
+              </div>
+            </>
+          )}
+        </div>
 
-              <select
-                value={filters.selectedStatus}
-                onChange={(e) => updateFilter("selectedStatus", e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-28"
-              >
-                {STATUS_OPTIONS.map((option: GroupFilterOption) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* 검색창 */}
-              <SearchWithButton placeholder="캐디 검색" />
-            </div>
-
-            {/* 버튼들 */}
-            <div className="flex items-center gap-2">
-              <Button
-                className="bg-yellow-400 hover:bg-yellow-500 text-white flex items-center gap-1"
-                onClick={openGroupCreateModal}
-              >
-                <Plus className="w-4 h-4" />
-                그룹 생성
-              </Button>
-              <Button
-                className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1"
-                onClick={openCaddieAssignmentModal}
-              >
-                <Plus className="w-4 h-4" />
-                캐디 배정
-              </Button>
+        {/* 오른쪽: 캐디 현황 */}
+        <div className="w-80">
+          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              캐디 현황
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">전체 캐디</span>
+                <span className="text-sm font-medium">
+                  {data.caddie_summary.total_caddies}명
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">팀장</span>
+                <span className="text-sm font-medium">
+                  {data.caddie_summary.team_leaders}명
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">활성 캐디</span>
+                <span className="text-sm font-medium">
+                  {data.caddie_summary.active_caddies}명
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* 그룹들 - 가로 스크롤 */}
-          <div className="overflow-x-auto">
-            <div className="flex gap-4 pb-4" style={{ width: "fit-content" }}>
-              {filteredGroups.map((group) => (
-                <GroupSection
-                  key={group.id}
-                  group={group}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  onDrop={handleDrop}
-                  draggedCaddie={null}
-                />
-              ))}
-            </div>
+          {/* 캐디 카드들 */}
+          <div className="space-y-3">
+            <h4 className="text-md font-medium text-gray-900">캐디 목록</h4>
+            {data.primary_groups.flatMap((group) =>
+              group.members.map((member) => (
+                <div
+                  key={member.id}
+                  className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {member.name}
+                      </div>
+                      <div className="text-sm text-gray-500">{group.name}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {member.is_team_leader && (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                          팀장
+                        </span>
+                      )}
+                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                        활성
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        </>
-      )}
+        </div>
+      </div>
 
       {/* 그룹 생성 모달 */}
       <GroupCreateModal
