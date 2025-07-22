@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { NewCaddieApplication } from "../types";
-import { REGISTRATION_STATUS } from "../constants";
+import type { NewCaddieApplication } from "../../types";
+import { REGISTRATION_STATUS } from "../../constants";
 import {
   bulkApproveNewCaddies,
   bulkRejectNewCaddies,
   getNewCaddieList,
-} from "../api/caddie-api";
+} from "../../api";
 
 const PAGE_SIZE = 20;
 

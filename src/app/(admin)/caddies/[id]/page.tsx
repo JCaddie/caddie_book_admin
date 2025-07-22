@@ -7,52 +7,11 @@ import { useCaddieDetail, useCaddieEdit } from "@/modules/caddie/hooks";
 import { EditableCaddieField } from "@/modules/caddie/components";
 import { useAuth } from "@/shared/hooks/use-auth";
 
-// 임시 타입 정의 (추후 shared/types에서 가져올 예정)
-interface PrimaryGroup {
-  id: string;
-  name: string;
-  golf_course_name: string;
-  group_type: string;
-  order: number;
-}
-
-interface SpecialGroup {
-  id: string;
-  name: string;
-  golf_course_name: string;
-  group_type: string;
-  order: number;
-}
-
-interface CaddieCareer {
-  golf_course_name: string;
-  start_date: string;
-  end_date: string | null;
-  description: string;
-}
-
-interface RoleDisplay {
-  role: string;
-  is_team_leader: boolean;
-}
-
-interface ExtendedCaddieDetail {
-  id: string;
-  name: string;
-  employment_type: string;
-  golf_course: { id: string; name: string; region: string };
-  role_display: RoleDisplay;
-  primary_group?: PrimaryGroup;
-  special_groups?: SpecialGroup[];
-  phone: string;
-  email: string;
-  address: string;
-  gender: string;
-  work_score: number;
-  is_team_leader: boolean;
-  careers: CaddieCareer[];
-  assigned_work: unknown;
-}
+import type {
+  CaddieCareer,
+  CaddieDetail,
+  SpecialGroup,
+} from "@/modules/caddie/types";
 
 interface CaddieDetailPageProps {
   params: Promise<{
@@ -142,20 +101,17 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
         role: caddie.role_display?.role || "캐디",
         isTeamLeader: caddie.role_display?.is_team_leader || false,
         primaryGroup:
-          (caddie as unknown as ExtendedCaddieDetail).primary_group?.name ||
-          "없음",
-        primaryGroupDescription: (caddie as unknown as ExtendedCaddieDetail)
+          (caddie as unknown as CaddieDetail).primary_group?.name || "없음",
+        primaryGroupDescription: (caddie as unknown as CaddieDetail)
           .primary_group
           ? `${
-              (caddie as unknown as ExtendedCaddieDetail).primary_group!
-                .group_type
+              (caddie as unknown as CaddieDetail).primary_group!.group_type
             } (순서: ${
-              (caddie as unknown as ExtendedCaddieDetail).primary_group!.order
+              (caddie as unknown as CaddieDetail).primary_group!.order
             })`
           : "",
-        specialGroups: (caddie as unknown as ExtendedCaddieDetail)
-          .special_groups
-          ? (caddie as unknown as ExtendedCaddieDetail)
+        specialGroups: (caddie as unknown as CaddieDetail).special_groups
+          ? (caddie as unknown as CaddieDetail)
               .special_groups!.map((sg: SpecialGroup) => sg.name)
               .join(", ")
           : "없음",

@@ -8,8 +8,8 @@ import {
   updateCaddieSpecialGroups,
   updateCaddieTeamLeader,
   updateCaddieWorkScore,
-} from "../api/caddie-api";
-import { CaddieDetail } from "@/shared/types/caddie";
+} from "../../api";
+import type { CaddieDetail } from "../../types";
 import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
 
 interface UseCaddieEditProps {

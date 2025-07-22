@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button, SearchWithButton } from "@/shared/components/ui";
-import { NEW_CADDIE_CONSTANTS } from "../constants";
+import { NEW_CADDIE_CONSTANTS } from "../../constants";
 
 interface NewCaddieActionBarProps {
   pendingCount: number;

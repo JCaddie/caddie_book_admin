@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import { Column } from "@/shared/types/table";
 import { basicRenderers } from "@/shared/components/ui";
-import { NewCaddieApplication } from "../types";
+import type { NewCaddieApplication } from "../../types";
 
 // 신규 캐디 테이블 컬럼 정의 (메모이제이션)
 export const useNewCaddieColumns = (): Column<NewCaddieApplication>[] => {
