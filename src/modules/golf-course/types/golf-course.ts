@@ -89,3 +89,46 @@ export interface GolfCourseGroupStatusResponse {
   page: number;
   total_pages: number;
 }
+
+// 골프장 그룹 상세 API 응답 타입
+export interface GolfCourseGroupDetail {
+  id: string;
+  name: string;
+  location: string;
+  address: string;
+  contract_status: string;
+}
+
+export interface GroupMember {
+  id: string;
+  name: string;
+  is_team_leader: boolean;
+}
+
+export interface Group {
+  id: number;
+  name: string;
+  order: number;
+  member_count: number;
+  members: GroupMember[];
+}
+
+export interface GroupSummary {
+  primary_group_count: number;
+  special_group_count: number;
+  total_caddies: number;
+}
+
+export interface CaddieSummary {
+  total_caddies: number;
+  team_leaders: number;
+  active_caddies: number;
+}
+
+export interface GolfCourseGroupDetailResponse {
+  golf_course: GolfCourseGroupDetail;
+  group_summary: GroupSummary;
+  primary_groups: Group[];
+  special_groups: Group[];
+  caddie_summary: CaddieSummary;
+}
