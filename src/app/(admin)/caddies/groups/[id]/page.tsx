@@ -1,14 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Button,
-  CaddieAssignmentModal,
-  SearchWithButton,
-} from "@/shared/components/ui";
+import { Button, SearchWithButton } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
-import { Plus, Settings } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   EmptyGroupsState,
   GROUP_OPTIONS,
@@ -66,8 +62,6 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
   // 모달 상태
   const [isGroupCreateModalOpen, setIsGroupCreateModalOpen] = useState(false);
-  const [isCaddieAssignmentModalOpen, setIsCaddieAssignmentModalOpen] =
-    useState(false);
 
   // 페이지 타이틀 설정
   const pageTitle = isOwnGolfCourse
@@ -140,15 +134,6 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     await loadData();
   };
 
-  const openCaddieAssignmentModal = () => setIsCaddieAssignmentModalOpen(true);
-  const closeCaddieAssignmentModal = () =>
-    setIsCaddieAssignmentModalOpen(false);
-
-  const handleCaddieAssignmentConfirm = (selectedCaddies: string[]) => {
-    console.log("캐디 배정", selectedCaddies);
-    closeCaddieAssignmentModal();
-  };
-
   // 드래그 앤 드롭 핸들러들 (기본 구현)
   const handleDragStart = (caddie: unknown, groupId: string) => {
     console.log("드래그 시작", caddie, groupId);
@@ -209,14 +194,6 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           >
             <Plus className="w-4 h-4" />
             그룹 생성
-          </Button>
-          <Button
-            variant="outline"
-            className="border-blue-400 text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-            onClick={openCaddieAssignmentModal}
-          >
-            <Settings className="w-4 h-4" />
-            캐디 배정
           </Button>
         </div>
       </div>
@@ -406,13 +383,6 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         onClose={closeGroupCreateModal}
         onSuccess={handleGroupCreateSuccess}
         golfCourseId={isOwnGolfCourse ? undefined : id} // MASTER일 때는 URL의 ID, ADMIN일 때는 undefined (자신의 골프장 ID 사용)
-      />
-
-      {/* 캐디 배정 모달 */}
-      <CaddieAssignmentModal
-        isOpen={isCaddieAssignmentModalOpen}
-        onClose={closeCaddieAssignmentModal}
-        onConfirm={handleCaddieAssignmentConfirm}
       />
     </div>
   );
