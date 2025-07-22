@@ -6,8 +6,6 @@ export type {
   GroupFilterOption,
   CaddieGroupManagement,
   GroupManagementFilters,
-  GroupData,
-  GroupSettingModalProps,
 } from "./types";
 
 // 상수들
@@ -23,7 +21,7 @@ export {
   EmptyGroupsState,
   GroupSection,
   GroupStatusActionBar,
-  GroupSettingModal,
+  GroupCreateModal,
   useGroupStatusColumns,
 } from "./components";
 
