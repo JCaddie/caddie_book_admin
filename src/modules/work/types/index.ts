@@ -78,6 +78,7 @@ export interface CaddieData {
   badge: string;
   status: string;
   specialBadge?: string;
+  originalId?: string; // 원본 UUID (드래그 앤 드롭용)
 }
 
 // 필드 데이터 타입

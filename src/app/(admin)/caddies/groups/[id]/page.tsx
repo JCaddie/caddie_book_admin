@@ -41,6 +41,7 @@ const transformApiGroupToGroupSection = (apiGroup: ApiGroup) => ({
   memberCount: apiGroup.member_count,
   caddies: apiGroup.members.map((member: GroupMember) => ({
     id: parseInt(member.id),
+    originalId: member.id, // 원본 UUID string 보존
     name: member.name,
     group: apiGroup.id,
     badge: member.is_team_leader ? "팀장" : "캐디",
@@ -52,7 +53,7 @@ const transformApiGroupToGroupSection = (apiGroup: ApiGroup) => ({
 // UserAssignment를 CaddieData 형식으로 변환하는 함수
 const transformUserAssignmentToCaddieData = (
   assignment: UserAssignment
-): CaddieData & { originalId: string } => {
+): CaddieData => {
   const specialGroupNames = assignment.special_groups
     .map((group) => group.name)
     .join(", ");
@@ -102,9 +103,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   const [isGroupCreateModalOpen, setIsGroupCreateModalOpen] = useState(false);
 
   // 드래그 앤 드롭 상태
-  const [draggedCaddie, setDraggedCaddie] = useState<
-    (CaddieData & { originalId: string }) | null
-  >(null);
+  const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
 
   // 페이지 타이틀 설정
   const pageTitle = isOwnGolfCourse
@@ -197,12 +196,9 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   };
 
   // 드래그 앤 드롭 핸들러들 (API 연동)
-  const handleDragStart = (
-    caddie: CaddieData | (CaddieData & { originalId: string }),
-    groupId: string
-  ) => {
+  const handleDragStart = (caddie: CaddieData, groupId: string) => {
     console.log("드래그 시작", caddie, groupId);
-    setDraggedCaddie(caddie as CaddieData & { originalId: string });
+    setDraggedCaddie(caddie);
   };
 
   const handleDragEnd = () => {
@@ -218,7 +214,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         if (targetGroupId === "unassigned") {
           // 캐디 배정 해제 (빈 영역으로 드래그)
           const currentGroupId = draggedCaddie.group;
-          if (currentGroupId > 0) {
+          if (currentGroupId > 0 && draggedCaddie.originalId) {
             await removePrimaryGroup(currentGroupId, {
               caddie_ids: [draggedCaddie.originalId],
             });
@@ -226,11 +222,13 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           }
         } else {
           // 캐디를 새로운 그룹에 배정
-          await assignPrimaryGroup(parseInt(targetGroupId), {
-            caddie_ids: [draggedCaddie.originalId],
-            orders: [insertIndex || 1],
-          });
-          console.log("캐디 그룹 배정 완료");
+          if (draggedCaddie.originalId) {
+            await assignPrimaryGroup(parseInt(targetGroupId), {
+              caddie_ids: [draggedCaddie.originalId],
+              orders: [insertIndex || 1],
+            });
+            console.log("캐디 그룹 배정 완료");
+          }
         }
 
         // 데이터 새로고침
