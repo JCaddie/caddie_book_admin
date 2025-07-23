@@ -5,16 +5,15 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { Button, ConfirmationModal } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
-import { getVacationRequestById } from "@/modules/vacation/utils";
-import { VACATION_UI_TEXT } from "@/modules/vacation/constants";
+import { DAY_OFF_UI_TEXT } from "@/modules/day-off/constants";
 
-interface VacationDetailPageProps {
+interface DayOffDetailPageProps {
   params: Promise<{
     id: string;
   }>;
 }
 
-const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
+const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
   const router = useRouter();
   const resolvedParams = use(params);
 
@@ -26,11 +25,18 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무 신청 상세" });
 
-  // 휴무 신청 데이터 조회
-  const vacationRequest = getVacationRequestById(resolvedParams.id);
+  // 휴무 신청 데이터 조회 (임시 mock 데이터)
+  const dayOffRequest = {
+    id: resolvedParams.id,
+    caddieName: "홍길동",
+    phone: "010-1234-5678",
+    requestDate: "2024-01-15",
+    reason: "개인 휴가 신청",
+    status: "검토 중",
+  };
 
   // 데이터가 없는 경우 처리
-  if (!vacationRequest) {
+  if (!dayOffRequest) {
     return (
       <div className="min-h-screen bg-gray-50" style={{ minWidth: "1600px" }}>
         <div className="bg-white rounded-xl p-8">
@@ -42,7 +48,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
               </p>
               <Button
                 variant="primary"
-                onClick={() => router.push("/works/vacation")}
+                onClick={() => router.push("/works/day-off")}
               >
                 목록으로 돌아가기
               </Button>
@@ -69,11 +75,11 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
     try {
       // 실제 환경에서는 API 호출
       await new Promise((resolve) => setTimeout(resolve, 1000)); // 시뮬레이션
-      console.log("승인 처리:", vacationRequest.id);
+      console.log("승인 처리:", dayOffRequest.id);
 
       setIsApproveModalOpen(false);
       // 처리 후 목록으로 이동
-      router.push("/works/vacation");
+      router.push("/works/day-off");
     } catch (error) {
       console.error("승인 처리 중 오류:", error);
       // 실제 환경에서는 에러 토스트 표시
@@ -88,11 +94,11 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
     try {
       // 실제 환경에서는 API 호출
       await new Promise((resolve) => setTimeout(resolve, 1000)); // 시뮬레이션
-      console.log("반려 처리:", vacationRequest.id);
+      console.log("반려 처리:", dayOffRequest.id);
 
       setIsRejectModalOpen(false);
       // 처리 후 목록으로 이동
-      router.push("/works/vacation");
+      router.push("/works/day-off");
     } catch (error) {
       console.error("반려 처리 중 오류:", error);
       // 실제 환경에서는 에러 토스트 표시
@@ -145,7 +151,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                     </div>
                     <div className="flex-1 flex items-center px-4 py-3">
                       <span className="text-sm text-black">
-                        {vacationRequest.caddieName}
+                        {dayOffRequest.caddieName}
                       </span>
                     </div>
                   </div>
@@ -205,7 +211,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                     </div>
                     <div className="flex-1 flex items-center px-4 py-3">
                       <span className="text-sm text-black">
-                        {vacationRequest.phone}
+                        {dayOffRequest.phone}
                       </span>
                     </div>
                   </div>
@@ -264,7 +270,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                   </span>
                 </div>
                 <span className="text-sm text-black">
-                  {formatDate(vacationRequest.requestDate)}
+                  {formatDate(dayOffRequest.requestDate)}
                 </span>
               </div>
 
@@ -285,7 +291,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                 </div>
                 <div className="flex-1">
                   <div className="text-sm text-black leading-relaxed">
-                    {vacationRequest.reason}
+                    {dayOffRequest.reason}
                   </div>
                 </div>
               </div>
@@ -293,7 +299,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
           </div>
 
           {/* 액션 버튼 */}
-          {vacationRequest.status === "검토 중" && (
+          {dayOffRequest.status === "검토 중" && (
             <div className="flex justify-end gap-4 pt-4">
               <Button
                 variant="outline"
@@ -302,7 +308,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                 disabled={isProcessing}
                 className="w-[120px] border-primary text-primary hover:bg-primary hover:text-white"
               >
-                {VACATION_UI_TEXT.REJECT_BUTTON}
+                {DAY_OFF_UI_TEXT.REJECT_BUTTON}
               </Button>
               <Button
                 variant="primary"
@@ -312,7 +318,7 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
                 loading={isProcessing}
                 className="w-[120px]"
               >
-                {VACATION_UI_TEXT.APPROVE_BUTTON}
+                {DAY_OFF_UI_TEXT.APPROVE_BUTTON}
               </Button>
             </div>
           )}
@@ -344,4 +350,4 @@ const VacationDetailPage: React.FC<VacationDetailPageProps> = ({ params }) => {
   );
 };
 
-export default VacationDetailPage;
+export default DayOffDetailPage;

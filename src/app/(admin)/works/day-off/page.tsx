@@ -2,18 +2,18 @@
 
 import React, { useCallback, useMemo } from "react";
 import {
-  useVacationColumns,
-  VacationActionBar,
-} from "@/modules/vacation/components";
-import { useVacationManagement } from "@/modules/vacation/hooks";
-import { VACATION_UI_TEXT } from "@/modules/vacation/constants";
+  DayOffActionBar,
+  useDayOffColumns,
+} from "@/modules/day-off/components";
+import { useDayOffManagement } from "@/modules/day-off/hooks";
+import { DAY_OFF_UI_TEXT } from "@/modules/day-off/constants";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { DataTable, EmptyState, Pagination } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
-import { VacationRequest } from "@/modules/vacation/types";
+import { DayOffRequest } from "@/modules/day-off/types";
 import { useRouter } from "next/navigation";
 
-export default function VacationManagementPage() {
+export default function DayOffManagementPage() {
   const router = useRouter();
 
   const {
@@ -27,13 +27,13 @@ export default function VacationManagementPage() {
     error,
     clearError,
     refreshData,
-  } = useVacationManagement();
+  } = useDayOffManagement();
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무관리" });
 
   // 테이블 컬럼 생성 (새로운 렌더러 시스템 사용)
-  const columns = useVacationColumns();
+  const columns = useDayOffColumns();
 
   // 페이지네이션을 고려한 번호가 포함된 데이터
   const dataWithNumbers = useMemo(() => {
@@ -45,12 +45,12 @@ export default function VacationManagementPage() {
 
   // 행 클릭 핸들러
   const handleRowClick = useCallback(
-    (record: VacationRequest) => {
+    (record: DayOffRequest) => {
       // 빈 행인 경우 무시
       if (record.isEmpty) return;
 
       // 상세 페이지로 이동
-      router.push(`/works/vacation/${record.id}`);
+      router.push(`/works/day-off/${record.id}`);
     },
     [router]
   );
@@ -90,7 +90,7 @@ export default function VacationManagementPage() {
       <AdminPageHeader title="휴무관리" />
 
       {/* 상단 액션 바 */}
-      <VacationActionBar
+      <DayOffActionBar
         totalCount={filteredCount}
         selectedCount={0}
         filters={filters}
@@ -102,11 +102,11 @@ export default function VacationManagementPage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">{VACATION_UI_TEXT.LOADING_MESSAGE}</p>
+            <p className="text-gray-600">{DAY_OFF_UI_TEXT.LOADING_MESSAGE}</p>
           </div>
         </div>
       ) : !data.length && filteredCount === 0 ? (
-        <EmptyState message={VACATION_UI_TEXT.EMPTY_MESSAGE} />
+        <EmptyState message={DAY_OFF_UI_TEXT.EMPTY_MESSAGE} />
       ) : (
         <>
           {/* 테이블 */}
@@ -117,7 +117,7 @@ export default function VacationManagementPage() {
               onRowClick={handleRowClick}
               layout="flexible"
               containerWidth="auto"
-              emptyText={VACATION_UI_TEXT.EMPTY_MESSAGE}
+              emptyText={DAY_OFF_UI_TEXT.EMPTY_MESSAGE}
               loading={loading}
               itemsPerPage={20}
             />
