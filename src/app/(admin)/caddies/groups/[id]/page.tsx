@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useDocumentTitle } from "@/shared/hooks";
+import { useAuth, useDocumentTitle } from "@/shared/hooks";
 import { Plus } from "lucide-react";
 import { GroupCreateModal } from "@/modules/group";
 import { GolfCourseInfo } from "@/modules/group/components/golf-course-info";
@@ -76,6 +76,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   params,
 }) => {
   const { id } = React.use(params);
+  const { user } = useAuth();
 
   // "me"인 경우 현재 사용자의 골프장 ID 사용, 아니면 전달받은 ID 사용
   const isOwnGolfCourse = id === "me";
@@ -107,25 +108,31 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
   // 골프장 그룹 데이터 로드 함수
   const loadData = useCallback(async () => {
-    if (isOwnGolfCourse) {
-      // TODO: 현재 사용자의 골프장 ID를 가져오는 로직 필요
-      console.log("현재 사용자의 골프장 정보 로드");
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const response = await getGolfCourseGroupDetail(id);
-      setData(response);
+      if (isOwnGolfCourse) {
+        // 현재 사용자의 골프장 ID를 사용
+        if (user?.golfCourseId) {
+          console.log("현재 사용자의 골프장 정보 로드:", user.golfCourseId);
+          const response = await getGolfCourseGroupDetail(user.golfCourseId);
+          setData(response);
+        } else {
+          setError("현재 사용자에게 할당된 골프장이 없습니다.");
+        }
+      } else {
+        // 전달받은 ID로 골프장 정보 조회
+        const response = await getGolfCourseGroupDetail(id);
+        setData(response);
+      }
     } catch (err) {
       console.error("골프장 그룹 상세 조회 실패:", err);
       setError("데이터를 불러오는 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
-  }, [id, isOwnGolfCourse]);
+  }, [id, isOwnGolfCourse, user?.golfCourseId]);
 
   // 캐디 배정 데이터 로드 함수
   const loadCaddieAssignments = useCallback(async () => {
@@ -133,8 +140,16 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     setCaddieError(null);
 
     try {
-      // MASTER 권한일 때는 golf_course_id 파라미터 전달
-      const golfCourseId = isOwnGolfCourse ? undefined : id;
+      let golfCourseId: string | undefined;
+
+      if (isOwnGolfCourse) {
+        // 현재 사용자의 골프장 ID를 사용
+        golfCourseId = user?.golfCourseId;
+      } else {
+        // 전달받은 ID 사용
+        golfCourseId = id;
+      }
+
       const response = await getGroupAssignmentOverview(golfCourseId);
       setAssignmentData(response);
     } catch (err) {
@@ -143,7 +158,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     } finally {
       setCaddieLoading(false);
     }
-  }, [id, isOwnGolfCourse]);
+  }, [id, isOwnGolfCourse, user?.golfCourseId]);
 
   // 초기 데이터 로드
   useEffect(() => {
