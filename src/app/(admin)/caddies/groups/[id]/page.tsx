@@ -7,25 +7,23 @@ import { useDocumentTitle } from "@/shared/hooks";
 import { Plus } from "lucide-react";
 import {
   EmptyGroupsState,
-  GROUP_OPTIONS,
   GroupCreateModal,
   GroupSection,
-  STATUS_OPTIONS,
 } from "@/modules/group";
-import { GroupFilterOption } from "@/modules/group/types";
 import { getGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
+import { GolfCourseGroupDetailResponse } from "@/modules/golf-course/types/golf-course";
+import { getCaddieAssignmentOverview } from "@/modules/user/api/user-api";
 import {
-  Group as ApiGroup,
-  GolfCourseGroupDetailResponse,
-  GroupMember,
-} from "@/modules/golf-course/types/golf-course";
-import { getUserAssignments } from "@/modules/user/api/user-api";
-import { UserAssignment } from "@/modules/user/types/user";
+  CaddieAssignmentOverviewResponse,
+  Group,
+  UnassignedCaddie,
+} from "@/modules/user/types/user";
 import { CaddieCard } from "@/modules/work/components";
 import { CaddieData } from "@/modules/work/types";
 import {
   assignPrimaryGroup,
   removePrimaryGroup,
+  reorderPrimaryGroup,
 } from "@/modules/group/api/group-api";
 
 interface GroupManagementPageProps {
@@ -34,42 +32,38 @@ interface GroupManagementPageProps {
   }>;
 }
 
-// API 그룹을 GroupSection에서 사용하는 형식으로 변환하는 함수
-const transformApiGroupToGroupSection = (apiGroup: ApiGroup) => ({
-  id: apiGroup.id.toString(),
-  name: apiGroup.name,
-  memberCount: apiGroup.member_count,
-  caddies: apiGroup.members.map((member: GroupMember) => ({
+// Group을 CaddieGroupManagement 형식으로 변환하는 함수
+const transformGroupToGroupSection = (group: Group) => ({
+  id: group.id.toString(),
+  name: group.name,
+  memberCount: group.member_count,
+  caddies: group.members.map((member) => ({
     id: parseInt(member.id),
     originalId: member.id, // 원본 UUID string 보존
     name: member.name,
-    group: apiGroup.id,
+    group: group.id,
     badge: member.is_team_leader ? "팀장" : "캐디",
     status: "active",
     specialBadge: member.is_team_leader ? "팀장" : undefined,
+    order: member.order,
+    groupName: group.name,
   })),
 });
 
-// UserAssignment를 CaddieData 형식으로 변환하는 함수
-const transformUserAssignmentToCaddieData = (
-  assignment: UserAssignment
+// UnassignedCaddie를 CaddieData 형식으로 변환하는 함수
+const transformUnassignedCaddieToCaddieData = (
+  caddie: UnassignedCaddie
 ): CaddieData => {
-  const specialGroupNames = assignment.special_groups
-    .map((group) => group.name)
-    .join(", ");
-
   return {
-    id: parseInt(assignment.id),
-    originalId: assignment.id, // 원본 UUID string 보존
-    name: assignment.name,
-    group:
-      assignment.special_groups.length > 0
-        ? assignment.special_groups[0].id
-        : 0,
-    badge: assignment.special_groups.length > 0 ? "특수반" : "일반",
+    id: parseInt(caddie.id),
+    originalId: caddie.id, // 원본 UUID string 보존
+    name: caddie.name,
+    group: 0, // 미배정
+    badge: "일반",
     status: "active",
-    specialBadge:
-      assignment.special_groups.length > 0 ? specialGroupNames : undefined,
+    specialBadge: undefined,
+    order: 1,
+    groupName: undefined,
   };
 };
 
@@ -87,17 +81,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // 캐디 배정 데이터 상태
-  const [caddieAssignments, setCaddieAssignments] = useState<UserAssignment[]>(
-    []
-  );
+  const [assignmentData, setAssignmentData] =
+    useState<CaddieAssignmentOverviewResponse | null>(null);
   const [caddieLoading, setCaddieLoading] = useState(true);
   const [caddieError, setCaddieError] = useState<string | null>(null);
-
-  // 필터 상태
-  const [filters, setFilters] = useState({
-    selectedGroup: "전체",
-    selectedStatus: "전체",
-  });
 
   // 모달 상태
   const [isGroupCreateModalOpen, setIsGroupCreateModalOpen] = useState(false);
@@ -143,8 +130,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     try {
       // MASTER 권한일 때는 golf_course_id 파라미터 전달
       const golfCourseId = isOwnGolfCourse ? undefined : id;
-      const response = await getUserAssignments(golfCourseId);
-      setCaddieAssignments(response.results);
+      const response = await getCaddieAssignmentOverview(golfCourseId);
+      setAssignmentData(response);
     } catch (err) {
       console.error("캐디 배정 정보 조회 실패:", err);
       setCaddieError("캐디 정보를 불러오는 중 오류가 발생했습니다.");
@@ -158,33 +145,6 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     loadData();
     loadCaddieAssignments();
   }, [id, loadData, loadCaddieAssignments]);
-
-  // API 데이터를 GroupSection 형식으로 변환 (주그룹만)
-  const transformedGroups = data
-    ? data.primary_groups.map(transformApiGroupToGroupSection)
-    : [];
-
-  // 필터링된 그룹 데이터
-  const filteredGroups = transformedGroups.filter((group) => {
-    if (
-      filters.selectedGroup !== "전체" &&
-      group.name !== filters.selectedGroup
-    ) {
-      return false;
-    }
-    return true;
-  });
-
-  // 전체 캐디 수 계산
-  const totalCaddieCount = filteredGroups.reduce(
-    (total, group) => total + group.memberCount,
-    0
-  );
-
-  // 필터 업데이트 함수
-  const updateFilter = (key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
 
   // 모달 제어 함수들
   const openGroupCreateModal = () => setIsGroupCreateModalOpen(true);
@@ -209,25 +169,60 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   const handleDrop = async (targetGroupId: string, insertIndex?: number) => {
     try {
       console.log("드롭", targetGroupId, insertIndex);
+      console.log("드래그된 캐디:", draggedCaddie);
 
       if (draggedCaddie) {
         if (targetGroupId === "unassigned") {
           // 캐디 배정 해제 (빈 영역으로 드래그)
           const currentGroupId = draggedCaddie.group;
           if (currentGroupId > 0 && draggedCaddie.originalId) {
+            console.log("배정 해제 요청:", {
+              groupId: currentGroupId,
+              caddie_ids: [draggedCaddie.originalId],
+            });
             await removePrimaryGroup(currentGroupId, {
               caddie_ids: [draggedCaddie.originalId],
             });
-            console.log("캐디 그룹 배정 해제 완료");
           }
         } else {
-          // 캐디를 새로운 그룹에 배정
-          if (draggedCaddie.originalId) {
-            await assignPrimaryGroup(parseInt(targetGroupId), {
-              caddie_ids: [draggedCaddie.originalId],
-              orders: [insertIndex || 1],
-            });
-            console.log("캐디 그룹 배정 완료");
+          const targetGroupIdNum = parseInt(targetGroupId);
+
+          // 같은 그룹 내에서 순서 변경인지 확인
+          if (draggedCaddie.group === targetGroupIdNum) {
+            // 같은 그룹 내 순서 변경
+            if (draggedCaddie.originalId && insertIndex !== undefined) {
+              // 현재 위치와 목표 위치가 다를 때만 순서 변경
+              if (draggedCaddie.currentIndex !== insertIndex) {
+                console.log("순서 변경 요청:", {
+                  groupId: targetGroupIdNum,
+                  caddie_id: draggedCaddie.originalId,
+                  currentIndex: draggedCaddie.currentIndex,
+                  newIndex: insertIndex,
+                  new_order: insertIndex + 1, // insertIndex는 0부터 시작하므로 +1
+                });
+                await reorderPrimaryGroup(targetGroupIdNum, {
+                  reorders: [
+                    {
+                      caddie_id: draggedCaddie.originalId,
+                      new_order: insertIndex + 1,
+                    },
+                  ],
+                });
+              }
+            }
+          } else {
+            // 다른 그룹으로 이동
+            if (draggedCaddie.originalId) {
+              console.log("배정 요청:", {
+                groupId: targetGroupIdNum,
+                caddie_ids: [draggedCaddie.originalId],
+                orders: [insertIndex ? insertIndex + 1 : 1],
+              });
+              await assignPrimaryGroup(targetGroupIdNum, {
+                caddie_ids: [draggedCaddie.originalId],
+                orders: [insertIndex ? insertIndex + 1 : 1],
+              });
+            }
           }
         }
 
@@ -236,7 +231,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         await loadCaddieAssignments();
       }
     } catch (error) {
-      console.error("캐디 그룹 배정/해제 실패:", error);
+      console.error("캐디 그룹 배정/해제/순서 변경 실패:", error);
     } finally {
       setDraggedCaddie(null);
     }
@@ -320,7 +315,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       </div>
 
       {/* 그룹 요약 정보 */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-blue-50 rounded-lg p-4">
           <div className="text-sm text-blue-600">주그룹</div>
           <div className="text-2xl font-bold text-blue-900">
@@ -333,20 +328,13 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             {data.caddie_summary.total_caddies}명
           </div>
         </div>
-        <div className="bg-yellow-50 rounded-lg p-4">
-          <div className="text-sm text-yellow-600">팀장</div>
-          <div className="text-2xl font-bold text-yellow-900">
-            {data.caddie_summary.team_leaders}명
-          </div>
-        </div>
       </div>
 
       {/* 메인 콘텐츠 */}
       <div className="flex gap-8">
         {/* 왼쪽: 그룹 관리 */}
         <div className="w-[calc(3*320px+2*16px)]">
-          {/* 그룹이 없을 때 빈 상태 화면 */}
-          {filteredGroups.length === 0 ? (
+          {!assignmentData || assignmentData.groups.length === 0 ? (
             <EmptyGroupsState onCreateGroup={openGroupCreateModal} />
           ) : (
             <>
@@ -355,38 +343,9 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">
-                      총 {totalCaddieCount}명
+                      총 {assignmentData.summary.total_assigned_caddies}명
                     </span>
                   </div>
-
-                  {/* 필터 드롭다운들 */}
-                  <select
-                    value={filters.selectedGroup}
-                    onChange={(e) =>
-                      updateFilter("selectedGroup", e.target.value)
-                    }
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm w-24"
-                  >
-                    {GROUP_OPTIONS.map((option: GroupFilterOption) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={filters.selectedStatus}
-                    onChange={(e) =>
-                      updateFilter("selectedStatus", e.target.value)
-                    }
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm w-28"
-                  >
-                    {STATUS_OPTIONS.map((option: GroupFilterOption) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
 
                   {/* 검색창 */}
                   <SearchWithButton placeholder="캐디 검색" />
@@ -399,17 +358,19 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
                   className="flex gap-4"
                   style={{ width: "max-content", minWidth: "100%" }}
                 >
-                  {filteredGroups.map((group) => (
-                    <div key={group.id} className="w-80 flex-shrink-0">
-                      <GroupSection
-                        group={group}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onDrop={handleDrop}
-                        draggedCaddie={draggedCaddie}
-                      />
-                    </div>
-                  ))}
+                  {assignmentData.groups
+                    .sort((a, b) => a.order - b.order)
+                    .map((group) => (
+                      <div key={group.id} className="w-80 flex-shrink-0">
+                        <GroupSection
+                          group={transformGroupToGroupSection(group)}
+                          onDragStart={handleDragStart}
+                          onDragEnd={handleDragEnd}
+                          onDrop={handleDrop}
+                          draggedCaddie={draggedCaddie}
+                        />
+                      </div>
+                    ))}
                 </div>
               </div>
             </>
@@ -426,19 +387,21 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">전체 캐디</span>
                 <span className="text-sm font-medium">
-                  {data.caddie_summary.total_caddies}명
+                  {(assignmentData?.summary.total_assigned_caddies || 0) +
+                    (assignmentData?.summary.total_unassigned_caddies || 0)}
+                  명
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">팀장</span>
+                <span className="text-sm text-gray-600">배정된 캐디</span>
                 <span className="text-sm font-medium">
-                  {data.caddie_summary.team_leaders}명
+                  {assignmentData?.summary.total_assigned_caddies || 0}명
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">활성 캐디</span>
+                <span className="text-sm text-gray-600">미배정 캐디</span>
                 <span className="text-sm font-medium">
-                  {data.caddie_summary.active_caddies}명
+                  {assignmentData?.summary.total_unassigned_caddies || 0}명
                 </span>
               </div>
             </div>
@@ -453,9 +416,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
               </div>
             ) : caddieError ? (
               <div className="text-sm text-red-500">{caddieError}</div>
-            ) : caddieAssignments.length === 0 ? (
+            ) : !assignmentData ||
+              assignmentData.unassigned_caddies.length === 0 ? (
               <div className="text-sm text-gray-500">
-                등록된 캐디가 없습니다.
+                미배정 캐디가 없습니다.
               </div>
             ) : (
               <div
@@ -469,12 +433,13 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
                 <div className="text-xs text-gray-500 mb-2 text-center">
                   캐디를 여기로 드래그하여 배정 해제
                 </div>
-                {caddieAssignments.map((assignment) => {
-                  const caddieData =
-                    transformUserAssignmentToCaddieData(assignment);
-                  return (
+                {assignmentData.unassigned_caddies
+                  .map((caddie) =>
+                    transformUnassignedCaddieToCaddieData(caddie)
+                  )
+                  .map((caddieData) => (
                     <div
-                      key={assignment.id}
+                      key={caddieData.originalId}
                       draggable
                       onDragStart={() => handleDragStart(caddieData, "")}
                       onDragEnd={handleDragEnd}
@@ -484,8 +449,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
                     >
                       <CaddieCard caddie={caddieData} />
                     </div>
-                  );
-                })}
+                  ))}
               </div>
             )}
           </div>
