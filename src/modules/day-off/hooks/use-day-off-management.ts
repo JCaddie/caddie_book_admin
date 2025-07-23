@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   DayOffRequest,
@@ -27,16 +27,41 @@ export const useDayOffManagement = () => {
 
   // 페이지네이션 상태
   const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const [filteredCount, setFilteredCount] = useState(0);
 
   // URL 파라미터에서 현재 페이지와 필터 가져오기
   const currentPage = Number(searchParams.get("page") || 1);
-  const currentFilters: DayOffRequestFilter = {
-    request_type: (searchParams.get("request_type") as DayOffRequestType) || "",
-    status: (searchParams.get("status") as DayOffStatus) || "",
-    searchTerm: searchParams.get("search") || "",
-  };
+  const currentFilters = useMemo(
+    (): DayOffRequestFilter => ({
+      request_type:
+        (searchParams.get("request_type") as DayOffRequestType) || "",
+      status: (searchParams.get("status") as DayOffStatus) || "",
+      searchTerm: searchParams.get("search") || "",
+    }),
+    [searchParams]
+  );
+
+  // API 파라미터 생성
+  const createApiParams = useCallback((): DayOffSearchParams => {
+    const params: DayOffSearchParams = {
+      page: currentPage,
+      page_size: DAY_OFF_CONSTANTS.PAGE_SIZE,
+    };
+
+    if (currentFilters.request_type) {
+      params.request_type = currentFilters.request_type as DayOffRequestType;
+    }
+
+    if (currentFilters.status) {
+      params.status = currentFilters.status as DayOffStatus;
+    }
+
+    if (currentFilters.searchTerm) {
+      params.search = currentFilters.searchTerm;
+    }
+
+    return params;
+  }, [currentPage, currentFilters]);
 
   // 초기 데이터 로드
   const loadData = useCallback(async () => {
@@ -44,40 +69,19 @@ export const useDayOffManagement = () => {
     setError(null);
 
     try {
-      const params: DayOffSearchParams = {
-        page: currentPage,
-        page_size: DAY_OFF_CONSTANTS.PAGE_SIZE,
-      };
-
-      if (currentFilters.request_type) {
-        params.request_type = currentFilters.request_type as DayOffRequestType;
-      }
-
-      if (currentFilters.status) {
-        params.status = currentFilters.status as DayOffStatus;
-      }
-
-      if (currentFilters.searchTerm) {
-        params.search = currentFilters.searchTerm;
-      }
-
+      const params = createApiParams();
       const response = await getDayOffRequests(params);
+
       setData(response.results);
       setTotalPages(response.total_pages);
-      setTotalCount(response.count);
-      setFilteredCount(response.count); // API에서 필터링된 결과를 받으므로 count 사용
+      setFilteredCount(response.count);
     } catch (err) {
       setError(DAY_OFF_ERROR_MESSAGES.FETCH_FAILED);
       console.error("Failed to load day-off data:", err);
     } finally {
       setLoading(false);
     }
-  }, [
-    currentPage,
-    currentFilters.request_type,
-    currentFilters.status,
-    currentFilters.searchTerm,
-  ]);
+  }, [createApiParams]);
 
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
@@ -92,7 +96,6 @@ export const useDayOffManagement = () => {
 
       try {
         await approveDayOffRequest(id);
-        // 데이터 새로고침
         await loadData();
       } catch (err) {
         setError(DAY_OFF_ERROR_MESSAGES.APPROVE_FAILED);
@@ -112,7 +115,6 @@ export const useDayOffManagement = () => {
 
       try {
         await rejectDayOffRequest(id);
-        // 데이터 새로고침
         await loadData();
       } catch (err) {
         setError(DAY_OFF_ERROR_MESSAGES.REJECT_FAILED);
@@ -137,7 +139,6 @@ export const useDayOffManagement = () => {
   return {
     // 데이터
     data,
-    totalCount,
     filteredCount,
     totalPages,
     currentPage,

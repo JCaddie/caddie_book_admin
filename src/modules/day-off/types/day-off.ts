@@ -49,25 +49,6 @@ export interface DayOffSearchParams {
 }
 
 // ================================
-// 폼 관련 타입
-// ================================
-
-export interface DayOffRequestFormData {
-  caddieId: string;
-  caddieName: string;
-  requestType: DayOffRequestType;
-  reason: string;
-  phone: string;
-}
-
-export interface DayOffRequestUpdateData {
-  status: DayOffStatus;
-  approver?: string;
-  approvalDate?: string;
-  updatedAt: string;
-}
-
-// ================================
 // API 응답 타입
 // ================================
 
@@ -79,32 +60,4 @@ export interface DayOffRequestListResponse {
   page_size: number;
   total_pages: number;
   results: DayOffRequest[];
-}
-
-export interface DayOffRequestStatsResponse {
-  total: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-}
-
-// ================================
-// 컴포넌트 Props 타입
-// ================================
-
-export interface DayOffActionsProps {
-  request: DayOffRequest;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-  loading?: boolean;
-}
-
-export interface DayOffManagementState {
-  data: DayOffRequest[];
-  filteredData: DayOffRequest[];
-  filters: DayOffRequestFilter;
-  currentPage: number;
-  totalPages: number;
-  loading: boolean;
-  error: string | null;
 }

@@ -5,6 +5,13 @@ import { basicRenderers } from "@/shared/components/ui";
 import { Column } from "@/shared/types/table";
 import { DayOffRequest } from "../types";
 
+// 사유 텍스트 말줄임표 렌더러
+const reasonRenderer = (value: unknown) => (
+  <div className="truncate" title={String(value)}>
+    {String(value)}
+  </div>
+);
+
 // 휴무 관리 테이블 컬럼 정의
 export const useDayOffColumns = (): Column<DayOffRequest>[] => {
   return useMemo(
@@ -30,8 +37,8 @@ export const useDayOffColumns = (): Column<DayOffRequest>[] => {
       {
         key: "reason",
         title: "사유",
-        width: 360,
-        render: basicRenderers.textLeft,
+        width: 280,
+        render: reasonRenderer,
       },
       {
         key: "golf_course_name",

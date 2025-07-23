@@ -18,10 +18,8 @@ export default function DayOffManagementPage() {
 
   const {
     data,
-    totalCount,
     filteredCount,
     totalPages,
-    currentPage,
     filters,
     loading,
     error,
@@ -130,16 +128,6 @@ export default function DayOffManagementPage() {
             </div>
           )}
         </>
-      )}
-
-      {/* 통계 정보 (디버깅용) */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-          <p>
-            전체 데이터: {totalCount}개 | 필터링된 데이터: {filteredCount}개 |
-            현재 페이지: {currentPage}/{totalPages}
-          </p>
-        </div>
       )}
     </div>
   );
