@@ -6,6 +6,7 @@ import { Button, Input } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks";
 import { createGroup } from "../api/group-api";
 import { CreateGroupRequest } from "../types";
+import { getGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
 
 export interface GroupCreateModalProps {
   isOpen: boolean;
@@ -21,9 +22,9 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
   golfCourseId,
 }) => {
   const [groupName, setGroupName] = useState("");
-  const [groupOrder, setGroupOrder] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [golfCourseName, setGolfCourseName] = useState<string>("");
 
   const { user } = useAuth();
   const isMaster = user?.role === "MASTER" || user?.role === "DEV";
@@ -32,10 +33,27 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setGroupName("");
-      setGroupOrder("");
       setError(null);
+
+      // 골프장 이름 가져오기
+      const fetchGolfCourseName = async () => {
+        try {
+          if (isMaster && golfCourseId) {
+            const response = await getGolfCourseGroupDetail(golfCourseId);
+            setGolfCourseName(response.golf_course.name);
+          } else if (user?.golfCourseId) {
+            const response = await getGolfCourseGroupDetail(user.golfCourseId);
+            setGolfCourseName(response.golf_course.name);
+          }
+        } catch (error) {
+          console.error("골프장 정보 가져오기 실패:", error);
+          setGolfCourseName("골프장 정보 없음");
+        }
+      };
+
+      fetchGolfCourseName();
     }
-  }, [isOpen]);
+  }, [isOpen, isMaster, golfCourseId, user?.golfCourseId]);
 
   if (!isOpen) return null;
 
@@ -61,17 +79,6 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
 
     if (groupName.trim().length > 20) {
       setError("그룹 이름은 최대 20자까지 가능합니다.");
-      return;
-    }
-
-    if (!groupOrder.trim()) {
-      setError("순서를 입력해주세요.");
-      return;
-    }
-
-    const orderNumber = parseInt(groupOrder);
-    if (isNaN(orderNumber) || orderNumber < 1) {
-      setError("순서는 1 이상의 숫자를 입력해주세요.");
       return;
     }
 
@@ -101,7 +108,6 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
         name: groupName.trim(),
         group_type: "PRIMARY",
         golf_course: targetGolfCourseId, // UUID 문자열
-        order: orderNumber,
         is_active: true,
       };
 
@@ -159,31 +165,13 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
             />
           </div>
 
-          {/* 그룹 순서 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              순서 <span className="text-red-500">*</span>
-            </label>
-            <Input
-              type="number"
-              value={groupOrder}
-              onChange={(e) => setGroupOrder(e.target.value)}
-              placeholder="예: 1, 2, 3"
-              min="1"
-              disabled={isLoading}
-              className="w-full"
-            />
-          </div>
-
           {/* 골프장 정보 표시 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               골프장
             </label>
             <div className="p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-              {isMaster
-                ? golfCourseId || "선택된 골프장 없음"
-                : user?.golfCourseId || "골프장 정보 없음"}
+              {golfCourseName || "골프장 정보를 불러오는 중..."}
             </div>
           </div>
 
