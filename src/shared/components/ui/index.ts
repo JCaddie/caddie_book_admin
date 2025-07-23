@@ -8,6 +8,7 @@ export { default as DataTable } from "./data-table";
 export { default as DeleteButton } from "./delete-button";
 export { default as Dropdown } from "./dropdown";
 export { default as EmptyState } from "./empty-state";
+export { default as URLDropdown } from "./url-dropdown";
 export { default as FileUpload } from "./file-upload";
 export { default as Input } from "./input";
 export { default as Pagination } from "./pagination";

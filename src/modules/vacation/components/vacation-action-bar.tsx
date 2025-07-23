@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button, Dropdown, SearchWithButton } from "@/shared/components/ui";
-import { useAuth } from "@/shared/hooks/use-auth";
-import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
+import { Button, SearchWithButton, URLDropdown } from "@/shared/components/ui";
 import { VacationRequestFilter } from "../types";
 import {
   VACATION_REQUEST_TYPE_OPTIONS,
@@ -15,50 +13,20 @@ export interface VacationActionBarProps {
   totalCount: number;
   selectedCount?: number;
   filters: VacationRequestFilter;
-  onFilterChange: (filters: VacationRequestFilter) => void;
   onDelete?: () => void;
   loading?: boolean;
-  // 골프장 필터링 props (MASTER 권한에서만 사용)
-  selectedGolfCourseId?: string;
-  onGolfCourseChange?: (golfCourseId: string) => void;
 }
 
 const VacationActionBar: React.FC<VacationActionBarProps> = ({
   totalCount,
   selectedCount = 0,
   filters,
-  onFilterChange,
   onDelete,
   loading = false,
-  selectedGolfCourseId = "",
-  onGolfCourseChange,
 }) => {
-  const { user } = useAuth();
-  const isMaster = user?.role === "MASTER";
-
-  const handleRequestTypeChange = (value: string) => {
-    onFilterChange({
-      ...filters,
-      requestType: value as VacationRequestFilter["requestType"],
-    });
-  };
-
-  const handleStatusChange = (value: string) => {
-    onFilterChange({
-      ...filters,
-      status: value as VacationRequestFilter["status"],
-    });
-  };
-
   const handleDeleteClick = () => {
     if (onDelete && selectedCount > 0 && !loading) {
       onDelete();
-    }
-  };
-
-  const handleGolfCourseFilterChange = (value: string) => {
-    if (onGolfCourseChange) {
-      onGolfCourseChange(value);
     }
   };
 
@@ -74,43 +42,28 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
         </div>
       </div>
 
-      {/* 오른쪽: 골프장 드롭다운 + 필터 + 검색창 + 버튼들 */}
+      {/* 오른쪽: 필터 + 검색창 + 버튼들 */}
       <div className="flex items-center gap-8">
-        {/* MASTER 권한일 때만 골프장 선택 드롭다운 표시 */}
-        {isMaster && onGolfCourseChange && (
-          <Dropdown
-            options={GOLF_COURSE_DROPDOWN_OPTIONS}
-            value={selectedGolfCourseId}
-            onChange={handleGolfCourseFilterChange}
-            placeholder="골프장 선택"
-            containerClassName="w-48"
-          />
-        )}
-
         {/* 필터 드롭다운들 */}
         <div className="flex items-center gap-2">
-          <Dropdown
+          <URLDropdown
             options={VACATION_REQUEST_TYPE_OPTIONS}
-            value={filters.requestType || ""}
-            onChange={handleRequestTypeChange}
+            value={filters.request_type || ""}
+            paramName="request_type"
             className="w-[106px]"
-            aria-label="신청구분 필터"
+            ariaLabel="신청구분 필터"
           />
-          <Dropdown
+          <URLDropdown
             options={VACATION_STATUS_OPTIONS}
             value={filters.status || ""}
-            onChange={handleStatusChange}
+            paramName="status"
             className="w-[106px]"
-            aria-label="상태 필터"
+            ariaLabel="상태 필터"
           />
         </div>
 
         {/* 검색 필드 */}
-        <SearchWithButton
-          placeholder={VACATION_UI_TEXT.SEARCH_PLACEHOLDER}
-          containerClassName="w-[420px]"
-          searchClassName="w-[360px]"
-        />
+        <SearchWithButton placeholder={VACATION_UI_TEXT.SEARCH_PLACEHOLDER} />
 
         {/* 버튼 그룹 */}
         {onDelete && (
