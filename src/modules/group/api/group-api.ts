@@ -5,10 +5,10 @@ import {
   CreateGroupRequest,
   CreateGroupResponse,
   GroupListResponse,
-  ReorderRequest,
-  ReorderResponse,
   RemovePrimaryRequest,
   RemovePrimaryResponse,
+  ReorderRequest,
+  ReorderResponse,
 } from "../types/group-status";
 
 /**

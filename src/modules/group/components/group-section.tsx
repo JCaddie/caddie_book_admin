@@ -58,10 +58,19 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     setIsDragOver(false);
     setDragOverIndex(null);
 
-    if (dragOverIndex !== null) {
-      onDrop(group.id, dragOverIndex);
+    // 드래그된 캐디가 같은 그룹 내에서 순서 변경인지 확인
+    if (draggedCaddie && draggedCaddie.group === parseInt(group.id)) {
+      // 같은 그룹 내 순서 변경
+      if (dragOverIndex !== null) {
+        onDrop(group.id, dragOverIndex);
+      }
     } else {
-      onDrop(group.id);
+      // 다른 그룹으로 이동
+      if (dragOverIndex !== null) {
+        onDrop(group.id, dragOverIndex);
+      } else {
+        onDrop(group.id);
+      }
     }
   };
 
@@ -99,30 +108,39 @@ const GroupSection: React.FC<GroupSectionProps> = ({
 
       {/* 캐디 카드들 */}
       <div className="bg-transparent p-4 flex flex-col gap-2 min-h-[100px] rounded-b-md">
-        {group.caddies.map((caddie, index) => (
-          <div key={caddie.id} className="relative">
-            {/* 드롭 인디케이터 */}
-            {dragOverIndex === index && (
-              <div className="absolute -top-1 left-0 right-0 h-0.5 bg-yellow-400 z-10" />
-            )}
+        {group.caddies
+          .sort((a, b) => (a.order || 1) - (b.order || 1))
+          .map((caddie, index) => (
+            <div key={caddie.id} className="relative">
+              {/* 드롭 인디케이터 */}
+              {dragOverIndex === index && (
+                <div className="absolute -top-1 left-0 right-0 h-0.5 bg-yellow-400 z-10" />
+              )}
 
-            <div
-              draggable
-              onDragStart={() => onDragStart(caddie, group.id)}
-              onDragEnd={() => {
-                onDragEnd();
-                setIsDragOver(false);
-                setDragOverIndex(null);
-              }}
-              onDragOver={(e) => handleCaddieDragOver(e, index)}
-              className={`cursor-move ${
-                draggedCaddie?.id === caddie.id ? "opacity-50" : ""
-              }`}
-            >
-              <CaddieCard caddie={caddie} />
+              <div
+                draggable
+                onDragStart={() => {
+                  // 드래그 시작 시 현재 위치 정보를 캐디 데이터에 추가
+                  const caddieWithPosition = {
+                    ...caddie,
+                    currentIndex: index,
+                  };
+                  onDragStart(caddieWithPosition, group.id);
+                }}
+                onDragEnd={() => {
+                  onDragEnd();
+                  setIsDragOver(false);
+                  setDragOverIndex(null);
+                }}
+                onDragOver={(e) => handleCaddieDragOver(e, index)}
+                className={`cursor-move ${
+                  draggedCaddie?.id === caddie.id ? "opacity-50" : ""
+                }`}
+              >
+                <CaddieCard caddie={caddie} draggable={true} />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
         {/* 빈 그룹일 때 드롭 영역 */}
         {group.caddies.length === 0 && (
