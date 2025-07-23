@@ -33,6 +33,11 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setIsDragOver(true);
+
+    // 그룹 영역에 드래그 오버할 때 마지막 위치 인덱스 설정
+    if (dragOverIndex !== group.caddies.length) {
+      setDragOverIndex(group.caddies.length);
+    }
   };
 
   // 그룹 영역에서 드래그 리브
@@ -159,6 +164,11 @@ const GroupSection: React.FC<GroupSectionProps> = ({
               </div>
             </div>
           ))}
+
+        {/* 마지막 위치 드롭 인디케이터 */}
+        {dragOverIndex === group.caddies.length && (
+          <div className="h-0.5 bg-yellow-400 z-10" />
+        )}
 
         {/* 빈 그룹일 때 드롭 영역 */}
         {group.caddies.length === 0 && (
