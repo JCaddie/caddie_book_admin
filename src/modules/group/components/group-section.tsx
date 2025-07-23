@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { CaddieCard } from "@/modules/work/components";
-import { CaddieGroupManagement } from "../types";
 import { CaddieData } from "@/modules/work/types";
+import { CaddieGroupManagement } from "../types/group-status";
 import { GroupMenu } from "./group-menu";
 
 interface GroupSectionProps {
@@ -25,67 +25,67 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   onEditGroup,
   onDeleteGroup,
 }) => {
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  // 그룹 영역에 드래그 오버
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (!isDragOver) {
-      setIsDragOver(true);
-    }
+    e.dataTransfer.dropEffect = "move";
+    setIsDragOver(true);
   };
 
+  // 그룹 영역에서 드래그 리브
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-
-    // 컨테이너를 벗어날 때만 상태 초기화
-    const rect = e.currentTarget.getBoundingClientRect();
-    const { clientX, clientY } = e;
-
-    if (
-      clientX < rect.left ||
-      clientX > rect.right ||
-      clientY < rect.top ||
-      clientY > rect.bottom
-    ) {
+    // 그룹 영역을 벗어날 때만 드래그 오버 상태 해제
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setIsDragOver(false);
       setDragOverIndex(null);
     }
   };
 
+  // 그룹 영역에 드롭
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
+    console.log("GroupSection 드롭:", {
+      dragOverIndex,
+      groupId: group.id,
+      draggedCaddieGroup: draggedCaddie?.group,
+      isSameGroup: draggedCaddie && draggedCaddie.group === parseInt(group.id),
+    });
+
     setIsDragOver(false);
     setDragOverIndex(null);
 
-    // 드래그된 캐디가 같은 그룹 내에서 순서 변경인지 확인
-    if (draggedCaddie && draggedCaddie.group === parseInt(group.id)) {
-      // 같은 그룹 내 순서 변경
-      if (dragOverIndex !== null) {
-        onDrop(group.id, dragOverIndex);
-      } else {
-        // 마지막 위치로 드롭 (dragOverIndex가 null이면 마지막)
-        onDrop(group.id, group.caddies.length);
-      }
+    // 드롭 인덱스 결정
+    let insertIndex: number;
+
+    if (dragOverIndex !== null) {
+      // 특정 위치에 드롭
+      insertIndex = dragOverIndex;
     } else {
-      // 다른 그룹으로 이동
-      if (dragOverIndex !== null) {
-        onDrop(group.id, dragOverIndex);
-      } else {
-        // 마지막 위치로 드롭
-        onDrop(group.id, group.caddies.length);
-      }
+      // 그룹 영역에 드롭 (마지막 위치)
+      insertIndex = group.caddies.length;
     }
+
+    onDrop(group.id, insertIndex);
   };
 
+  // 캐디 카드 위에 드래그 오버
   const handleCaddieDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.stopPropagation();
+
     if (dragOverIndex !== index) {
+      console.log("GroupSection 드래그오버:", {
+        index,
+        dragOverIndex,
+        groupId: group.id,
+        totalCaddies: group.caddies.length,
+      });
       setDragOverIndex(index);
     }
   };
@@ -126,7 +126,10 @@ const GroupSection: React.FC<GroupSectionProps> = ({
         {group.caddies
           .sort((a, b) => (a.order || 1) - (b.order || 1))
           .map((caddie, index) => (
-            <div key={caddie.id} className="relative">
+            <div
+              key={caddie.originalId || `caddie-${index}`}
+              className="relative"
+            >
               {/* 드롭 인디케이터 */}
               {dragOverIndex === index && (
                 <div className="absolute -top-1 left-0 right-0 h-0.5 bg-yellow-400 z-10" />

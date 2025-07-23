@@ -11,7 +11,8 @@ interface UnassignedCaddieListProps {
   onDrop: (targetGroupId: string) => void;
   draggedCaddie: CaddieData | null;
   transformUnassignedCaddieToCaddieData: (
-    caddie: UnassignedCaddie
+    caddie: UnassignedCaddie,
+    index?: number
   ) => CaddieData;
 }
 
@@ -35,6 +36,7 @@ export const UnassignedCaddieList: React.FC<UnassignedCaddieListProps> = ({
     return <div className="text-sm text-red-500">{error}</div>;
   }
 
+  // 미배정 캐디가 없을 때의 드롭 영역
   if (unassignedCaddies.length === 0) {
     return (
       <div
@@ -55,6 +57,7 @@ export const UnassignedCaddieList: React.FC<UnassignedCaddieListProps> = ({
     );
   }
 
+  // 미배정 캐디 목록
   return (
     <div
       className="space-y-2 min-h-[200px] p-2 border-2 border-dashed border-gray-300 rounded-lg"
@@ -68,7 +71,9 @@ export const UnassignedCaddieList: React.FC<UnassignedCaddieListProps> = ({
         캐디를 여기로 드래그하여 배정 해제
       </div>
       {unassignedCaddies
-        .map((caddie) => transformUnassignedCaddieToCaddieData(caddie))
+        .map((caddie, index) =>
+          transformUnassignedCaddieToCaddieData(caddie, index)
+        )
         .map((caddieData) => (
           <div
             key={caddieData.originalId}

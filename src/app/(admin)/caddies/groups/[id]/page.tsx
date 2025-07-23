@@ -55,7 +55,8 @@ const transformGroupToGroupSection = (group: Group) => ({
 
 // UnassignedCaddie를 CaddieData 형식으로 변환하는 함수
 const transformUnassignedCaddieToCaddieData = (
-  caddie: UnassignedCaddie
+  caddie: UnassignedCaddie,
+  index?: number
 ): CaddieData => {
   return {
     id: parseInt(caddie.id),
@@ -67,6 +68,7 @@ const transformUnassignedCaddieToCaddieData = (
     specialBadge: undefined,
     order: 1,
     groupName: undefined,
+    currentIndex: index, // 미배정 캐디 목록에서의 인덱스
   };
 };
 
@@ -172,86 +174,86 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
   const handleDrop = async (targetGroupId: string, insertIndex?: number) => {
     try {
-      console.log("드롭", targetGroupId, insertIndex);
-      console.log("드래그된 캐디:", draggedCaddie);
+      console.log("드롭 요청:", {
+        targetGroupId,
+        insertIndex,
+        draggedCaddieGroup: draggedCaddie?.group,
+        draggedCaddieCurrentIndex: draggedCaddie?.currentIndex,
+      });
 
-      if (draggedCaddie) {
-        if (targetGroupId === "unassigned") {
-          // 캐디 배정 해제 (빈 영역으로 드래그)
-          const currentGroupId = draggedCaddie.group;
-          if (currentGroupId > 0 && draggedCaddie.originalId) {
-            console.log("배정 해제 요청:", {
-              groupId: currentGroupId,
-              caddie_ids: [draggedCaddie.originalId],
+      if (!draggedCaddie || !draggedCaddie.originalId) {
+        console.log("드래그된 캐디 정보가 없습니다.");
+        return;
+      }
+
+      if (targetGroupId === "unassigned") {
+        // 캐디 배정 해제 (미배정 영역으로 드래그)
+        const currentGroupId = draggedCaddie.group;
+        if (currentGroupId > 0) {
+          console.log("배정 해제 요청:", {
+            groupId: currentGroupId,
+            caddie_ids: [draggedCaddie.originalId],
+          });
+          await removePrimaryGroup(currentGroupId, {
+            caddie_ids: [draggedCaddie.originalId],
+          });
+        }
+      } else {
+        const targetGroupIdNum = parseInt(targetGroupId);
+        const currentGroupId = draggedCaddie.group;
+
+        // 드롭 인덱스 결정 (기본값: 마지막 위치)
+        const dropIndex =
+          insertIndex !== undefined
+            ? insertIndex
+            : assignmentData?.groups.find((g) => g.id === targetGroupIdNum)
+                ?.member_count || 0;
+
+        // order는 1부터 시작
+        const newOrder = dropIndex + 1;
+
+        if (currentGroupId === targetGroupIdNum && currentGroupId > 0) {
+          // 같은 그룹 내에서 순서 변경
+          const currentIndex = draggedCaddie.currentIndex || 0;
+
+          // 현재 위치와 목표 위치가 다를 때만 순서 변경
+          if (currentIndex !== dropIndex) {
+            console.log("순서 변경 요청:", {
+              groupId: targetGroupIdNum,
+              caddie_id: draggedCaddie.originalId,
+              currentIndex,
+              newIndex: dropIndex,
+              new_order: newOrder,
             });
-            await removePrimaryGroup(currentGroupId, {
-              caddie_ids: [draggedCaddie.originalId],
+
+            await reorderPrimaryGroup(targetGroupIdNum, {
+              reorders: [
+                {
+                  caddie_id: draggedCaddie.originalId,
+                  new_order: newOrder,
+                },
+              ],
             });
           }
         } else {
-          const targetGroupIdNum = parseInt(targetGroupId);
+          // 다른 그룹으로 이동 또는 미배정 캐디를 그룹에 배정
+          console.log("배정 요청:", {
+            groupId: targetGroupIdNum,
+            caddie_ids: [draggedCaddie.originalId],
+            orders: [newOrder],
+            isFromUnassigned: currentGroupId === 0,
+          });
 
-          // 같은 그룹 내에서 순서 변경인지 확인
-          if (draggedCaddie.group === targetGroupIdNum) {
-            // 같은 그룹 내 순서 변경
-            if (draggedCaddie.originalId) {
-              // insertIndex가 undefined이면 마지막 위치로 이동
-              const newIndex =
-                insertIndex !== undefined
-                  ? insertIndex
-                  : assignmentData?.groups.find(
-                      (g) => g.id === targetGroupIdNum
-                    )?.member_count || 0;
-              const newOrder = newIndex + 1;
-
-              // 현재 위치와 목표 위치가 다를 때만 순서 변경
-              if (draggedCaddie.currentIndex !== newIndex) {
-                console.log("순서 변경 요청:", {
-                  groupId: targetGroupIdNum,
-                  caddie_id: draggedCaddie.originalId,
-                  currentIndex: draggedCaddie.currentIndex,
-                  newIndex: newIndex,
-                  new_order: newOrder,
-                });
-                await reorderPrimaryGroup(targetGroupIdNum, {
-                  reorders: [
-                    {
-                      caddie_id: draggedCaddie.originalId,
-                      new_order: newOrder,
-                    },
-                  ],
-                });
-              }
-            }
-          } else {
-            // 다른 그룹으로 이동
-            if (draggedCaddie.originalId) {
-              // insertIndex가 undefined이면 마지막 위치로 이동
-              const newIndex =
-                insertIndex !== undefined
-                  ? insertIndex
-                  : assignmentData?.groups.find(
-                      (g) => g.id === targetGroupIdNum
-                    )?.member_count || 0;
-              const newOrder = newIndex + 1;
-
-              console.log("배정 요청:", {
-                groupId: targetGroupIdNum,
-                caddie_ids: [draggedCaddie.originalId],
-                orders: [newOrder],
-              });
-              await assignPrimaryGroup(targetGroupIdNum, {
-                caddie_ids: [draggedCaddie.originalId],
-                orders: [newOrder],
-              });
-            }
-          }
+          await assignPrimaryGroup(targetGroupIdNum, {
+            caddie_ids: [draggedCaddie.originalId],
+            orders: [newOrder],
+          });
         }
-
-        // 데이터 새로고침
-        await loadData();
-        await loadCaddieAssignments();
       }
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
     } catch (error) {
       console.error("캐디 그룹 배정/해제/순서 변경 실패:", error);
     } finally {
@@ -392,8 +394,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
               onDragEnd={handleDragEnd}
               onDrop={handleDrop}
               draggedCaddie={draggedCaddie}
-              transformUnassignedCaddieToCaddieData={
-                transformUnassignedCaddieToCaddieData
+              transformUnassignedCaddieToCaddieData={(caddie, index) =>
+                transformUnassignedCaddieToCaddieData(caddie, index)
               }
             />
           </div>

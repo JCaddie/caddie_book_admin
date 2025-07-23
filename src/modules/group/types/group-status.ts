@@ -42,6 +42,7 @@ export interface CaddieGroupManagement {
     badge: string;
     status: string;
     specialBadge?: string;
+    originalId?: string; // 원본 UUID (드래그 앤 드롭용)
     order?: number; // 그룹 내 순서
     groupName?: string; // 그룹 이름
   }>;
