@@ -42,6 +42,8 @@ export interface CaddieGroupManagement {
     badge: string;
     status: string;
     specialBadge?: string;
+    order?: number; // 그룹 내 순서
+    groupName?: string; // 그룹 이름
   }>;
 }
 

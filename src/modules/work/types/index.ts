@@ -58,12 +58,14 @@ export interface CaddieCardProps {
     badge: string;
     status: string;
     specialBadge?: string;
+    groupName?: string;
   };
   isEmpty?: boolean;
   emptyText?: string;
   onDragStart?: (caddie: CaddieData) => void;
   onDragEnd?: (caddie: CaddieData) => void;
   isDragging?: boolean;
+  draggable?: boolean; // 드래그 가능 여부
 }
 
 // ================================
@@ -79,6 +81,9 @@ export interface CaddieData {
   status: string;
   specialBadge?: string;
   originalId?: string; // 원본 UUID (드래그 앤 드롭용)
+  order?: number; // 그룹 내 순서
+  groupName?: string; // 그룹 이름 (primary_group.name)
+  currentIndex?: number; // 드래그 시작 시 현재 위치 (순서 변경용)
 }
 
 // 필드 데이터 타입
