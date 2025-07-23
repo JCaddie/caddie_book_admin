@@ -4,11 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { ConfirmationModal, Pagination } from "@/shared/components/ui";
-import {
-  PAGE_TITLES,
-  useDocumentTitle,
-  useGolfCourseFilter,
-} from "@/shared/hooks";
+import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
 import { Work } from "@/modules/work/types";
 import {
   useWorksData,
@@ -23,19 +19,16 @@ const WorksPage: React.FC = () => {
   // 페이지 타이틀 설정
   useDocumentTitle({ title: PAGE_TITLES.WORKS });
 
-  // 골프장 필터링 (MASTER 권한에서만 사용, UI만 제공)
-  const { selectedGolfCourseId, handleGolfCourseChange } =
-    useGolfCourseFilter();
-
   // 커스텀 훅들 사용
   const {
     worksList,
     setWorksList,
-    searchTerm,
     filteredWorks,
     currentData,
     totalPages,
-    handleSearchChange,
+    isLoading,
+    error,
+    refetch,
   } = useWorksData();
 
   const { selectedRowKeys, selectedRows, handleSelectChange, clearSelection } =
@@ -54,7 +47,19 @@ const WorksPage: React.FC = () => {
     if (work.isEmpty) {
       return;
     }
-    router.push(`/works/${work.id}`);
+
+    // 날짜가 있는 경우에만 날짜 파라미터 추가
+    let dateParam = "";
+    if (work.date && work.date !== "미정") {
+      // "YYYY.MM.DD" 형식을 "YYYY-MM-DD" 형식으로 변환
+      const formattedDate = work.date
+        .replace(/\s+/g, "") // 모든 공백 제거
+        .replace(/\./g, "-") // 점을 하이픈으로 변환
+        .replace(/-+$/, ""); // 끝에 있는 하이픈 제거
+      dateParam = `?date=${formattedDate}`;
+    }
+
+    router.push(`/works/${work.golfCourseId}${dateParam}`);
   };
 
   // 생성 핸들러 - 생성 페이지로 이동
@@ -82,25 +87,46 @@ const WorksPage: React.FC = () => {
       <WorksActionBar
         totalCount={filteredWorks.length}
         selectedCount={selectedRowKeys.length}
-        searchTerm={searchTerm}
-        onSearchChange={handleSearchChange}
         onDelete={handleDelete}
         onCreate={handleCreate}
-        selectedGolfCourseId={selectedGolfCourseId}
-        onGolfCourseChange={handleGolfCourseChange}
       />
+
+      {/* 로딩 상태 */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">데이터를 불러오는 중...</div>
+        </div>
+      )}
+
+      {/* 에러 상태 */}
+      {error && (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-red-500">
+            <p>데이터 로딩에 실패했습니다.</p>
+            <p className="text-sm mt-2">{error}</p>
+            <button
+              onClick={refetch}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              다시 시도
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 테이블 */}
-      <WorksTable
-        data={currentData}
-        onRowClick={handleRowClick}
-        selectedRowKeys={selectedRowKeys}
-        onSelectChange={handleSelectChange}
-        totalCount={filteredWorks.length}
-      />
+      {!isLoading && !error && (
+        <WorksTable
+          data={currentData}
+          onRowClick={handleRowClick}
+          selectedRowKeys={selectedRowKeys}
+          onSelectChange={handleSelectChange}
+          totalCount={filteredWorks.length}
+        />
+      )}
 
       {/* 페이지네이션 */}
-      <Pagination totalPages={totalPages} />
+      {!isLoading && !error && <Pagination totalPages={totalPages} />}
 
       {/* 삭제 확인 모달 */}
       <ConfirmationModal

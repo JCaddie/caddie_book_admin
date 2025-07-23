@@ -8,9 +8,11 @@ export interface Work extends Record<string, unknown> {
   no: number;
   date: string; // 일자 (YYYY.MM.DD 형식)
   golfCourse: string; // 골프장명
+  golfCourseId: string; // 골프장 ID
   totalStaff: number; // 전체 인원수
   availableStaff: number; // 가용인원수
   status: "planning" | "confirmed" | "completed" | "cancelled"; // 상태
+  scheduleType?: string; // 스케줄 타입 (daily, special 등)
   createdAt?: string;
   updatedAt?: string;
   isEmpty?: boolean;
@@ -110,4 +112,19 @@ export interface TimeSlots {
 export interface PersonnelStats {
   total: number;
   available: number;
+}
+
+// ================================
+// 라운딩 설정 타입
+// ================================
+
+// 라운딩 설정 타입
+export interface RoundingSettings {
+  numberOfRounds: number;
+  timeUnit: number;
+  roundTimes: Array<{
+    round: number;
+    startTime: string;
+    endTime: string;
+  }>;
 }

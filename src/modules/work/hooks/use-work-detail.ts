@@ -1,32 +1,51 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Work } from "@/modules/work/types";
-import { SAMPLE_GOLF_COURSES } from "@/modules/work/constants";
+import { fetchWorkSchedules } from "@/modules/work/api";
 
-// useWorksData와 동일한 샘플 데이터 생성 함수
-const generateSampleWorks = (count: number): Work[] => {
-  return Array.from({ length: count }, (_, index) => ({
-    id: `work-${index + 1}`,
-    no: index + 1,
-    date: "2025.01.06",
-    golfCourse: SAMPLE_GOLF_COURSES[index % SAMPLE_GOLF_COURSES.length],
-    totalStaff: 130,
-    availableStaff: 130,
-    status: "planning" as const,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }));
-};
+export function useWorkDetail(golfCourseId: string) {
+  const [work, setWork] = useState<Work | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function useWorkDetail(workId: string) {
-  // 샘플 데이터 생성 (useWorksData와 동일)
-  const sampleWorks = useMemo(() => generateSampleWorks(26), []);
+  // API에서 데이터 가져오기
+  useEffect(() => {
+    const fetchWorkData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-  // 실제로는 API에서 데이터를 가져올 것
-  const [work, setWork] = useState<Work | null>(() => {
-    return sampleWorks.find((w: Work) => w.id === workId) || null;
-  });
+        // API에서 모든 work 데이터 가져오기
+        const allWorks = await fetchWorkSchedules();
+
+        // golfCourseId로 해당 work 찾기
+        const foundWork = allWorks.find(
+          (w: Work) => w.golfCourseId === golfCourseId
+        );
+
+        if (foundWork) {
+          setWork(foundWork);
+        } else {
+          // 임시 해결책: 첫 번째 데이터를 사용하고 golfCourseId 업데이트
+          if (allWorks.length > 0) {
+            const firstWork = { ...allWorks[0], golfCourseId };
+            setWork(firstWork);
+          }
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "데이터를 불러오는데 실패했습니다."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWorkData();
+  }, [golfCourseId]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -40,12 +59,8 @@ export function useWorkDetail(workId: string) {
   // 편집 취소
   const handleCancel = useCallback(() => {
     setIsEditing(false);
-    // 원본 데이터로 복원 (실제로는 API에서 다시 가져올 것)
-    const originalWork = sampleWorks.find((w: Work) => w.id === workId);
-    if (originalWork) {
-      setWork(originalWork);
-    }
-  }, [workId, sampleWorks]);
+    // 편집 모드만 종료하고 현재 work 데이터 유지
+  }, []);
 
   // 업데이트
   const handleUpdate = useCallback(
@@ -102,6 +117,8 @@ export function useWorkDetail(workId: string) {
 
   return {
     work,
+    isLoading,
+    error,
     isEditing,
     isDeleting,
     showDeleteModal,

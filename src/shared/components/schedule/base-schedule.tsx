@@ -3,6 +3,7 @@
 import React from "react";
 import { RotateCcw } from "lucide-react";
 import { Field, PersonnelStats, TimeSlots } from "@/modules/work/types";
+import { Button } from "@/shared/components/ui";
 
 interface BaseScheduleProps<T> {
   fields: Field[];
@@ -11,6 +12,10 @@ interface BaseScheduleProps<T> {
   onResetClick: () => void;
   hideHeader?: boolean;
   isFullWidth?: boolean;
+
+  // 추가 액션 버튼들
+  onRoundingSettingsClick?: () => void;
+  onFillClick?: () => void;
 
   // 드래그 앤 드롭 관련
   draggedItem?: T | null;
@@ -59,6 +64,8 @@ export default function BaseSchedule<T>({
   onResetClick,
   hideHeader = false,
   isFullWidth = false,
+  onRoundingSettingsClick,
+  onFillClick,
   draggedItem,
   onDragStart: _onDragStart,
   onDragEnd: _onDragEnd,
@@ -142,14 +149,35 @@ export default function BaseSchedule<T>({
               </div>
             </div>
 
-            {/* 초기화 버튼 */}
-            <button
-              onClick={onResetClick}
-              className="flex items-center gap-2 px-4 py-2 bg-[#FEB912] text-white font-semibold rounded-md hover:bg-[#e5a50f] transition-colors"
-            >
-              <RotateCcw className="w-6 h-6" />
-              초기화
-            </button>
+            {/* 액션 버튼들 */}
+            <div className="flex items-center gap-3">
+              {onRoundingSettingsClick && (
+                <Button
+                  variant="outline"
+                  onClick={onRoundingSettingsClick}
+                  className="border-yellow-400 text-yellow-600 hover:bg-yellow-50"
+                >
+                  라운딩 설정
+                </Button>
+              )}
+              {onFillClick && (
+                <Button
+                  variant="outline"
+                  onClick={onFillClick}
+                  className="border-blue-400 text-blue-600 hover:bg-blue-50"
+                >
+                  채우기
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={onResetClick}
+                className="bg-[#FEB912] hover:bg-[#e5a50f] text-white"
+                icon={<RotateCcw className="w-4 h-4" />}
+              >
+                초기화
+              </Button>
+            </div>
           </div>
         </div>
       )}

@@ -1,70 +1,53 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Work } from "@/modules/work/types";
-import { SAMPLE_GOLF_COURSES, WORKS_PAGE_SIZE } from "@/modules/work/constants";
+import { WORKS_PAGE_SIZE } from "@/modules/work/constants";
 import { usePagination } from "@/shared/hooks";
+import { fetchWorkSchedules } from "@/modules/work/api";
 
 export interface UseWorksDataReturn {
   worksList: Work[];
   setWorksList: React.Dispatch<React.SetStateAction<Work[]>>;
-  searchTerm: string;
-  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   filteredWorks: Work[];
   currentData: Work[];
   currentPage: number;
   totalPages: number;
-  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoading: boolean;
+  error: string | null;
   handlePageChange: (page: number) => void;
+  refetch: () => Promise<void>;
 }
 
-// 샘플 데이터 생성 함수
-const generateSampleWorks = (count: number): Work[] => {
-  return Array.from({ length: count }, (_, index) => ({
-    id: `work-${index + 1}`,
-    no: index + 1,
-    date: "2025.01.06",
-    golfCourse: SAMPLE_GOLF_COURSES[index % SAMPLE_GOLF_COURSES.length],
-    totalStaff: 130,
-    availableStaff: 130,
-    status: "planning" as const,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }));
-};
-
 const useWorksData = (): UseWorksDataReturn => {
-  const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState("");
   const [worksList, setWorksList] = useState<Work[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 초기 데이터 생성
-  const initialWorks = useMemo(() => generateSampleWorks(26), []);
-
-  // URL 검색 파라미터로부터 자동 검색 설정
-  useEffect(() => {
-    const searchParam = searchParams.get("search");
-    if (searchParam) {
-      setSearchTerm(decodeURIComponent(searchParam));
+  // API에서 데이터 가져오기
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await fetchWorkSchedules();
+      setWorksList(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "데이터를 불러오는데 실패했습니다."
+      );
+      console.error("근무 스케줄 데이터 로딩 실패:", err);
+    } finally {
+      setIsLoading(false);
     }
-  }, [searchParams]);
+  };
 
-  // 초기 데이터 설정
+  // 초기 데이터 로딩
   useEffect(() => {
-    if (worksList.length === 0) {
-      setWorksList(initialWorks);
-    }
-  }, [initialWorks, worksList.length]);
+    fetchData();
+  }, []);
 
-  // 필터링된 데이터
+  // 필터링된 데이터 (현재는 모든 데이터를 그대로 사용)
   const filteredWorks = useMemo(() => {
-    return worksList.filter((work) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        work.golfCourse.toLowerCase().includes(searchTerm.toLowerCase());
-
-      return matchesSearch;
-    });
-  }, [worksList, searchTerm]);
+    return worksList;
+  }, [worksList]);
 
   // 페이지네이션
   const { currentPage, totalPages, currentData, handlePageChange } =
@@ -82,22 +65,17 @@ const useWorksData = (): UseWorksDataReturn => {
     }));
   }, [currentData, currentPage]);
 
-  // 검색 변경 핸들러
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
   return {
     worksList,
     setWorksList,
-    searchTerm,
-    setSearchTerm,
     filteredWorks,
     currentData: paginatedData,
     currentPage,
     totalPages,
-    handleSearchChange,
+    isLoading,
+    error,
     handlePageChange,
+    refetch: fetchData,
   };
 };
 
