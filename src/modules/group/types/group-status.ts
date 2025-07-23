@@ -60,7 +60,6 @@ export interface CreateGroupRequest {
   name: string;
   group_type: "PRIMARY" | "SPECIAL";
   golf_course: string; // UUID 문자열로 변경
-  order: number;
   is_active: boolean;
   description?: string;
 }
