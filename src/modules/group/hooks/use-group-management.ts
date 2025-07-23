@@ -20,8 +20,6 @@ export function useGroupManagement() {
 
   // 모달 상태
   const [isGroupSettingModalOpen, setIsGroupSettingModalOpen] = useState(false);
-  const [isCaddieAssignmentModalOpen, setIsCaddieAssignmentModalOpen] =
-    useState(false);
 
   // 드래그 상태
   const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
@@ -70,16 +68,6 @@ export function useGroupManagement() {
   ) => {
     console.log("그룹 설정", groups);
     closeGroupSettingModal();
-  };
-
-  // 캐디 배정 모달 제어 함수들
-  const openCaddieAssignmentModal = () => setIsCaddieAssignmentModalOpen(true);
-  const closeCaddieAssignmentModal = () =>
-    setIsCaddieAssignmentModalOpen(false);
-
-  const handleCaddieAssignmentConfirm = (selectedCaddies: string[]) => {
-    console.log("캐디 배정", selectedCaddies);
-    closeCaddieAssignmentModal();
   };
 
   // 드래그 앤 드롭 핸들러들
@@ -179,7 +167,6 @@ export function useGroupManagement() {
     filteredGroups,
     totalCaddieCount,
     isGroupSettingModalOpen,
-    isCaddieAssignmentModalOpen,
     draggedCaddie,
     draggedFromGroup,
 
@@ -190,9 +177,6 @@ export function useGroupManagement() {
     openGroupSettingModal,
     closeGroupSettingModal,
     handleGroupSettingConfirm,
-    openCaddieAssignmentModal,
-    closeCaddieAssignmentModal,
-    handleCaddieAssignmentConfirm,
     handleDragStart,
     handleDragEnd,
     handleDrop,

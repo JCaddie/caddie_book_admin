@@ -1,24 +1,33 @@
 "use client";
 
-import React from "react";
-import {
-  Button,
-  CaddieAssignmentModal,
-  SearchWithButton,
-} from "@/shared/components/ui";
+import React, { useCallback, useEffect, useState } from "react";
+import { Button } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useDocumentTitle } from "@/shared/hooks";
+import { useAuth, useDocumentTitle } from "@/shared/hooks";
 import { Plus } from "lucide-react";
+import { GroupCreateModal } from "@/modules/group";
+import { GolfCourseInfo } from "@/modules/group/components/golf-course-info";
+import { GroupSummary } from "@/modules/group/components/group-summary";
+import { CaddieStatusPanel } from "@/modules/group/components/caddie-status-panel";
+import { UnassignedCaddieList } from "@/modules/group/components/unassigned-caddie-list";
+import { GroupManagementArea } from "@/modules/group/components/group-management-area";
+import { getGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
+import { GolfCourseGroupDetailResponse } from "@/modules/golf-course/types/golf-course";
 import {
-  EmptyGroupsState,
-  GROUP_OPTIONS,
-  GroupSection,
-  GroupSettingModal,
-  SPECIAL_TEAM_OPTIONS,
-  STATUS_OPTIONS,
-  useGroupManagement,
-} from "@/modules/group";
-import { GroupFilterOption } from "@/modules/group/types";
+  CaddieAssignmentOverviewResponse,
+  Group,
+  UnassignedCaddie,
+} from "@/modules/user/types/user";
+
+import { CaddieData } from "@/modules/work/types";
+import {
+  assignPrimaryGroup,
+  deleteGroup,
+  getGroupAssignmentOverview,
+  removePrimaryGroup,
+  reorderPrimaryGroup,
+  updateGroup,
+} from "@/modules/group/api/group-api";
 
 interface GroupManagementPageProps {
   params: Promise<{
@@ -26,163 +35,394 @@ interface GroupManagementPageProps {
   }>;
 }
 
+// Group을 CaddieGroupManagement 형식으로 변환하는 함수
+const transformGroupToGroupSection = (group: Group) => ({
+  id: group.id.toString(),
+  name: group.name,
+  memberCount: group.member_count,
+  caddies: group.members.map((member) => ({
+    id: parseInt(member.id),
+    originalId: member.id, // 원본 UUID string 보존
+    name: member.name,
+    group: group.id,
+    badge: member.is_team_leader ? "팀장" : "캐디",
+    status: "active",
+    specialBadge: member.is_team_leader ? "팀장" : undefined,
+    order: member.order,
+    groupName: group.name,
+  })),
+});
+
+// UnassignedCaddie를 CaddieData 형식으로 변환하는 함수
+const transformUnassignedCaddieToCaddieData = (
+  caddie: UnassignedCaddie,
+  index?: number
+): CaddieData => {
+  return {
+    id: parseInt(caddie.id),
+    originalId: caddie.id, // 원본 UUID string 보존
+    name: caddie.name,
+    group: 0, // 미배정
+    badge: "일반",
+    status: "active",
+    specialBadge: undefined,
+    order: 1,
+    groupName: undefined,
+    currentIndex: index, // 미배정 캐디 목록에서의 인덱스
+  };
+};
+
 const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   params,
 }) => {
   const { id } = React.use(params);
+  const { user } = useAuth();
 
   // "me"인 경우 현재 사용자의 골프장 ID 사용, 아니면 전달받은 ID 사용
   const isOwnGolfCourse = id === "me";
 
+  // 상태 관리
+  const [data, setData] = useState<GolfCourseGroupDetailResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 캐디 배정 데이터 상태
+  const [assignmentData, setAssignmentData] =
+    useState<CaddieAssignmentOverviewResponse | null>(null);
+  const [caddieLoading, setCaddieLoading] = useState(true);
+  const [caddieError, setCaddieError] = useState<string | null>(null);
+
+  // 모달 상태
+  const [isGroupCreateModalOpen, setIsGroupCreateModalOpen] = useState(false);
+
+  // 드래그 앤 드롭 상태
+  const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
+
   // 페이지 타이틀 설정
-  const pageTitle = isOwnGolfCourse ? "내 골프장 그룹현황" : `그룹현황`;
+  const pageTitle = isOwnGolfCourse
+    ? "내 골프장 그룹현황"
+    : data?.golf_course.name
+    ? `${data.golf_course.name} 그룹현황`
+    : "그룹현황";
   useDocumentTitle({ title: pageTitle });
 
-  // 그룹 관리 훅 사용
-  const {
-    filters,
-    filteredGroups,
-    totalCaddieCount,
-    isGroupSettingModalOpen,
-    isCaddieAssignmentModalOpen,
-    draggedCaddie,
-    updateFilter,
-    handleSearchChange,
-    handleSearchClear,
-    openGroupSettingModal,
-    closeGroupSettingModal,
-    handleGroupSettingConfirm,
-    openCaddieAssignmentModal,
-    closeCaddieAssignmentModal,
-    handleCaddieAssignmentConfirm,
-    handleDragStart,
-    handleDragEnd,
-    handleDrop,
-  } = useGroupManagement();
+  // 골프장 그룹 데이터 로드 함수
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isOwnGolfCourse) {
+        // 현재 사용자의 골프장 ID를 사용
+        if (user?.golfCourseId) {
+          console.log("현재 사용자의 골프장 정보 로드:", user.golfCourseId);
+          const response = await getGolfCourseGroupDetail(user.golfCourseId);
+          setData(response);
+        } else {
+          setError("현재 사용자에게 할당된 골프장이 없습니다.");
+        }
+      } else {
+        // 전달받은 ID로 골프장 정보 조회
+        const response = await getGolfCourseGroupDetail(id);
+        setData(response);
+      }
+    } catch (err) {
+      console.error("골프장 그룹 상세 조회 실패:", err);
+      setError("데이터를 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, isOwnGolfCourse, user?.golfCourseId]);
+
+  // 캐디 배정 데이터 로드 함수
+  const loadCaddieAssignments = useCallback(async () => {
+    setCaddieLoading(true);
+    setCaddieError(null);
+
+    try {
+      let golfCourseId: string | undefined;
+
+      if (isOwnGolfCourse) {
+        // 현재 사용자의 골프장 ID를 사용
+        golfCourseId = user?.golfCourseId;
+      } else {
+        // 전달받은 ID 사용
+        golfCourseId = id;
+      }
+
+      const response = await getGroupAssignmentOverview(golfCourseId);
+      setAssignmentData(response);
+    } catch (err) {
+      console.error("캐디 배정 정보 조회 실패:", err);
+      setCaddieError("캐디 정보를 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setCaddieLoading(false);
+    }
+  }, [id, isOwnGolfCourse, user?.golfCourseId]);
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    loadData();
+    loadCaddieAssignments();
+  }, [id, loadData, loadCaddieAssignments]);
+
+  // 모달 제어 함수들
+  const openGroupCreateModal = () => setIsGroupCreateModalOpen(true);
+  const closeGroupCreateModal = () => setIsGroupCreateModalOpen(false);
+
+  const handleGroupCreateSuccess = async () => {
+    // 그룹 생성 완료 후 데이터 다시 로드
+    await loadData();
+    await loadCaddieAssignments();
+  };
+
+  // 드래그 앤 드롭 핸들러들 (API 연동)
+  const handleDragStart = (caddie: CaddieData, groupId: string) => {
+    console.log("드래그 시작", caddie, groupId);
+    setDraggedCaddie(caddie);
+  };
+
+  const handleDragEnd = () => {
+    console.log("드래그 종료");
+    setDraggedCaddie(null);
+  };
+
+  const handleDrop = async (targetGroupId: string, insertIndex?: number) => {
+    try {
+      console.log("드롭 요청:", {
+        targetGroupId,
+        insertIndex,
+        draggedCaddieGroup: draggedCaddie?.group,
+        draggedCaddieCurrentIndex: draggedCaddie?.currentIndex,
+      });
+
+      if (!draggedCaddie || !draggedCaddie.originalId) {
+        console.log("드래그된 캐디 정보가 없습니다.");
+        return;
+      }
+
+      if (targetGroupId === "unassigned") {
+        // 캐디 배정 해제 (미배정 영역으로 드래그)
+        const currentGroupId = draggedCaddie.group;
+        if (currentGroupId > 0) {
+          console.log("배정 해제 요청:", {
+            groupId: currentGroupId,
+            caddie_ids: [draggedCaddie.originalId],
+          });
+          await removePrimaryGroup(currentGroupId, {
+            caddie_ids: [draggedCaddie.originalId],
+          });
+        }
+      } else {
+        const targetGroupIdNum = parseInt(targetGroupId);
+        const currentGroupId = draggedCaddie.group;
+
+        // 드롭 인덱스 결정 (기본값: 마지막 위치)
+        const dropIndex =
+          insertIndex !== undefined
+            ? insertIndex
+            : assignmentData?.groups.find((g) => g.id === targetGroupIdNum)
+                ?.member_count || 0;
+
+        // order는 1부터 시작
+        const newOrder = dropIndex + 1;
+
+        if (currentGroupId === targetGroupIdNum && currentGroupId > 0) {
+          // 같은 그룹 내에서 순서 변경
+          const currentIndex = draggedCaddie.currentIndex || 0;
+
+          // 현재 위치와 목표 위치가 다를 때만 순서 변경
+          if (currentIndex !== dropIndex) {
+            console.log("순서 변경 요청:", {
+              groupId: targetGroupIdNum,
+              caddie_id: draggedCaddie.originalId,
+              currentIndex,
+              newIndex: dropIndex,
+              new_order: newOrder,
+            });
+
+            await reorderPrimaryGroup(targetGroupIdNum, {
+              reorders: [
+                {
+                  caddie_id: draggedCaddie.originalId,
+                  new_order: newOrder,
+                },
+              ],
+            });
+          }
+        } else {
+          // 다른 그룹으로 이동 또는 미배정 캐디를 그룹에 배정
+          console.log("배정 요청:", {
+            groupId: targetGroupIdNum,
+            caddie_ids: [draggedCaddie.originalId],
+            orders: [newOrder],
+            isFromUnassigned: currentGroupId === 0,
+          });
+
+          await assignPrimaryGroup(targetGroupIdNum, {
+            caddie_ids: [draggedCaddie.originalId],
+            orders: [newOrder],
+          });
+        }
+      }
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("캐디 그룹 배정/해제/순서 변경 실패:", error);
+    } finally {
+      setDraggedCaddie(null);
+    }
+  };
+
+  // 그룹 수정 핸들러
+  const handleEditGroup = async (groupId: string, newName: string) => {
+    try {
+      console.log("그룹 수정 요청:", { groupId, newName });
+      await updateGroup(parseInt(groupId), { name: newName });
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("그룹 수정 실패:", error);
+      alert("그룹명 수정에 실패했습니다.");
+    }
+  };
+
+  // 그룹 삭제 핸들러
+  const handleDeleteGroup = async (groupId: string) => {
+    try {
+      console.log("그룹 삭제 요청:", { groupId });
+      await deleteGroup(parseInt(groupId));
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("그룹 삭제 실패:", error);
+      alert("그룹 삭제에 실패했습니다.");
+    }
+  };
+
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader title={pageTitle} />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">데이터를 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader title={pageTitle} />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터가 없는 경우
+  if (!data) {
+    return (
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader title={pageTitle} />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">데이터가 없습니다.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
-      <AdminPageHeader title={pageTitle} />
+      <div className="flex items-center justify-between">
+        <AdminPageHeader title={pageTitle} />
+        <div className="flex items-center gap-2">
+          <Button
+            className="bg-yellow-400 hover:bg-yellow-500 text-white flex items-center gap-1"
+            onClick={openGroupCreateModal}
+          >
+            <Plus className="w-4 h-4" />
+            그룹 생성
+          </Button>
+        </div>
+      </div>
 
-      {/* 그룹이 없을 때 빈 상태 화면 */}
-      {filteredGroups.length === 0 ? (
-        <EmptyGroupsState onCreateGroup={openGroupSettingModal} />
-      ) : (
-        <>
-          {/* 필터 및 액션바 */}
-          <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">
-                  총 {totalCaddieCount}명
-                </span>
-              </div>
-
-              {/* 필터 드롭다운들 */}
-              <select
-                value={filters.selectedGroup}
-                onChange={(e) => updateFilter("selectedGroup", e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-24"
-              >
-                {GROUP_OPTIONS.map((option: GroupFilterOption) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={filters.selectedSpecialTeam}
-                onChange={(e) =>
-                  updateFilter("selectedSpecialTeam", e.target.value)
-                }
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-28"
-              >
-                {SPECIAL_TEAM_OPTIONS.map((option: GroupFilterOption) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={filters.selectedStatus}
-                onChange={(e) => updateFilter("selectedStatus", e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-28"
-              >
-                {STATUS_OPTIONS.map((option: GroupFilterOption) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* 검색창 */}
-              <SearchWithButton
-                placeholder="캐디 검색"
-                containerClassName="w-[460px]"
-                searchClassName="w-[400px]"
-              />
-            </div>
-
-            {/* 버튼들 */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={openGroupSettingModal}
-                className="border-yellow-400 text-yellow-600 hover:bg-yellow-50"
-              >
-                그룹 설정
-              </Button>
-              <Button
-                className="bg-yellow-400 hover:bg-yellow-500 text-white flex items-center gap-1"
-                onClick={openCaddieAssignmentModal}
-              >
-                <Plus className="w-4 h-4" />
-                캐디 배정
-              </Button>
-            </div>
-          </div>
-
-          {/* 그룹들 - 가로 스크롤 */}
-          <div className="overflow-x-auto">
-            <div className="flex gap-4 pb-4" style={{ width: "fit-content" }}>
-              {filteredGroups.map((group) => (
-                <GroupSection
-                  key={group.id}
-                  group={group}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  onDrop={handleDrop}
-                  draggedCaddie={draggedCaddie}
-                />
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* 그룹 설정 모달 */}
-      <GroupSettingModal
-        isOpen={isGroupSettingModalOpen}
-        onClose={closeGroupSettingModal}
-        onSave={handleGroupSettingConfirm}
-        initialGroups={[
-          { id: "1", name: "1조", order: 1 },
-          { id: "2", name: "2조", order: 2 },
-          { id: "3", name: "3조", order: 3 },
-          { id: "4", name: "4조", order: 4 },
-          { id: "5", name: "5조", order: 5 },
-          { id: "6", name: "6조", order: 6 },
-          { id: "7", name: "7조", order: 7 },
-        ]}
+      {/* 골프장 정보 */}
+      <GolfCourseInfo
+        name={data.golf_course.name}
+        address={data.golf_course.address}
+        contractStatus={data.golf_course.contract_status}
       />
 
-      {/* 캐디 배정 모달 */}
-      <CaddieAssignmentModal
-        isOpen={isCaddieAssignmentModalOpen}
-        onClose={closeCaddieAssignmentModal}
-        onConfirm={handleCaddieAssignmentConfirm}
+      {/* 그룹 요약 정보 */}
+      <GroupSummary
+        primaryGroupCount={data.group_summary.primary_group_count}
+        totalCaddies={data.caddie_summary.total_caddies}
+      />
+
+      {/* 메인 콘텐츠 */}
+      <div className="flex gap-8">
+        {/* 왼쪽: 그룹 관리 */}
+        <div className="w-[calc(3*320px+2*16px)]">
+          <GroupManagementArea
+            groups={assignmentData?.groups || []}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDrop={handleDrop}
+            draggedCaddie={draggedCaddie}
+            onCreateGroup={openGroupCreateModal}
+            transformGroupToGroupSection={transformGroupToGroupSection}
+            onEditGroup={handleEditGroup}
+            onDeleteGroup={handleDeleteGroup}
+          />
+        </div>
+
+        {/* 오른쪽: 캐디 현황 */}
+        <div className="w-96">
+          <CaddieStatusPanel
+            totalAssignedCaddies={
+              assignmentData?.summary.total_assigned_caddies || 0
+            }
+            totalUnassignedCaddies={
+              assignmentData?.summary.total_unassigned_caddies || 0
+            }
+          />
+
+          {/* 캐디 목록 */}
+          <div className="space-y-3">
+            <h4 className="text-md font-medium text-gray-900">캐디 목록</h4>
+            <UnassignedCaddieList
+              unassignedCaddies={assignmentData?.unassigned_caddies || []}
+              isLoading={caddieLoading}
+              error={caddieError}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDrop={handleDrop}
+              draggedCaddie={draggedCaddie}
+              transformUnassignedCaddieToCaddieData={(caddie, index) =>
+                transformUnassignedCaddieToCaddieData(caddie, index)
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 그룹 생성 모달 */}
+      <GroupCreateModal
+        isOpen={isGroupCreateModalOpen}
+        onClose={closeGroupCreateModal}
+        onSuccess={handleGroupCreateSuccess}
+        golfCourseId={isOwnGolfCourse ? undefined : id} // MASTER일 때는 URL의 ID, ADMIN일 때는 undefined (자신의 골프장 ID 사용)
       />
     </div>
   );

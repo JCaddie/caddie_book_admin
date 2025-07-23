@@ -14,6 +14,7 @@ export default function CaddieCard({
   onDragStart,
   onDragEnd,
   isDragging = false,
+  draggable = true,
 }: CaddieCardProps) {
   if (isEmpty) {
     return (
@@ -47,15 +48,15 @@ export default function CaddieCard({
     <div
       className={`w-[218px] flex items-center justify-between px-2 py-1.5 bg-white rounded-md border border-[#DDDDDD] ${cardStyle} ${
         isDragging ? "opacity-50" : ""
-      } cursor-move`}
-      draggable={true}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
+      } ${draggable ? "cursor-move" : ""}`}
+      draggable={draggable}
+      onDragStart={draggable ? handleDragStart : undefined}
+      onDragEnd={draggable ? handleDragEnd : undefined}
     >
       <div className="flex items-center gap-1.5">
         {/* 조 배지 */}
         <div className="w-9 h-5 bg-[#DDE9FF] text-[#1061F9] text-xs font-bold rounded-xl flex items-center justify-center flex-shrink-0">
-          {caddie.group}조
+          {caddie.groupName || `${caddie.group}조`}
         </div>
 
         {/* 이름 */}

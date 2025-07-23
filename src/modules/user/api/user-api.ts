@@ -1,128 +1,81 @@
 import { apiClient } from "@/shared/lib/api-client";
-import { AdminsApiResponse, User, UserDetailApiResponse } from "../types";
+import {
+  AdminsApiResponse,
+  CaddieAssignmentOverviewResponse,
+  UserDetailApiResponse,
+} from "../types/user";
 
 /**
- * 관리자 사용자 목록 조회 (간소화된 정보)
+ * 관리자 목록 조회
  */
-export const getAdmins = async (): Promise<AdminsApiResponse> => {
-  try {
-    const response = await apiClient.get<AdminsApiResponse>(
-      "/api/v1/auth/admins/"
-    );
-    return response;
-  } catch (error) {
-    console.error("관리자 사용자 목록 조회 실패:", error);
-    throw error;
-  }
-};
+export const getAdmins = async (params?: {
+  page?: number;
+  page_size?: number;
+  search?: string;
+}): Promise<AdminsApiResponse> => {
+  const searchParams = new URLSearchParams();
 
-/**
- * 사용자 생성
- */
-export const createUser = async (userData: {
-  username: string;
-  password: string;
-  password_confirm: string;
-  name: string;
-  phone: string;
-  email: string;
-  golf_course_id: string;
-}): Promise<User> => {
-  try {
-    const response = await apiClient.post<User>(
-      "/api/v1/auth/admins/",
-      userData
-    );
-    return response;
-  } catch (error) {
-    console.error("사용자 생성 실패:", error);
-    throw error;
+  if (params?.page) {
+    searchParams.append("page", params.page.toString());
   }
-};
 
-/**
- * 사용자 삭제
- */
-export const deleteUser = async (userId: string): Promise<void> => {
-  try {
-    await apiClient.delete(`/api/v1/auth/admins/${userId}/`);
-  } catch (error) {
-    console.error("사용자 삭제 실패:", error);
-    throw error;
+  if (params?.page_size) {
+    searchParams.append("page_size", params.page_size.toString());
   }
-};
 
-/**
- * 여러 사용자 일괄 삭제
- */
-export const deleteMultipleUsers = async (userIds: string[]): Promise<void> => {
-  try {
-    // 각 사용자를 개별적으로 삭제
-    const deletePromises = userIds.map((userId) => deleteUser(userId));
-    await Promise.all(deletePromises);
-  } catch (error) {
-    console.error("여러 사용자 일괄 삭제 실패:", error);
-    throw error;
+  if (params?.search) {
+    searchParams.append("search", params.search);
   }
+
+  const queryString = searchParams.toString();
+  const endpoint = `/api/v1/users/admins/${
+    queryString ? `?${queryString}` : ""
+  }`;
+
+  return apiClient.get<AdminsApiResponse>(endpoint);
 };
 
 /**
  * 사용자 상세 조회
  */
-export const getUserDetail = async (userId: string): Promise<User> => {
-  try {
-    const response = await apiClient.get<UserDetailApiResponse>(
-      `/api/v1/auth/admins/${userId}/`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("사용자 상세 조회 실패:", error);
-    throw error;
-  }
+export const getUserDetail = async (
+  userId: string
+): Promise<UserDetailApiResponse> => {
+  return apiClient.get<UserDetailApiResponse>(`/api/v1/users/${userId}/`);
 };
 
 /**
- * 사용자 정보 수정
+ * @deprecated 그룹 관련 API로 이동됨 - getGroupAssignmentOverview 사용
  */
-export const updateUser = async (
-  userId: string,
-  userData: {
-    name?: string;
-    phone?: string;
-    email?: string;
-    golf_course_id?: string;
+export const getCaddieAssignmentOverview = async (
+  golfCourseId?: string
+): Promise<CaddieAssignmentOverviewResponse> => {
+  console.warn(
+    "getCaddieAssignmentOverview is deprecated. Use getGroupAssignmentOverview from group-api instead."
+  );
+
+  const searchParams = new URLSearchParams();
+
+  if (golfCourseId) {
+    searchParams.append("golf_course_id", golfCourseId);
   }
-): Promise<User> => {
-  try {
-    const response = await apiClient.patch<UserDetailApiResponse>(
-      `/api/v1/auth/admins/${userId}/`,
-      userData
-    );
-    return response.data;
-  } catch (error) {
-    console.error("사용자 정보 수정 실패:", error);
-    throw error;
-  }
+
+  const queryString = searchParams.toString();
+  const endpoint = `/api/v1/caddie-groups/assignment-overview/overview/${
+    queryString ? `?${queryString}` : ""
+  }`;
+
+  return apiClient.get<CaddieAssignmentOverviewResponse>(endpoint);
 };
 
 /**
- * 사용자 비밀번호 수정
+ * @deprecated 새로운 API로 변경됨 - getCaddieAssignmentOverview 사용
  */
-export const updateUserPassword = async (
-  userId: string,
-  passwordData: {
-    password: string;
-    password_confirm: string;
-  }
-): Promise<User> => {
-  try {
-    const response = await apiClient.patch<UserDetailApiResponse>(
-      `/api/v1/auth/admins/${userId}/password/`,
-      passwordData
-    );
-    return response.data;
-  } catch (error) {
-    console.error("사용자 비밀번호 수정 실패:", error);
-    throw error;
-  }
+export const getUserAssignments = async (
+  golfCourseId?: string
+): Promise<CaddieAssignmentOverviewResponse> => {
+  console.warn(
+    "getUserAssignments is deprecated. Use getCaddieAssignmentOverview instead."
+  );
+  return getCaddieAssignmentOverview(golfCourseId);
 };
