@@ -3,10 +3,10 @@
 import { useMemo } from "react";
 import { basicRenderers } from "@/shared/components/ui";
 import { Column } from "@/shared/types/table";
-import { VacationRequest } from "../types";
+import { DayOffRequest } from "../types";
 
-// 휴가 관리 테이블 컬럼 정의
-export const useVacationColumns = (): Column<VacationRequest>[] => {
+// 휴무 관리 테이블 컬럼 정의
+export const useDayOffColumns = (): Column<DayOffRequest>[] => {
   return useMemo(
     () => [
       {

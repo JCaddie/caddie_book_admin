@@ -3,24 +3,24 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  VacationRequest,
-  VacationRequestFilter,
-  VacationRequestType,
-  VacationSearchParams,
-  VacationStatus,
+  DayOffRequest,
+  DayOffRequestFilter,
+  DayOffRequestType,
+  DayOffSearchParams,
+  DayOffStatus,
 } from "../types";
 import {
-  approveVacationRequest,
-  getVacationRequests,
-  rejectVacationRequest,
-} from "../api/vacation-api";
-import { VACATION_CONSTANTS, VACATION_ERROR_MESSAGES } from "../constants";
+  approveDayOffRequest,
+  getDayOffRequests,
+  rejectDayOffRequest,
+} from "../api/day-off-api";
+import { DAY_OFF_CONSTANTS, DAY_OFF_ERROR_MESSAGES } from "../constants";
 
-export const useVacationManagement = () => {
+export const useDayOffManagement = () => {
   const searchParams = useSearchParams();
 
   // 상태 관리
-  const [data, setData] = useState<VacationRequest[]>([]);
+  const [data, setData] = useState<DayOffRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -32,10 +32,9 @@ export const useVacationManagement = () => {
 
   // URL 파라미터에서 현재 페이지와 필터 가져오기
   const currentPage = Number(searchParams.get("page") || 1);
-  const currentFilters: VacationRequestFilter = {
-    request_type:
-      (searchParams.get("request_type") as VacationRequestType) || "",
-    status: (searchParams.get("status") as VacationStatus) || "",
+  const currentFilters: DayOffRequestFilter = {
+    request_type: (searchParams.get("request_type") as DayOffRequestType) || "",
+    status: (searchParams.get("status") as DayOffStatus) || "",
     searchTerm: searchParams.get("search") || "",
   };
 
@@ -45,32 +44,31 @@ export const useVacationManagement = () => {
     setError(null);
 
     try {
-      const params: VacationSearchParams = {
+      const params: DayOffSearchParams = {
         page: currentPage,
-        page_size: VACATION_CONSTANTS.PAGE_SIZE,
+        page_size: DAY_OFF_CONSTANTS.PAGE_SIZE,
       };
 
       if (currentFilters.request_type) {
-        params.request_type =
-          currentFilters.request_type as VacationRequestType;
+        params.request_type = currentFilters.request_type as DayOffRequestType;
       }
 
       if (currentFilters.status) {
-        params.status = currentFilters.status as VacationStatus;
+        params.status = currentFilters.status as DayOffStatus;
       }
 
       if (currentFilters.searchTerm) {
         params.search = currentFilters.searchTerm;
       }
 
-      const response = await getVacationRequests(params);
+      const response = await getDayOffRequests(params);
       setData(response.results);
       setTotalPages(response.total_pages);
       setTotalCount(response.count);
       setFilteredCount(response.count); // API에서 필터링된 결과를 받으므로 count 사용
     } catch (err) {
-      setError(VACATION_ERROR_MESSAGES.FETCH_FAILED);
-      console.error("Failed to load vacation data:", err);
+      setError(DAY_OFF_ERROR_MESSAGES.FETCH_FAILED);
+      console.error("Failed to load day-off data:", err);
     } finally {
       setLoading(false);
     }
@@ -93,12 +91,12 @@ export const useVacationManagement = () => {
       setError(null);
 
       try {
-        await approveVacationRequest(id);
+        await approveDayOffRequest(id);
         // 데이터 새로고침
         await loadData();
       } catch (err) {
-        setError(VACATION_ERROR_MESSAGES.APPROVE_FAILED);
-        console.error("Failed to approve vacation request:", err);
+        setError(DAY_OFF_ERROR_MESSAGES.APPROVE_FAILED);
+        console.error("Failed to approve day-off request:", err);
       } finally {
         setActionLoading(null);
       }
@@ -113,12 +111,12 @@ export const useVacationManagement = () => {
       setError(null);
 
       try {
-        await rejectVacationRequest(id);
+        await rejectDayOffRequest(id);
         // 데이터 새로고침
         await loadData();
       } catch (err) {
-        setError(VACATION_ERROR_MESSAGES.REJECT_FAILED);
-        console.error("Failed to reject vacation request:", err);
+        setError(DAY_OFF_ERROR_MESSAGES.REJECT_FAILED);
+        console.error("Failed to reject day-off request:", err);
       } finally {
         setActionLoading(null);
       }

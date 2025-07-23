@@ -1,12 +1,12 @@
 import { apiClient } from "@/shared/lib/api-client";
-import { VacationRequestListResponse, VacationSearchParams } from "../types";
+import { DayOffRequestListResponse, DayOffSearchParams } from "../types";
 
 /**
  * 휴무 신청 목록 조회
  */
-export const getVacationRequests = async (
-  params?: VacationSearchParams
-): Promise<VacationRequestListResponse> => {
+export const getDayOffRequests = async (
+  params?: DayOffSearchParams
+): Promise<DayOffRequestListResponse> => {
   const searchParams = new URLSearchParams();
 
   if (params?.page) {
@@ -34,19 +34,19 @@ export const getVacationRequests = async (
     queryString ? `?${queryString}` : ""
   }`;
 
-  return apiClient.get<VacationRequestListResponse>(url);
+  return apiClient.get<DayOffRequestListResponse>(url);
 };
 
 /**
  * 휴무 신청 승인
  */
-export const approveVacationRequest = async (id: string): Promise<void> => {
+export const approveDayOffRequest = async (id: string): Promise<void> => {
   await apiClient.patch(`/api/v1/users/day-off-requests/${id}/approve/`);
 };
 
 /**
  * 휴무 신청 반려
  */
-export const rejectVacationRequest = async (id: string): Promise<void> => {
+export const rejectDayOffRequest = async (id: string): Promise<void> => {
   await apiClient.patch(`/api/v1/users/day-off-requests/${id}/reject/`);
 };

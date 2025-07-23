@@ -2,27 +2,27 @@
 // 기본 타입 정의
 // ================================
 
-export type VacationRequestType = "day_off" | "waiting";
-export type VacationRequestTypeDisplay = "휴무" | "대기";
+export type DayOffRequestType = "day_off" | "waiting";
+export type DayOffRequestTypeDisplay = "휴무" | "대기";
 
-export type VacationStatus = "reviewing" | "approved" | "rejected";
-export type VacationStatusDisplay = "검토 중" | "승인" | "반려";
+export type DayOffStatus = "reviewing" | "approved" | "rejected";
+export type DayOffStatusDisplay = "검토 중" | "승인" | "반려";
 
 // ================================
 // 휴무 신청 관련 타입
 // ================================
 
-export interface VacationRequest extends Record<string, unknown> {
+export interface DayOffRequest extends Record<string, unknown> {
   id: string;
-  request_type: VacationRequestType;
-  request_type_display: VacationRequestTypeDisplay;
+  request_type: DayOffRequestType;
+  request_type_display: DayOffRequestTypeDisplay;
   caddie: string;
   caddie_name: string;
   reason: string;
   golf_course: number;
   golf_course_name: string;
-  status: VacationStatus;
-  status_display: VacationStatusDisplay;
+  status: DayOffStatus;
+  status_display: DayOffStatusDisplay;
   approved_by: string | null;
   approved_by_name: string | null;
   date: string;
@@ -34,17 +34,17 @@ export interface VacationRequest extends Record<string, unknown> {
 // 필터 및 검색 관련 타입
 // ================================
 
-export interface VacationRequestFilter {
-  request_type?: VacationRequestType | "";
-  status?: VacationStatus | "";
+export interface DayOffRequestFilter {
+  request_type?: DayOffRequestType | "";
+  status?: DayOffStatus | "";
   searchTerm?: string;
 }
 
-export interface VacationSearchParams {
+export interface DayOffSearchParams {
   page?: number;
   page_size?: number;
-  request_type?: VacationRequestType;
-  status?: VacationStatus;
+  request_type?: DayOffRequestType;
+  status?: DayOffStatus;
   search?: string;
 }
 
@@ -52,16 +52,16 @@ export interface VacationSearchParams {
 // 폼 관련 타입
 // ================================
 
-export interface VacationRequestFormData {
+export interface DayOffRequestFormData {
   caddieId: string;
   caddieName: string;
-  requestType: VacationRequestType;
+  requestType: DayOffRequestType;
   reason: string;
   phone: string;
 }
 
-export interface VacationRequestUpdateData {
-  status: VacationStatus;
+export interface DayOffRequestUpdateData {
+  status: DayOffStatus;
   approver?: string;
   approvalDate?: string;
   updatedAt: string;
@@ -71,17 +71,17 @@ export interface VacationRequestUpdateData {
 // API 응답 타입
 // ================================
 
-export interface VacationRequestListResponse {
+export interface DayOffRequestListResponse {
   success: boolean;
   message: string;
   count: number;
   page: number;
   page_size: number;
   total_pages: number;
-  results: VacationRequest[];
+  results: DayOffRequest[];
 }
 
-export interface VacationRequestStatsResponse {
+export interface DayOffRequestStatsResponse {
   total: number;
   pending: number;
   approved: number;
@@ -92,17 +92,17 @@ export interface VacationRequestStatsResponse {
 // 컴포넌트 Props 타입
 // ================================
 
-export interface VacationActionsProps {
-  request: VacationRequest;
+export interface DayOffActionsProps {
+  request: DayOffRequest;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   loading?: boolean;
 }
 
-export interface VacationManagementState {
-  data: VacationRequest[];
-  filteredData: VacationRequest[];
-  filters: VacationRequestFilter;
+export interface DayOffManagementState {
+  data: DayOffRequest[];
+  filteredData: DayOffRequest[];
+  filters: DayOffRequestFilter;
   currentPage: number;
   totalPages: number;
   loading: boolean;

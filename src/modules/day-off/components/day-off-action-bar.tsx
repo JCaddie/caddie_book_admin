@@ -2,22 +2,22 @@
 
 import React from "react";
 import { Button, SearchWithButton, URLDropdown } from "@/shared/components/ui";
-import { VacationRequestFilter } from "../types";
+import { DayOffRequestFilter } from "../types";
 import {
-  VACATION_REQUEST_TYPE_OPTIONS,
-  VACATION_STATUS_OPTIONS,
-  VACATION_UI_TEXT,
+  DAY_OFF_REQUEST_TYPE_OPTIONS,
+  DAY_OFF_STATUS_OPTIONS,
+  DAY_OFF_UI_TEXT,
 } from "../constants";
 
-export interface VacationActionBarProps {
+export interface DayOffActionBarProps {
   totalCount: number;
   selectedCount?: number;
-  filters: VacationRequestFilter;
+  filters: DayOffRequestFilter;
   onDelete?: () => void;
   loading?: boolean;
 }
 
-const VacationActionBar: React.FC<VacationActionBarProps> = ({
+const DayOffActionBar: React.FC<DayOffActionBarProps> = ({
   totalCount,
   selectedCount = 0,
   filters,
@@ -47,14 +47,14 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
         {/* 필터 드롭다운들 */}
         <div className="flex items-center gap-2">
           <URLDropdown
-            options={VACATION_REQUEST_TYPE_OPTIONS}
+            options={DAY_OFF_REQUEST_TYPE_OPTIONS}
             value={filters.request_type || ""}
             paramName="request_type"
             className="w-[106px]"
             ariaLabel="신청구분 필터"
           />
           <URLDropdown
-            options={VACATION_STATUS_OPTIONS}
+            options={DAY_OFF_STATUS_OPTIONS}
             value={filters.status || ""}
             paramName="status"
             className="w-[106px]"
@@ -63,7 +63,7 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
         </div>
 
         {/* 검색 필드 */}
-        <SearchWithButton placeholder={VACATION_UI_TEXT.SEARCH_PLACEHOLDER} />
+        <SearchWithButton placeholder={DAY_OFF_UI_TEXT.SEARCH_PLACEHOLDER} />
 
         {/* 버튼 그룹 */}
         {onDelete && (
@@ -76,7 +76,7 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
               className="w-24"
               aria-label={`선택된 ${selectedCount}개 항목 삭제`}
             >
-              {VACATION_UI_TEXT.DELETE_BUTTON}
+              {DAY_OFF_UI_TEXT.DELETE_BUTTON}
             </Button>
           </div>
         )}
@@ -85,4 +85,4 @@ const VacationActionBar: React.FC<VacationActionBarProps> = ({
   );
 };
 
-export default VacationActionBar;
+export default DayOffActionBar;
