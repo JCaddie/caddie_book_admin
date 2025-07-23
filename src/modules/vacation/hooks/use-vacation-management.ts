@@ -1,18 +1,43 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { VacationRequest, VacationRequestFilter } from "../types";
-import { getVacationRequests } from "../utils";
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  VacationRequest,
+  VacationRequestFilter,
+  VacationRequestType,
+  VacationSearchParams,
+  VacationStatus,
+} from "../types";
+import {
+  approveVacationRequest,
+  getVacationRequests,
+  rejectVacationRequest,
+} from "../api/vacation-api";
 import { VACATION_CONSTANTS, VACATION_ERROR_MESSAGES } from "../constants";
-import { usePagination } from "@/shared/hooks";
 
 export const useVacationManagement = () => {
+  const searchParams = useSearchParams();
+
   // 상태 관리
   const [data, setData] = useState<VacationRequest[]>([]);
-  const [filters, setFilters] = useState<VacationRequestFilter>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // 페이지네이션 상태
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [filteredCount, setFilteredCount] = useState(0);
+
+  // URL 파라미터에서 현재 페이지와 필터 가져오기
+  const currentPage = Number(searchParams.get("page") || 1);
+  const currentFilters: VacationRequestFilter = {
+    request_type:
+      (searchParams.get("request_type") as VacationRequestType) || "",
+    status: (searchParams.get("status") as VacationStatus) || "",
+    searchTerm: searchParams.get("search") || "",
+  };
 
   // 초기 데이터 로드
   const loadData = useCallback(async () => {
@@ -20,138 +45,85 @@ export const useVacationManagement = () => {
     setError(null);
 
     try {
-      // 실제 환경에서는 API 호출
-      const result = await Promise.resolve(getVacationRequests());
-      setData(result);
+      const params: VacationSearchParams = {
+        page: currentPage,
+        page_size: VACATION_CONSTANTS.PAGE_SIZE,
+      };
+
+      if (currentFilters.request_type) {
+        params.request_type =
+          currentFilters.request_type as VacationRequestType;
+      }
+
+      if (currentFilters.status) {
+        params.status = currentFilters.status as VacationStatus;
+      }
+
+      if (currentFilters.searchTerm) {
+        params.search = currentFilters.searchTerm;
+      }
+
+      const response = await getVacationRequests(params);
+      setData(response.results);
+      setTotalPages(response.total_pages);
+      setTotalCount(response.count);
+      setFilteredCount(response.count); // API에서 필터링된 결과를 받으므로 count 사용
     } catch (err) {
       setError(VACATION_ERROR_MESSAGES.FETCH_FAILED);
       console.error("Failed to load vacation data:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [
+    currentPage,
+    currentFilters.request_type,
+    currentFilters.status,
+    currentFilters.searchTerm,
+  ]);
 
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // 필터링된 데이터
-  const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      // 신청구분 필터
-      if (
-        filters.requestType &&
-        filters.requestType.trim() !== "" &&
-        item.requestType !== filters.requestType
-      ) {
-        return false;
-      }
-
-      // 상태 필터
-      if (
-        filters.status &&
-        filters.status.trim() !== "" &&
-        item.status !== filters.status
-      ) {
-        return false;
-      }
-
-      // 검색어 필터
-      if (filters.searchTerm && filters.searchTerm.trim() !== "") {
-        const searchTerm = filters.searchTerm.toLowerCase().trim();
-        return (
-          item.caddieName.toLowerCase().includes(searchTerm) ||
-          item.reason.toLowerCase().includes(searchTerm) ||
-          item.phone.includes(searchTerm)
-        );
-      }
-
-      return true;
-    });
-  }, [data, filters]);
-
-  // 페이지네이션
-  const { currentPage, totalPages, currentData, handlePageChange } =
-    usePagination({
-      data: filteredData,
-      itemsPerPage: VACATION_CONSTANTS.PAGE_SIZE,
-    });
-
   // 승인 처리
-  const handleApprove = useCallback(async (id: string) => {
-    setActionLoading(id);
-    setError(null);
+  const handleApprove = useCallback(
+    async (id: string) => {
+      setActionLoading(id);
+      setError(null);
 
-    try {
-      // 실제 환경에서는 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 500)); // 시뮬레이션
-
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                status: "승인",
-                approver: "관리자",
-                approvalDate: new Date()
-                  .toISOString()
-                  .split("T")[0]
-                  .replace(/-/g, "."),
-                updatedAt: new Date().toISOString(),
-              }
-            : item
-        )
-      );
-    } catch (err) {
-      setError(VACATION_ERROR_MESSAGES.APPROVE_FAILED);
-      console.error("Failed to approve vacation request:", err);
-    } finally {
-      setActionLoading(null);
-    }
-  }, []);
+      try {
+        await approveVacationRequest(id);
+        // 데이터 새로고침
+        await loadData();
+      } catch (err) {
+        setError(VACATION_ERROR_MESSAGES.APPROVE_FAILED);
+        console.error("Failed to approve vacation request:", err);
+      } finally {
+        setActionLoading(null);
+      }
+    },
+    [loadData]
+  );
 
   // 반려 처리
-  const handleReject = useCallback(async (id: string) => {
-    setActionLoading(id);
-    setError(null);
+  const handleReject = useCallback(
+    async (id: string) => {
+      setActionLoading(id);
+      setError(null);
 
-    try {
-      // 실제 환경에서는 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 500)); // 시뮬레이션
-
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                status: "반려",
-                approver: "관리자",
-                approvalDate: new Date()
-                  .toISOString()
-                  .split("T")[0]
-                  .replace(/-/g, "."),
-                updatedAt: new Date().toISOString(),
-              }
-            : item
-        )
-      );
-    } catch (err) {
-      setError(VACATION_ERROR_MESSAGES.REJECT_FAILED);
-      console.error("Failed to reject vacation request:", err);
-    } finally {
-      setActionLoading(null);
-    }
-  }, []);
-
-  // 필터 변경
-  const handleFilterChange = useCallback(
-    (newFilters: VacationRequestFilter) => {
-      setFilters(newFilters);
-      // 필터 변경 시 첫 페이지로 이동
-      handlePageChange(1);
+      try {
+        await rejectVacationRequest(id);
+        // 데이터 새로고침
+        await loadData();
+      } catch (err) {
+        setError(VACATION_ERROR_MESSAGES.REJECT_FAILED);
+        console.error("Failed to reject vacation request:", err);
+      } finally {
+        setActionLoading(null);
+      }
     },
-    [handlePageChange]
+    [loadData]
   );
 
   // 에러 초기화
@@ -166,19 +138,14 @@ export const useVacationManagement = () => {
 
   return {
     // 데이터
-    data: currentData,
-    filteredData,
-    totalCount: data.length,
-    filteredCount: filteredData.length,
-
-    // 페이지네이션
-    currentPage,
+    data,
+    totalCount,
+    filteredCount,
     totalPages,
-    handlePageChange,
+    currentPage,
 
     // 필터
-    filters,
-    handleFilterChange,
+    filters: currentFilters,
 
     // 액션
     handleApprove,

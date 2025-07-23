@@ -2,9 +2,11 @@
 // 기본 타입 정의
 // ================================
 
-export type VacationRequestType = "휴무" | "대기";
+export type VacationRequestType = "day_off" | "waiting";
+export type VacationRequestTypeDisplay = "휴무" | "대기";
 
-export type VacationStatus = "검토 중" | "승인" | "반려";
+export type VacationStatus = "reviewing" | "approved" | "rejected";
+export type VacationStatusDisplay = "검토 중" | "승인" | "반려";
 
 // ================================
 // 휴무 신청 관련 타입
@@ -12,18 +14,19 @@ export type VacationStatus = "검토 중" | "승인" | "반려";
 
 export interface VacationRequest extends Record<string, unknown> {
   id: string;
-  caddieId: string;
-  caddieName: string;
-  requestType: VacationRequestType;
+  request_type: VacationRequestType;
+  request_type_display: VacationRequestTypeDisplay;
+  caddie: string;
+  caddie_name: string;
   reason: string;
-  phone: string;
+  golf_course: number;
+  golf_course_name: string;
   status: VacationStatus;
-  approver?: string;
-  requestDate: string;
-  approvalDate?: string;
-  golfCourse: string; // 소속 골프장 정보 추가
-  createdAt: string;
-  updatedAt: string;
+  status_display: VacationStatusDisplay;
+  approved_by: string | null;
+  approved_by_name: string | null;
+  date: string;
+  created_at: string;
   isEmpty?: boolean; // BaseTable 자동 패딩을 위한 속성
 }
 
@@ -32,15 +35,15 @@ export interface VacationRequest extends Record<string, unknown> {
 // ================================
 
 export interface VacationRequestFilter {
-  requestType?: VacationRequestType | "";
+  request_type?: VacationRequestType | "";
   status?: VacationStatus | "";
   searchTerm?: string;
 }
 
 export interface VacationSearchParams {
   page?: number;
-  limit?: number;
-  requestType?: VacationRequestType;
+  page_size?: number;
+  request_type?: VacationRequestType;
   status?: VacationStatus;
   search?: string;
 }
@@ -69,11 +72,13 @@ export interface VacationRequestUpdateData {
 // ================================
 
 export interface VacationRequestListResponse {
-  data: VacationRequest[];
-  total: number;
+  success: boolean;
+  message: string;
+  count: number;
   page: number;
-  limit: number;
-  totalPages: number;
+  page_size: number;
+  total_pages: number;
+  results: VacationRequest[];
 }
 
 export interface VacationRequestStatsResponse {
