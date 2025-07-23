@@ -15,6 +15,8 @@ interface GroupManagementAreaProps {
     memberCount: number;
     caddies: CaddieData[];
   };
+  onEditGroup?: (groupId: string, newName: string) => void;
+  onDeleteGroup?: (groupId: string) => void;
 }
 
 export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
@@ -25,6 +27,8 @@ export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
   draggedCaddie,
   onCreateGroup,
   transformGroupToGroupSection,
+  onEditGroup,
+  onDeleteGroup,
 }) => {
   if (groups.length === 0) {
     return <EmptyGroupsState onCreateGroup={onCreateGroup} />;
@@ -59,6 +63,8 @@ export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
                   onDragEnd={onDragEnd}
                   onDrop={onDrop}
                   draggedCaddie={draggedCaddie}
+                  onEditGroup={onEditGroup}
+                  onDeleteGroup={onDeleteGroup}
                 />
               </div>
             ))}

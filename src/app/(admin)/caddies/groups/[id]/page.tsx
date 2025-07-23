@@ -23,8 +23,10 @@ import {
 import { CaddieData } from "@/modules/work/types";
 import {
   assignPrimaryGroup,
+  deleteGroup,
   removePrimaryGroup,
   reorderPrimaryGroup,
+  updateGroup,
 } from "@/modules/group/api/group-api";
 
 interface GroupManagementPageProps {
@@ -154,6 +156,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   const handleGroupCreateSuccess = async () => {
     // 그룹 생성 완료 후 데이터 다시 로드
     await loadData();
+    await loadCaddieAssignments();
   };
 
   // 드래그 앤 드롭 핸들러들 (API 연동)
@@ -256,6 +259,36 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     }
   };
 
+  // 그룹 수정 핸들러
+  const handleEditGroup = async (groupId: string, newName: string) => {
+    try {
+      console.log("그룹 수정 요청:", { groupId, newName });
+      await updateGroup(parseInt(groupId), { name: newName });
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("그룹 수정 실패:", error);
+      alert("그룹명 수정에 실패했습니다.");
+    }
+  };
+
+  // 그룹 삭제 핸들러
+  const handleDeleteGroup = async (groupId: string) => {
+    try {
+      console.log("그룹 삭제 요청:", { groupId });
+      await deleteGroup(parseInt(groupId));
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("그룹 삭제 실패:", error);
+      alert("그룹 삭제에 실패했습니다.");
+    }
+  };
+
   // 로딩 상태
   if (loading) {
     return (
@@ -332,6 +365,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             draggedCaddie={draggedCaddie}
             onCreateGroup={openGroupCreateModal}
             transformGroupToGroupSection={transformGroupToGroupSection}
+            onEditGroup={handleEditGroup}
+            onDeleteGroup={handleDeleteGroup}
           />
         </div>
 

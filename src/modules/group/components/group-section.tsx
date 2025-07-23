@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { MoreVertical } from "lucide-react";
 import { CaddieCard } from "@/modules/work/components";
 import { CaddieGroupManagement } from "../types";
 import { CaddieData } from "@/modules/work/types";
+import { GroupMenu } from "./group-menu";
 
 interface GroupSectionProps {
   group: CaddieGroupManagement;
@@ -12,6 +12,8 @@ interface GroupSectionProps {
   onDragEnd: () => void;
   onDrop: (targetGroupId: string, insertIndex?: number) => void;
   draggedCaddie: CaddieData | null;
+  onEditGroup?: (groupId: string, newName: string) => void;
+  onDeleteGroup?: (groupId: string) => void;
 }
 
 const GroupSection: React.FC<GroupSectionProps> = ({
@@ -20,6 +22,8 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   onDragEnd,
   onDrop,
   draggedCaddie,
+  onEditGroup,
+  onDeleteGroup,
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -105,9 +109,16 @@ const GroupSection: React.FC<GroupSectionProps> = ({
             {group.memberCount}
           </div>
         </div>
-        <button className="p-1">
-          <MoreVertical className="w-6 h-6 text-white" />
-        </button>
+        {onEditGroup && onDeleteGroup ? (
+          <GroupMenu
+            groupId={group.id}
+            groupName={group.name}
+            onEditGroup={onEditGroup}
+            onDeleteGroup={onDeleteGroup}
+          />
+        ) : (
+          <div className="w-6 h-6" />
+        )}
       </div>
 
       {/* 캐디 카드들 */}
