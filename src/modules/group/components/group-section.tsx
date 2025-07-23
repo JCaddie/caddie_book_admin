@@ -63,13 +63,17 @@ const GroupSection: React.FC<GroupSectionProps> = ({
       // 같은 그룹 내 순서 변경
       if (dragOverIndex !== null) {
         onDrop(group.id, dragOverIndex);
+      } else {
+        // 마지막 위치로 드롭 (dragOverIndex가 null이면 마지막)
+        onDrop(group.id, group.caddies.length);
       }
     } else {
       // 다른 그룹으로 이동
       if (dragOverIndex !== null) {
         onDrop(group.id, dragOverIndex);
       } else {
-        onDrop(group.id);
+        // 마지막 위치로 드롭
+        onDrop(group.id, group.caddies.length);
       }
     }
   };
@@ -107,7 +111,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
       </div>
 
       {/* 캐디 카드들 */}
-      <div className="bg-transparent p-4 flex flex-col gap-2 min-h-[100px] rounded-b-md">
+      <div className="bg-transparent p-4 flex flex-col gap-2 h-[824px] overflow-y-auto rounded-b-md">
         {group.caddies
           .sort((a, b) => (a.order || 1) - (b.order || 1))
           .map((caddie, index) => (
@@ -144,7 +148,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
 
         {/* 빈 그룹일 때 드롭 영역 */}
         {group.caddies.length === 0 && (
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-gray-500 py-8 h-[824px] flex items-center justify-center">
             캐디를 여기로 드래그하세요
           </div>
         )}
