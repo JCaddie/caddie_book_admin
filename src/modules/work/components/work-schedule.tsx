@@ -16,24 +16,28 @@ interface WorkScheduleProps {
   fields: Field[];
   timeSlots: TimeSlots;
   personnelStats: PersonnelStats;
-  onResetClick: () => void;
   draggedCaddie?: CaddieData | null;
   onDragStart?: (caddie: CaddieData) => void;
   onDragEnd?: () => void;
   hideHeader?: boolean;
   isFullWidth?: boolean;
+  onRoundingSettingsClick?: () => void;
+  onFillClick?: () => void;
+  onResetClick?: () => void;
 }
 
 export default function WorkSchedule({
   fields,
   timeSlots,
   personnelStats,
-  onResetClick,
   draggedCaddie: externalDraggedCaddie,
   onDragStart: externalOnDragStart,
   onDragEnd: externalOnDragEnd,
   hideHeader = false,
   isFullWidth = false,
+  onRoundingSettingsClick,
+  onFillClick,
+  onResetClick,
 }: WorkScheduleProps) {
   // 캐디 위치 상태 관리
   const [caddiePositions, setCaddiePositions] = useState<
@@ -217,13 +221,6 @@ export default function WorkSchedule({
     void part;
   };
 
-  // 리셋 핸들러
-  const handleReset = () => {
-    setCaddiePositions(new Map());
-    setExternalCaddies(new Map()); // 외부 캐디들도 초기화
-    onResetClick();
-  };
-
   // 캐디 제거 핸들러
   const handleRemove = (
     fieldIndex: number,
@@ -285,9 +282,11 @@ export default function WorkSchedule({
       fields={fields}
       timeSlots={timeSlots}
       personnelStats={personnelStats}
-      onResetClick={handleReset}
+      onResetClick={onResetClick || (() => {})}
       hideHeader={hideHeader}
       isFullWidth={isFullWidth}
+      onRoundingSettingsClick={onRoundingSettingsClick}
+      onFillClick={onFillClick}
       renderCell={renderCell}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
