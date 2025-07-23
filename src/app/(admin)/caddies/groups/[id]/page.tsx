@@ -76,7 +76,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   params,
 }) => {
   const { id } = React.use(params);
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
   // "me"인 경우 현재 사용자의 골프장 ID 사용, 아니면 전달받은 ID 사용
   const isOwnGolfCourse = id === "me";
@@ -145,6 +145,12 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       if (isOwnGolfCourse) {
         // 현재 사용자의 골프장 ID를 사용
         golfCourseId = user?.golfCourseId;
+
+        // golfCourseId가 없으면 에러 처리
+        if (!golfCourseId) {
+          setCaddieError("현재 사용자에게 할당된 골프장이 없습니다.");
+          return;
+        }
       } else {
         // 전달받은 ID 사용
         golfCourseId = id;
@@ -162,9 +168,21 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
   // 초기 데이터 로드
   useEffect(() => {
-    loadData();
-    loadCaddieAssignments();
-  }, [id, loadData, loadCaddieAssignments]);
+    // 인증 로딩 중이면 대기
+    if (authLoading) return;
+
+    // me 파라미터일 때는 사용자 정보가 로드된 후에 데이터 로드
+    if (isOwnGolfCourse) {
+      if (user) {
+        loadData();
+        loadCaddieAssignments();
+      }
+    } else {
+      // 일반 ID일 때는 즉시 로드
+      loadData();
+      loadCaddieAssignments();
+    }
+  }, [id, loadData, loadCaddieAssignments, isOwnGolfCourse, user, authLoading]);
 
   // 모달 제어 함수들
   const openGroupCreateModal = () => setIsGroupCreateModalOpen(true);
@@ -307,12 +325,16 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   };
 
   // 로딩 상태
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="bg-white rounded-xl p-8 space-y-6">
         <AdminPageHeader title={pageTitle} />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">데이터를 불러오는 중...</div>
+          <div className="text-gray-500">
+            {authLoading
+              ? "사용자 정보를 불러오는 중..."
+              : "데이터를 불러오는 중..."}
+          </div>
         </div>
       </div>
     );
