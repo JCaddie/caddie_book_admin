@@ -90,19 +90,73 @@ export interface UseUserManagementReturn {
   refetch?: () => void;
 }
 
-// 사용자 배정 API 응답 타입
-export interface SpecialGroup {
+// 새로운 캐디 그룹 배정 개요 API 응답 타입
+export interface GolfCourseInfo {
+  id: string;
+  name: string;
+}
+
+export interface GroupMember {
+  id: string;
+  name: string;
+  order: number;
+  is_team_leader: boolean;
+}
+
+export interface Group {
   id: number;
+  name: string;
+  order: number;
+  member_count: number;
+  members: GroupMember[];
+}
+
+export interface UnassignedCaddie {
+  id: string;
+  name: string;
+  golf_course: string;
+}
+
+export interface AssignmentSummary {
+  total_groups: number;
+  total_assigned_caddies: number;
+  total_unassigned_caddies: number;
+}
+
+export interface CaddieAssignmentOverviewResponse {
+  golf_course: GolfCourseInfo;
+  groups: Group[];
+  unassigned_caddies: UnassignedCaddie[];
+  summary: AssignmentSummary;
+}
+
+// 기존 타입들은 호환성을 위해 유지하되 deprecated로 표시
+/** @deprecated 새로운 API 구조로 변경됨 */
+export interface PrimaryGroup {
+  id: string;
+  name: string;
+  group_type_name: string;
+  description: string;
+}
+
+/** @deprecated 새로운 API 구조로 변경됨 */
+export interface SpecialGroup {
+  id: string;
   name: string;
   order: number;
 }
 
+/** @deprecated 새로운 API 구조로 변경됨 */
 export interface UserAssignment {
   id: string;
   name: string;
-  special_groups: SpecialGroup[];
+  primary_group: PrimaryGroup | null;
+  primary_group_order: number | null;
+  special_group: SpecialGroup | null;
+  special_group_order: number | null;
 }
 
+/** @deprecated 새로운 API 구조로 변경됨 */
 export interface UserAssignmentResponse {
   count: number;
   next: string | null;

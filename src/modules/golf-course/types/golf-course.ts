@@ -103,6 +103,7 @@ export interface GroupMember {
   id: string;
   name: string;
   is_team_leader: boolean;
+  order?: number; // 그룹 내 순서
 }
 
 export interface Group {
@@ -128,7 +129,5 @@ export interface CaddieSummary {
 export interface GolfCourseGroupDetailResponse {
   golf_course: GolfCourseGroupDetail;
   group_summary: GroupSummary;
-  primary_groups: Group[];
-  special_groups: Group[];
   caddie_summary: CaddieSummary;
 }
