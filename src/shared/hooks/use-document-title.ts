@@ -42,8 +42,8 @@ export const PAGE_TITLES = {
   // 근무 관리
   WORKS: "근무 일정",
   WORK_DETAIL: "근무 상세",
-  VACATION: "휴무관리",
-  VACATION_DETAIL: "휴무 상세",
+  DAY_OFF: "휴무관리",
+  DAY_OFF_DETAIL: "휴무 상세",
 
   // 필드 관리
   FIELDS: "필드",
