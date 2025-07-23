@@ -45,11 +45,15 @@ export const getUserDetail = async (
 };
 
 /**
- * 캐디 그룹 배정 개요 조회 (새로운 API)
+ * @deprecated 그룹 관련 API로 이동됨 - getGroupAssignmentOverview 사용
  */
 export const getCaddieAssignmentOverview = async (
   golfCourseId?: string
 ): Promise<CaddieAssignmentOverviewResponse> => {
+  console.warn(
+    "getCaddieAssignmentOverview is deprecated. Use getGroupAssignmentOverview from group-api instead."
+  );
+
   const searchParams = new URLSearchParams();
 
   if (golfCourseId) {
@@ -57,7 +61,7 @@ export const getCaddieAssignmentOverview = async (
   }
 
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/caddie-groups/assignments/overview/${
+  const endpoint = `/api/v1/caddie-groups/assignment-overview/overview/${
     queryString ? `?${queryString}` : ""
   }`;
 

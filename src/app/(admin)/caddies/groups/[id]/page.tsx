@@ -13,7 +13,6 @@ import { UnassignedCaddieList } from "@/modules/group/components/unassigned-cadd
 import { GroupManagementArea } from "@/modules/group/components/group-management-area";
 import { getGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
 import { GolfCourseGroupDetailResponse } from "@/modules/golf-course/types/golf-course";
-import { getCaddieAssignmentOverview } from "@/modules/user/api/user-api";
 import {
   CaddieAssignmentOverviewResponse,
   Group,
@@ -24,6 +23,7 @@ import { CaddieData } from "@/modules/work/types";
 import {
   assignPrimaryGroup,
   deleteGroup,
+  getGroupAssignmentOverview,
   removePrimaryGroup,
   reorderPrimaryGroup,
   updateGroup,
@@ -135,7 +135,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     try {
       // MASTER 권한일 때는 golf_course_id 파라미터 전달
       const golfCourseId = isOwnGolfCourse ? undefined : id;
-      const response = await getCaddieAssignmentOverview(golfCourseId);
+      const response = await getGroupAssignmentOverview(golfCourseId);
       setAssignmentData(response);
     } catch (err) {
       console.error("캐디 배정 정보 조회 실패:", err);
