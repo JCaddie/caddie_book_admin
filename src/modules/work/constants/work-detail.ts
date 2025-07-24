@@ -1,4 +1,10 @@
-import { CaddieData, Field, PersonnelStats, TimeSlots } from "../types";
+import {
+  CaddieData,
+  Field,
+  PersonnelStats,
+  TimeSlots,
+  RoundingSettings,
+} from "../types";
 
 // 필드별 데이터 (4개로 확장)
 export const FIELDS: Field[] = [
@@ -32,7 +38,7 @@ export const FILTER_OPTIONS = {
   BADGE: ["전체", "하우스", "2•3부", "3부", "마샬", "새싹", "실버"],
 };
 
-// 시간 슬롯 생성 함수
+// 기본 시간 슬롯 생성 함수 (하드코딩)
 export const generateTimeSlots = (): TimeSlots => {
   return {
     part1: Array.from({ length: 13 }, (_, i) => {
@@ -51,6 +57,31 @@ export const generateTimeSlots = (): TimeSlots => {
       return `${hour.toString().padStart(2, "0")}:${minute}`;
     }),
   };
+};
+
+// 라운딩 설정 기반 시간 슬롯 생성 함수
+export const generateTimeSlotsFromSettings = (
+  settings: RoundingSettings
+): TimeSlots => {
+  const result: TimeSlots = {} as TimeSlots;
+
+  settings.roundTimes.forEach((round, index) => {
+    const partKey = `part${index + 1}` as keyof TimeSlots;
+    const slots: string[] = [];
+
+    const currentTime = new Date(`2000-01-01T${round.startTime}`);
+    const endTime = new Date(`2000-01-01T${round.endTime}`);
+
+    let tempTime = new Date(currentTime);
+    while (tempTime < endTime) {
+      slots.push(tempTime.toTimeString().slice(0, 5));
+      tempTime.setMinutes(tempTime.getMinutes() + settings.timeUnit);
+    }
+
+    result[partKey] = slots;
+  });
+
+  return result;
 };
 
 // 샘플 캐디 데이터 (다양한 상태 포함)

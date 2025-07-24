@@ -18,61 +18,75 @@ export interface Work extends Record<string, unknown> {
   isEmpty?: boolean;
 }
 
-// 근무 스케줄 필터 타입
-export interface WorkFilter {
-  search: string;
-  status: string;
-  dateRange?: {
-    start: string;
-    end: string;
-  };
-}
-
-// 근무 스케줄 생성/수정 데이터 타입
-export interface WorkFormData {
-  date: string;
+// 근무표 상세 타입
+export interface WorkSchedule {
+  id: string;
+  golfCourse: string;
   golfCourseId: string;
+  scheduleType: string;
+  date: string;
+  name: string;
   totalStaff: number;
   availableStaff: number;
-  notes?: string;
+  status: string;
+  notes: string;
+  createdBy: string;
+  createdByName: string;
+  partsCount: number;
+  parts: WorkPart[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-// ================================
-// 페이지 및 컴포넌트 Props 타입
-// ================================
-
-// 근무 상세 페이지 Props
-export interface WorkDetailPageProps {
-  params: Promise<{
-    id: string; // 골프장 ID
-  }>;
-  searchParams: Promise<{
-    date?: string;
-  }>;
+// 근무 부 타입
+export interface WorkPart {
+  id: string;
+  scheduleId: string;
+  partNumber: number;
+  startTime: string;
+  endTime: string;
+  timeInterval: number;
+  isActive: boolean;
+  timeSlotsCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 캐디 카드 컴포넌트 Props
-export interface CaddieCardProps {
-  caddie?: {
-    id: number;
-    name: string;
-    group: number;
-    badge: string;
-    status: string;
-    specialBadge?: string;
-    groupName?: string;
-  };
-  isEmpty?: boolean;
-  emptyText?: string;
-  onDragStart?: (caddie: CaddieData) => void;
-  onDragEnd?: (caddie: CaddieData) => void;
-  isDragging?: boolean;
-  draggable?: boolean; // 드래그 가능 여부
+// 시간 슬롯 타입
+export interface WorkTimeSlot {
+  id: string;
+  partId: string;
+  partNumber: number;
+  scheduleName: string;
+  golfCourseName: string;
+  startTime: string;
+  endTime: string;
+  positionIndex: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// ================================
-// 도메인 데이터 타입
-// ================================
+// 근무 슬롯 타입
+export interface WorkSlot {
+  id: string;
+  timeSlotId: string;
+  timeSlotStartTime: string;
+  timeSlotEndTime: string;
+  partNumber: number;
+  fieldId: string;
+  fieldName: string;
+  caddieId: string | null;
+  caddieName: string | null;
+  specialGroupId: string | null;
+  specialGroupName: string | null;
+  assignedById: string | null;
+  assignedByName: string | null;
+  assignedAt: string | null;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // 캐디 데이터 타입
 export interface CaddieData {
@@ -82,23 +96,18 @@ export interface CaddieData {
   badge: string;
   status: string;
   specialBadge?: string;
-  originalId?: string; // 원본 UUID (드래그 앤 드롭용)
-  order?: number; // 그룹 내 순서
-  groupName?: string; // 그룹 이름 (primary_group.name)
-  currentIndex?: number; // 드래그 시작 시 현재 위치 (순서 변경용)
 }
 
-// 필드 데이터 타입
+// 필드 타입
 export interface Field {
   id: number;
   name: string;
 }
 
-// 인원 필터 타입
-export interface PersonnelFilter {
-  status: string;
-  group: string;
-  badge: string;
+// 인원 통계 타입
+export interface PersonnelStats {
+  total: number;
+  available: number;
 }
 
 // 시간대 슬롯 타입
@@ -108,10 +117,11 @@ export interface TimeSlots {
   part3: string[];
 }
 
-// 인원 통계 타입
-export interface PersonnelStats {
-  total: number;
-  available: number;
+// 필터 타입
+export interface WorkFilters {
+  status: string;
+  group: string;
+  badge: string;
 }
 
 // ================================
@@ -127,4 +137,14 @@ export interface RoundingSettings {
     startTime: string;
     endTime: string;
   }>;
+}
+
+// ================================
+// 페이지 Props 타입
+// ================================
+
+// 근무 상세 페이지 Props
+export interface WorkDetailPageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ date?: string }>;
 }

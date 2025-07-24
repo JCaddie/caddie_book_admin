@@ -2,11 +2,14 @@
 
 import { notFound } from "next/navigation";
 import { use, useState } from "react";
-import { useWorkDetail } from "@/modules/work/hooks/use-work-detail";
+import {
+  useRoundingSettings,
+  useWorkDetail,
+  useWorkSchedule,
+} from "@/modules/work/hooks";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import { upsertRoundingSettings } from "@/modules/work/api";
 import {
   CaddieData,
   RoundingSettings,
@@ -15,6 +18,7 @@ import {
 import {
   FIELDS,
   generateTimeSlots,
+  generateTimeSlotsFromSettings,
   PERSONNEL_STATS,
 } from "@/modules/work/constants/work-detail";
 import DateNavigation from "@/modules/work/components/date-navigation";
@@ -36,13 +40,6 @@ export default function WorkDetailPage({
   // 라운딩 설정 모달 상태
   const [isRoundingSettingsModalOpen, setIsRoundingSettingsModalOpen] =
     useState(false);
-  const [isRoundingSettingsLoading, setIsRoundingSettingsLoading] =
-    useState(false);
-  const [roundingSettings, setRoundingSettings] = useState<RoundingSettings>({
-    numberOfRounds: 1,
-    timeUnit: 10,
-    roundTimes: [{ round: 1, startTime: "06:00", endTime: "08:00" }],
-  });
 
   // 커스텀 훅들 사용
   const { currentDate, handleDateChange } = useDateNavigation(
@@ -55,6 +52,31 @@ export default function WorkDetailPage({
 
   // golfCourseId로 work 데이터 조회
   const { work, isLoading, error } = useWorkDetail(golfCourseId);
+
+  // 라운딩 설정 관리
+  const {
+    settings: roundingSettings,
+    isLoading: isRoundingSettingsLoading,
+    fetchSettings,
+    saveSettings,
+  } = useRoundingSettings({ golfCourseId });
+
+  // 근무표 관리
+  const {
+    schedule,
+    timeSlots: apiTimeSlots,
+    workSlots,
+    isLoading: isScheduleLoading,
+    error: scheduleError,
+    fetchSchedule,
+    createSchedule,
+    assignCaddie,
+    unassignCaddie,
+    getCaddieAtPosition,
+  } = useWorkSchedule({
+    golfCourseId,
+    date: currentDate.toISOString().split("T")[0],
+  });
 
   // 로딩 중인 경우
   if (isLoading) {
@@ -86,8 +108,10 @@ export default function WorkDetailPage({
     notFound();
   }
 
-  // 시간 슬롯 생성
-  const timeSlots = generateTimeSlots();
+  // 시간 슬롯 생성 (라운딩 설정 기반 또는 기본값)
+  const timeSlots = roundingSettings
+    ? generateTimeSlotsFromSettings(roundingSettings)
+    : generateTimeSlots();
 
   // 공통 드래그 이벤트 핸들러
   const handleDragStart = (caddie: CaddieData) => {
@@ -99,28 +123,31 @@ export default function WorkDetailPage({
   };
 
   // 라운딩 설정 모달 핸들러
-  const handleOpenRoundingSettings = () => {
+  const handleOpenRoundingSettings = async () => {
     setIsRoundingSettingsModalOpen(true);
+    // 모달이 열릴 때 기존 설정 데이터를 불러옴
+    try {
+      await fetchSettings();
+    } catch (error) {
+      console.warn("라운딩 설정 조회 실패:", error);
+    }
   };
 
   const handleCloseRoundingSettings = () => {
     setIsRoundingSettingsModalOpen(false);
   };
 
-  const handleSaveRoundingSettings = async (settings: RoundingSettings) => {
+  const handleSaveRoundingSettings = async (
+    settings: RoundingSettings,
+    golfCourseName?: string
+  ) => {
     try {
-      setIsRoundingSettingsLoading(true);
-      // work 데이터에서 실제 golfCourseId 사용
-      const actualGolfCourseId = work?.golfCourseId || golfCourseId;
-      await upsertRoundingSettings(actualGolfCourseId, settings);
-      setRoundingSettings(settings);
+      await saveSettings(settings, golfCourseName);
       setIsRoundingSettingsModalOpen(false);
       // TODO: 성공 메시지 표시
     } catch {
       // TODO: 에러 메시지 표시
       alert("라운딩 설정 저장에 실패했습니다.");
-    } finally {
-      setIsRoundingSettingsLoading(false);
     }
   };
 
@@ -184,8 +211,9 @@ export default function WorkDetailPage({
         isOpen={isRoundingSettingsModalOpen}
         onClose={handleCloseRoundingSettings}
         onSave={handleSaveRoundingSettings}
-        initialSettings={roundingSettings}
+        initialSettings={roundingSettings || undefined}
         isLoading={isRoundingSettingsLoading}
+        golfCourseName={work?.golfCourse}
       />
     </div>
   );
