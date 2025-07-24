@@ -25,8 +25,6 @@ const CartsPage: React.FC = () => {
     totalCount,
     realDataCount,
     totalPages,
-    filters,
-    updateSearchTerm,
     selectedGolfCourseId,
     golfCourseSearchTerm,
     handleGolfCourseChange,
@@ -87,8 +85,6 @@ const CartsPage: React.FC = () => {
       <CartActionBar
         totalCount={totalCount}
         selectedCount={selection.selectedRowKeys.length}
-        searchTerm={filters.searchTerm}
-        onSearchChange={updateSearchTerm}
         onDeleteSelected={deleteSelectedCarts}
         onCreateNew={handleCreateNew}
         isDeleting={isDeleting}

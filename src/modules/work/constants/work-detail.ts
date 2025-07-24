@@ -2,8 +2,8 @@ import {
   CaddieData,
   Field,
   PersonnelStats,
-  TimeSlots,
   RoundingSettings,
+  TimeSlots,
 } from "../types";
 
 // 필드별 데이터 (4개로 확장)
@@ -72,7 +72,7 @@ export const generateTimeSlotsFromSettings = (
     const currentTime = new Date(`2000-01-01T${round.startTime}`);
     const endTime = new Date(`2000-01-01T${round.endTime}`);
 
-    let tempTime = new Date(currentTime);
+    const tempTime = new Date(currentTime);
     while (tempTime < endTime) {
       slots.push(tempTime.toTimeString().slice(0, 5));
       tempTime.setMinutes(tempTime.getMinutes() + settings.timeUnit);

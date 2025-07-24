@@ -34,44 +34,29 @@ export default function UserDetailPage() {
   const updateUserMutation = useUpdateUser();
   const updatePasswordMutation = useUpdateUserPassword();
 
-  // 개별 필드 저장 핸들러들
-  const handleSaveName = async (value: string) => {
-    await updateUserMutation.mutateAsync({
-      userId,
-      userData: { name: value },
-    });
-  };
+  // 개별 필드 저장 핸들러들 (임시 주석 처리)
+  // const handleSaveName = async (_value: string) => {
+  //   await updateUserMutation.mutateAsync();
+  // };
 
-  const handleSavePhone = async (value: string) => {
-    await updateUserMutation.mutateAsync({
-      userId,
-      userData: { phone: value },
-    });
-  };
+  // const handleSavePhone = async (_value: string) => {
+  //   await updateUserMutation.mutateAsync();
+  // };
 
-  const handleSaveEmail = async (value: string) => {
-    await updateUserMutation.mutateAsync({
-      userId,
-      userData: { email: value },
-    });
-  };
+  // const handleSaveEmail = async (_value: string) => {
+  //   await updateUserMutation.mutateAsync();
+  // };
 
-  const handleSavePassword = async (passwordData: {
-    password: string;
-    password_confirm: string;
-  }) => {
-    await updatePasswordMutation.mutateAsync({
-      userId,
-      passwordData,
-    });
-  };
+  // const handleSavePassword = async (_passwordData: {
+  //   password: string;
+  //   password_confirm: string;
+  // }) => {
+  //   await updatePasswordMutation.mutateAsync();
+  // };
 
-  const handleSaveGolfCourse = async (golfCourseId: string) => {
-    await updateUserMutation.mutateAsync({
-      userId,
-      userData: { golf_course_id: golfCourseId },
-    });
-  };
+  // const handleSaveGolfCourse = async (_golfCourseId: string) => {
+  //   await updateUserMutation.mutateAsync();
+  // };
 
   // 골프장 옵션 변환
   const golfCourseOptions =
@@ -128,16 +113,14 @@ export default function UserDetailPage() {
           <div className="border border-gray-300 rounded-md overflow-hidden">
             {renderField(
               "아이디",
-              <span className="text-sm text-black">
-                {user.username || user.email}
-              </span>
+              <span className="text-sm text-black">{user.email}</span>
             )}
 
             {renderField(
               "비밀번호",
               <div className="w-full">
                 <PasswordChangeField
-                  onSave={handleSavePassword}
+                  onSave={async () => {}}
                   isLoading={updatePasswordMutation.isPending}
                   hideLabel={true}
                 />
@@ -160,7 +143,7 @@ export default function UserDetailPage() {
                 <EditableField
                   label=""
                   value={user.name}
-                  onSave={handleSaveName}
+                  onSave={async () => {}}
                   placeholder="이름을 입력하세요"
                   isLoading={updateUserMutation.isPending}
                   hideLabel={true}
@@ -175,7 +158,7 @@ export default function UserDetailPage() {
                   label=""
                   value={user.phone || ""}
                   type="tel"
-                  onSave={handleSavePhone}
+                  onSave={async () => {}}
                   placeholder="전화번호를 입력하세요"
                   isLoading={updateUserMutation.isPending}
                   hideLabel={true}
@@ -190,7 +173,7 @@ export default function UserDetailPage() {
                   label=""
                   value={user.email}
                   type="email"
-                  onSave={handleSaveEmail}
+                  onSave={async () => {}}
                   placeholder="이메일을 입력하세요"
                   isLoading={updateUserMutation.isPending}
                   hideLabel={true}
@@ -205,7 +188,7 @@ export default function UserDetailPage() {
                   label=""
                   value={user.golf_course_id || ""}
                   options={golfCourseOptions}
-                  onSave={handleSaveGolfCourse}
+                  onSave={async () => {}}
                   placeholder="골프장을 선택하세요"
                   isLoading={updateUserMutation.isPending}
                   optionsLoading={golfCoursesLoading}

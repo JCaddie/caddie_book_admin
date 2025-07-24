@@ -1,12 +1,16 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { use, useState, useEffect, useCallback } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { fetchWorkScheduleByDate } from "@/modules/work/api";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import { CaddieData, WorkDetailPageProps } from "@/modules/work/types";
+import {
+  CaddieData,
+  TimeSlots,
+  WorkDetailPageProps,
+} from "@/modules/work/types";
 import {
   FIELDS,
   generateTimeSlots,
@@ -72,8 +76,8 @@ export default function WorkDetailPage({
       endTime: string;
     }>;
   } | null>(null);
-  const [isScheduleLoading, setIsScheduleLoading] = useState(false);
-  const [scheduleError, setScheduleError] = useState<string | null>(null);
+  const [, setIsScheduleLoading] = useState(false);
+  const [, setScheduleError] = useState<string | null>(null);
 
   // 근무표 데이터 조회
   const fetchScheduleData = useCallback(async () => {
@@ -98,7 +102,7 @@ export default function WorkDetailPage({
     if (golfCourseId) {
       fetchScheduleData();
     }
-  }, [fetchScheduleData]);
+  }, [fetchScheduleData, golfCourseId]);
 
   // 로딩 중인 경우
   if (isLoading) {
@@ -133,13 +137,13 @@ export default function WorkDetailPage({
   // 시간 슬롯 생성 (API 데이터 기반 또는 기본값)
   const timeSlots = scheduleData?.scheduleParts.length
     ? (() => {
-        const result: any = {};
+        const result: TimeSlots = { part1: [], part2: [], part3: [] };
         scheduleData.scheduleParts.forEach((part) => {
-          const partKey = `part${part.partNumber}` as keyof typeof result;
+          const partKey = `part${part.partNumber}` as keyof TimeSlots;
           const slots: string[] = [];
           const currentTime = new Date(`2000-01-01T${part.startTime}`);
           const endTime = new Date(`2000-01-01T${part.endTime}`);
-          let tempTime = new Date(currentTime);
+          const tempTime = new Date(currentTime);
 
           while (tempTime < endTime) {
             slots.push(tempTime.toTimeString().slice(0, 5));

@@ -87,7 +87,7 @@ export const useUserManagement = (): UseUserManagementReturn => {
     if (selectedRowKeys.length === 0) return;
 
     try {
-      await deleteUsersMutation.mutateAsync(selectedRowKeys);
+      await deleteUsersMutation.mutateAsync();
 
       // 선택 상태 초기화
       setSelectedRowKeys([]);
@@ -106,28 +106,17 @@ export const useUserManagement = (): UseUserManagementReturn => {
     setIsCreateModalOpen(false);
   }, []);
 
-  const handleSubmitUser = React.useCallback(
-    async (userData: {
-      username: string;
-      password: string;
-      password_confirm: string;
-      name: string;
-      phone: string;
-      email: string;
-      golf_course_id: string;
-    }) => {
-      try {
-        await createUserMutation.mutateAsync(userData);
+  const handleSubmitUser = React.useCallback(async () => {
+    try {
+      await createUserMutation.mutateAsync();
 
-        // 모달 닫기
-        setIsCreateModalOpen(false);
-      } catch (error) {
-        console.error("사용자 생성 중 오류:", error);
-        // 에러 처리 (토스트 메시지 등)
-      }
-    },
-    [createUserMutation]
-  );
+      // 모달 닫기
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      console.error("사용자 생성 중 오류:", error);
+      // 에러 처리 (토스트 메시지 등)
+    }
+  }, [createUserMutation]);
 
   const handleRowClick = React.useCallback((user: User) => {
     if (user.isEmpty) return;

@@ -88,7 +88,7 @@ const AnnouncementActionBar: React.FC<AnnouncementActionBarProps> = memo(
             <div className="flex items-center gap-4">
               {/* 검색창 */}
               <SearchWithButton
-                placeholder={ANNOUNCEMENT_CONSTANTS.DEFAULT_SEARCH_PLACEHOLDER}
+                placeholder={ANNOUNCEMENT_CONSTANTS.FORM.PLACEHOLDERS.SEARCH}
               />
 
               {/* 버튼 그룹 */}

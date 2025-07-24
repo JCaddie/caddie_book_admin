@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { createField } from "../api/field-api";
-import { CreateFieldRequest, FieldData } from "../types";
+import { CreateFieldRequest, Field } from "../types";
 
 export const useCreateField = () => {
-  return useMutation<FieldData, Error, CreateFieldRequest>({
+  return useMutation<Field, Error, CreateFieldRequest>({
     mutationFn: createField,
   });
 };

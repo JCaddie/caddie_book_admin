@@ -5,6 +5,9 @@ import {
   UserDetailApiResponse,
 } from "../types/user";
 
+// 타입들을 다시 export
+export type { AdminsApiResponse, UserDetailApiResponse };
+
 /**
  * 관리자 목록 조회
  */

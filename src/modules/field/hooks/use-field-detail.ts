@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchFieldDetail } from "../api/field-api";
-import { FieldData } from "../types";
+import { Field } from "../types";
 
 export const useFieldDetail = (id: string) => {
-  return useQuery<FieldData, Error>({
+  return useQuery<Field, Error>({
     queryKey: ["field", id],
     queryFn: () => fetchFieldDetail(id),
     enabled: !!id,

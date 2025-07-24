@@ -8,7 +8,10 @@ import { User } from "../types";
 export const useUserDetail = (userId: string) => {
   return useQuery<User, Error>({
     queryKey: ["admin-detail", userId],
-    queryFn: () => getUserDetail(userId),
+    queryFn: async () => {
+      const response = await getUserDetail(userId);
+      return response.data;
+    },
     enabled: !!userId, // userId가 있을 때만 쿼리 실행
     staleTime: 5 * 60 * 1000, // 5분
     retry: 3,

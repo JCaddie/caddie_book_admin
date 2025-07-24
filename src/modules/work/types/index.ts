@@ -96,6 +96,23 @@ export interface CaddieData {
   badge: string;
   status: string;
   specialBadge?: string;
+  originalId?: string; // 원본 UUID string (API 연동용)
+  order?: number; // 그룹 내 순서
+  groupName?: string; // 그룹명
+  currentIndex?: number; // 현재 인덱스 (드래그 앤 드롭용)
+}
+
+// 캐디 카드 Props 타입
+export interface CaddieCardProps {
+  caddie?: CaddieData;
+  isEmpty?: boolean;
+  emptyText?: string;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragEnd?: (e: React.DragEvent) => void;
+  isDragging?: boolean;
+  isSelected?: boolean;
+  onClick?: (caddie: CaddieData) => void;
+  draggable?: boolean;
 }
 
 // 필드 타입
@@ -119,6 +136,13 @@ export interface TimeSlots {
 
 // 필터 타입
 export interface WorkFilters {
+  status: string;
+  group: string;
+  badge: string;
+}
+
+// 인원 필터 타입
+export interface PersonnelFilter {
   status: string;
   group: string;
   badge: string;

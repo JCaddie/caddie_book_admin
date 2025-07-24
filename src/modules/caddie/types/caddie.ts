@@ -59,7 +59,7 @@ export interface AssignedWork {
 }
 
 // 캐디 기본 정보 인터페이스
-export interface Caddie {
+export interface Caddie extends Record<string, unknown> {
   id: string;
   name: string;
   golf_course: GolfCourse;

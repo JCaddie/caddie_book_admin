@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchFields } from "../api/field-api";
-import { FieldListItem } from "../types";
+import { Field } from "../types";
 
 export interface FieldListApiResponse {
-  results: FieldListItem[];
+  results: Field[];
   count: number;
   page: number;
   page_size: number;

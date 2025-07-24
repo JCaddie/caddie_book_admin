@@ -172,8 +172,12 @@ export default function PersonnelStatus({
                         <CaddieCard
                           key={caddie.id}
                           caddie={caddie}
-                          onDragStart={onDragStart}
-                          onDragEnd={onDragEnd}
+                          onDragStart={
+                            onDragStart ? () => onDragStart(caddie) : undefined
+                          }
+                          onDragEnd={
+                            onDragEnd ? () => onDragEnd(caddie) : undefined
+                          }
                           isDragging={draggedCaddie?.id === caddie.id}
                         />
                       ))}
