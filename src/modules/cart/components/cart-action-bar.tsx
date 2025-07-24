@@ -13,8 +13,8 @@ import { useAuth } from "@/shared/hooks/use-auth";
 interface CartActionBarProps {
   totalCount: number;
   selectedCount: number;
-  searchTerm: string;
-  onSearchChange: (searchTerm: string) => void;
+  // searchTerm: string; // 현재 사용되지 않음
+  // onSearchChange: (searchTerm: string) => void; // 현재 사용되지 않음
   onDeleteSelected: () => void;
   onCreateNew: () => void;
   isDeleting?: boolean;
@@ -29,8 +29,8 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
   ({
     totalCount,
     selectedCount,
-    searchTerm,
-    onSearchChange,
+    // searchTerm, // 현재 사용되지 않음
+    // onSearchChange, // 현재 사용되지 않음
     onDeleteSelected,
     onCreateNew,
     isDeleting = false,
@@ -43,12 +43,12 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
     const isMaster = user?.role === "MASTER";
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    const handleSearchChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        onSearchChange(e.target.value);
-      },
-      [onSearchChange]
-    );
+    // const handleSearchChange = useCallback(
+    //   (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     onSearchChange(e.target.value);
+    //   },
+    //   [onSearchChange]
+    // );
 
     const handleDeleteClick = useCallback(() => {
       if (selectedCount > 0) {
@@ -97,11 +97,7 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
             {/* 우측: 검색창과 버튼들 */}
             <div className="flex items-center gap-8">
               {/* 검색창 */}
-              <SearchWithButton
-                placeholder="카트명, 골프장명 검색"
-                containerClassName="w-[420px]"
-                searchClassName="w-[360px]"
-              />
+              <SearchWithButton placeholder="카트명, 골프장명 검색" />
 
               {/* 버튼 그룹 */}
               <div className="flex items-center gap-2">

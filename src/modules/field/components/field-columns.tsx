@@ -31,8 +31,7 @@ export const useFieldColumns = (): Column<FieldTableRow>[] => {
         key: "is_active",
         title: "활성여부",
         width: 120,
-        render: (value, _record, _index) =>
-          (value as boolean) ? "활성" : "비활성",
+        render: (value) => ((value as boolean) ? "활성" : "비활성"),
       },
     ],
     []

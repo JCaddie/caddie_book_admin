@@ -201,15 +201,11 @@ const TeamsPage: React.FC = () => {
   // 선택 상태
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
-  // 검색 상태
-  const [searchTerm, setSearchTerm] = useState("");
+  // 검색 상태 (현재 사용되지 않음)
+  // const [searchTerm, setSearchTerm] = useState("");
 
-  // 필터링된 데이터
-  const filteredData = MOCK_GOLF_COURSE_DATA.filter(
-    (course) =>
-      course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 필터링된 데이터 (현재는 모든 데이터 표시)
+  const filteredData = MOCK_GOLF_COURSE_DATA;
 
   // 페이지네이션
   const { currentData, totalPages } = usePagination({
@@ -227,19 +223,17 @@ const TeamsPage: React.FC = () => {
     setSelectedRowKeys(keys);
   };
 
-  // 검색 변경 핸들러
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    // setCurrentPage(1); // 검색 시 첫 페이지로 이동
-    setSelectedRowKeys([]); // 검색 시 선택 상태 초기화
-  };
+  // 검색 변경 핸들러 (현재 사용되지 않음)
+  // const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setSearchTerm(e.target.value);
+  //   setSelectedRowKeys([]); // 검색 시 선택 상태 초기화
+  // };
 
-  // 검색 클리어 핸들러
-  const handleSearchClear = () => {
-    setSearchTerm("");
-    // setCurrentPage(1); // 검색 클리어 시 첫 페이지로 이동
-    setSelectedRowKeys([]); // 검색 클리어 시 선택 상태 초기화
-  };
+  // 검색 클리어 핸들러 (현재 사용되지 않음)
+  // const handleSearchClear = () => {
+  //   setSearchTerm("");
+  //   setSelectedRowKeys([]); // 검색 클리어 시 선택 상태 초기화
+  // };
 
   // 삭제 버튼 클릭 핸들러
   const handleDeleteClick = () => {
@@ -291,11 +285,7 @@ const TeamsPage: React.FC = () => {
         {/* 오른쪽: 검색 + 버튼들 */}
         <div className="flex items-center gap-8">
           {/* 검색 */}
-          <SearchWithButton
-            placeholder="골프장명 또는 위치 검색..."
-            containerClassName="w-[460px]"
-            searchClassName="w-[400px]"
-          />
+          <SearchWithButton placeholder="골프장명 또는 위치 검색..." />
 
           {/* 버튼 그룹 */}
           {selectedRowKeys.length > 0 && (
