@@ -42,9 +42,9 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   const iconSizes = {
-    sm: "w-4 h-4",
-    md: "w-6 h-6", // Figma 24px 아이콘
-    lg: "w-6 h-6",
+    sm: "w-4 h-4 flex-shrink-0",
+    md: "w-5 h-5 flex-shrink-0", // 아이콘 크기 조정
+    lg: "w-6 h-6 flex-shrink-0",
   };
 
   const isLoading = loading || disabled;
@@ -65,8 +65,12 @@ const Button: React.FC<ButtonProps> = ({
           ].join(" ")}
         />
       )}
-      {icon && !loading && <span className={iconSizes[size]}>{icon}</span>}
-      {children}
+      {icon && !loading && (
+        <span className={`${iconSizes[size]} flex items-center justify-center`}>
+          {icon}
+        </span>
+      )}
+      <span className="flex items-center">{children}</span>
     </button>
   );
 };
