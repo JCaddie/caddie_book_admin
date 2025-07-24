@@ -1,31 +1,21 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { use, useState } from "react";
-import {
-  useRoundingSettings,
-  useWorkDetail,
-  useWorkSchedule,
-} from "@/modules/work/hooks";
+import { use, useState, useEffect, useCallback } from "react";
+import { fetchWorkScheduleByDate } from "@/modules/work/api";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import {
-  CaddieData,
-  RoundingSettings,
-  WorkDetailPageProps,
-} from "@/modules/work/types";
+import { CaddieData, WorkDetailPageProps } from "@/modules/work/types";
 import {
   FIELDS,
   generateTimeSlots,
-  generateTimeSlotsFromSettings,
   PERSONNEL_STATS,
 } from "@/modules/work/constants/work-detail";
 import DateNavigation from "@/modules/work/components/date-navigation";
 import WorkSchedule from "@/modules/work/components/work-schedule";
 import PersonnelStatus from "@/modules/work/components/personnel-status";
 import ConfirmationModal from "@/shared/components/ui/confirmation-modal";
-import RoundingSettingsModal from "@/modules/work/components/rounding-settings-modal";
 
 export default function WorkDetailPage({
   params,
@@ -37,10 +27,6 @@ export default function WorkDetailPage({
   // 드래그 상태 관리
   const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
 
-  // 라운딩 설정 모달 상태
-  const [isRoundingSettingsModalOpen, setIsRoundingSettingsModalOpen] =
-    useState(false);
-
   // 커스텀 훅들 사용
   const { currentDate, handleDateChange } = useDateNavigation(
     golfCourseId,
@@ -50,33 +36,69 @@ export default function WorkDetailPage({
   const { isResetModalOpen, openResetModal, closeResetModal, handleReset } =
     useResetModal();
 
-  // golfCourseId로 work 데이터 조회
-  const { work, isLoading, error } = useWorkDetail(golfCourseId);
+  // 골프장 정보 (임시로 하드코딩, 실제로는 API에서 가져와야 함)
+  const work = {
+    id: golfCourseId,
+    golfCourse: "골든베이 골프장",
+    golfCourseId: golfCourseId,
+  };
+  const isLoading = false;
+  const error = null;
 
-  // 라운딩 설정 관리
-  const {
-    settings: roundingSettings,
-    isLoading: isRoundingSettingsLoading,
-    fetchSettings,
-    saveSettings,
-  } = useRoundingSettings({ golfCourseId });
+  // 근무표 데이터 상태
+  const [scheduleData, setScheduleData] = useState<{
+    date: string;
+    golfCourseId: string;
+    schedules: Array<{
+      id: string;
+      golfCourse: string;
+      golfCourseName: string;
+      scheduleType: string;
+      date: string;
+      totalStaff: number;
+      availableStaff: number;
+      status: string;
+      createdBy: string;
+      createdByName: string;
+      partsCount: number;
+      timeInterval: number;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+    scheduleParts: Array<{
+      scheduleId: string;
+      partNumber: number;
+      startTime: string;
+      endTime: string;
+    }>;
+  } | null>(null);
+  const [isScheduleLoading, setIsScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
 
-  // 근무표 관리
-  const {
-    schedule,
-    timeSlots: apiTimeSlots,
-    workSlots,
-    isLoading: isScheduleLoading,
-    error: scheduleError,
-    fetchSchedule,
-    createSchedule,
-    assignCaddie,
-    unassignCaddie,
-    getCaddieAtPosition,
-  } = useWorkSchedule({
-    golfCourseId,
-    date: currentDate.toISOString().split("T")[0],
-  });
+  // 근무표 데이터 조회
+  const fetchScheduleData = useCallback(async () => {
+    try {
+      setIsScheduleLoading(true);
+      setScheduleError(null);
+      const data = await fetchWorkScheduleByDate(
+        currentDate.toISOString().split("T")[0],
+        golfCourseId
+      );
+      setScheduleData(data);
+    } catch (error) {
+      console.error("근무표 조회 실패:", error);
+      setScheduleError("근무표 조회에 실패했습니다.");
+    } finally {
+      setIsScheduleLoading(false);
+    }
+  }, [currentDate, golfCourseId]);
+
+  // 날짜 변경 시 근무표 데이터 조회
+  useEffect(() => {
+    if (golfCourseId) {
+      fetchScheduleData();
+    }
+  }, [fetchScheduleData]);
 
   // 로딩 중인 경우
   if (isLoading) {
@@ -108,9 +130,28 @@ export default function WorkDetailPage({
     notFound();
   }
 
-  // 시간 슬롯 생성 (라운딩 설정 기반 또는 기본값)
-  const timeSlots = roundingSettings
-    ? generateTimeSlotsFromSettings(roundingSettings)
+  // 시간 슬롯 생성 (API 데이터 기반 또는 기본값)
+  const timeSlots = scheduleData?.scheduleParts.length
+    ? (() => {
+        const result: any = {};
+        scheduleData.scheduleParts.forEach((part) => {
+          const partKey = `part${part.partNumber}` as keyof typeof result;
+          const slots: string[] = [];
+          const currentTime = new Date(`2000-01-01T${part.startTime}`);
+          const endTime = new Date(`2000-01-01T${part.endTime}`);
+          let tempTime = new Date(currentTime);
+
+          while (tempTime < endTime) {
+            slots.push(tempTime.toTimeString().slice(0, 5));
+            tempTime.setMinutes(
+              tempTime.getMinutes() +
+                (scheduleData.schedules[0]?.timeInterval || 10)
+            );
+          }
+          result[partKey] = slots;
+        });
+        return result;
+      })()
     : generateTimeSlots();
 
   // 공통 드래그 이벤트 핸들러
@@ -120,35 +161,6 @@ export default function WorkDetailPage({
 
   const handleDragEnd = () => {
     setDraggedCaddie(null);
-  };
-
-  // 라운딩 설정 모달 핸들러
-  const handleOpenRoundingSettings = async () => {
-    setIsRoundingSettingsModalOpen(true);
-    // 모달이 열릴 때 기존 설정 데이터를 불러옴
-    try {
-      await fetchSettings();
-    } catch (error) {
-      console.warn("라운딩 설정 조회 실패:", error);
-    }
-  };
-
-  const handleCloseRoundingSettings = () => {
-    setIsRoundingSettingsModalOpen(false);
-  };
-
-  const handleSaveRoundingSettings = async (
-    settings: RoundingSettings,
-    golfCourseName?: string
-  ) => {
-    try {
-      await saveSettings(settings, golfCourseName);
-      setIsRoundingSettingsModalOpen(false);
-      // TODO: 성공 메시지 표시
-    } catch {
-      // TODO: 에러 메시지 표시
-      alert("라운딩 설정 저장에 실패했습니다.");
-    }
   };
 
   // 채우기 핸들러
@@ -169,17 +181,40 @@ export default function WorkDetailPage({
         onDateChange={handleDateChange}
       />
 
+      {/* 부 정보 표시 */}
+      {scheduleData?.scheduleParts.length && (
+        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+          <span className="text-sm font-medium text-gray-700">부 정보:</span>
+          <div className="flex gap-3">
+            {scheduleData.scheduleParts.map((part) => (
+              <span
+                key={part.partNumber}
+                className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-md text-sm font-medium"
+              >
+                {part.partNumber}부 {part.startTime} ~ {part.endTime}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 메인 콘텐츠 */}
       <div className="flex gap-8">
         {/* 왼쪽: 라운딩 관리 */}
         <WorkSchedule
           fields={FIELDS}
           timeSlots={timeSlots}
-          personnelStats={PERSONNEL_STATS}
+          personnelStats={
+            scheduleData?.schedules[0]
+              ? {
+                  total: scheduleData.schedules[0].totalStaff,
+                  available: scheduleData.schedules[0].availableStaff,
+                }
+              : PERSONNEL_STATS
+          }
           draggedCaddie={draggedCaddie}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          onRoundingSettingsClick={handleOpenRoundingSettings}
           onFillClick={handleFill}
           onResetClick={openResetModal}
         />
@@ -204,16 +239,6 @@ export default function WorkDetailPage({
         message="초기화 시 모든 배치 정보가 삭제됩니다."
         confirmText="초기화"
         cancelText="취소"
-      />
-
-      {/* 라운딩 설정 모달 */}
-      <RoundingSettingsModal
-        isOpen={isRoundingSettingsModalOpen}
-        onClose={handleCloseRoundingSettings}
-        onSave={handleSaveRoundingSettings}
-        initialSettings={roundingSettings || undefined}
-        isLoading={isRoundingSettingsLoading}
-        golfCourseName={work?.golfCourse}
       />
     </div>
   );

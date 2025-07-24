@@ -270,6 +270,40 @@ interface CreateWorkScheduleResponse {
 }
 
 /**
+ * 특정 날짜 근무표 조회 API 응답 타입
+ */
+interface WorkScheduleByDateResponse {
+  success: boolean;
+  message: string;
+  data: {
+    date: string;
+    golf_course_id: string;
+    schedules: Array<{
+      id: string;
+      golf_course: string;
+      golf_course_name: string;
+      schedule_type: string;
+      date: string;
+      total_staff: number;
+      available_staff: number;
+      status: string;
+      created_by: string;
+      created_by_name: string;
+      parts_count: number;
+      time_interval: number;
+      created_at: string;
+      updated_at: string;
+    }>;
+    schedule_parts: Array<{
+      schedule_id: string;
+      part_number: number;
+      start_time: string;
+      end_time: string;
+    }>;
+  };
+}
+
+/**
  * 근무표 생성 API
  */
 export const createWorkSchedule = async (
@@ -299,6 +333,70 @@ export const createWorkSchedule = async (
   return {
     golfCourseId: response.data.golf_course_id,
     date: response.data.date,
+  };
+};
+
+/**
+ * 특정 날짜 근무표 조회 API
+ */
+export const fetchWorkScheduleByDate = async (
+  date: string,
+  golfCourseId: string
+): Promise<{
+  date: string;
+  golfCourseId: string;
+  schedules: Array<{
+    id: string;
+    golfCourse: string;
+    golfCourseName: string;
+    scheduleType: string;
+    date: string;
+    totalStaff: number;
+    availableStaff: number;
+    status: string;
+    createdBy: string;
+    createdByName: string;
+    partsCount: number;
+    timeInterval: number;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  scheduleParts: Array<{
+    scheduleId: string;
+    partNumber: number;
+    startTime: string;
+    endTime: string;
+  }>;
+}> => {
+  const response = await apiClient.get<WorkScheduleByDateResponse>(
+    `${WORK_API_ENDPOINTS.SCHEDULES}?date=${date}&golf_course=${golfCourseId}`
+  );
+
+  return {
+    date: response.data.date,
+    golfCourseId: response.data.golf_course_id,
+    schedules: response.data.schedules.map((schedule) => ({
+      id: schedule.id,
+      golfCourse: schedule.golf_course,
+      golfCourseName: schedule.golf_course_name,
+      scheduleType: schedule.schedule_type,
+      date: schedule.date,
+      totalStaff: schedule.total_staff,
+      availableStaff: schedule.available_staff,
+      status: schedule.status,
+      createdBy: schedule.created_by,
+      createdByName: schedule.created_by_name,
+      partsCount: schedule.parts_count,
+      timeInterval: schedule.time_interval,
+      createdAt: schedule.created_at,
+      updatedAt: schedule.updated_at,
+    })),
+    scheduleParts: response.data.schedule_parts.map((part) => ({
+      scheduleId: part.schedule_id,
+      partNumber: part.part_number,
+      startTime: part.start_time.slice(0, 5), // HH:MM 형식으로 변환
+      endTime: part.end_time.slice(0, 5), // HH:MM 형식으로 변환
+    })),
   };
 };
 
