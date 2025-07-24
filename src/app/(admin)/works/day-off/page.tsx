@@ -1,17 +1,27 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
-import {
-  DayOffActionBar,
-  useDayOffColumns,
-} from "@/modules/day-off/components";
+import React, { useCallback, useMemo, useState } from "react";
+import { useDayOffColumns } from "@/modules/day-off/components";
 import { useDayOffManagement } from "@/modules/day-off/hooks";
 import { DAY_OFF_UI_TEXT } from "@/modules/day-off/constants";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { DataTable, EmptyState, Pagination } from "@/shared/components/ui";
+import {
+  Button,
+  ConfirmationModal,
+  EmptyState,
+  Pagination,
+  RejectionReasonModal,
+  SearchWithButton,
+  SelectableDataTable,
+} from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { DayOffRequest } from "@/modules/day-off/types";
 import { useRouter } from "next/navigation";
+import {
+  bulkApproveDayOffRequests,
+  bulkRejectDayOffRequests,
+} from "@/modules/day-off/api/day-off-api";
+import { Check, X } from "lucide-react";
 
 export default function DayOffManagementPage() {
   const router = useRouter();
@@ -20,12 +30,22 @@ export default function DayOffManagementPage() {
     data,
     filteredCount,
     totalPages,
-    filters,
     loading,
     error,
     clearError,
     refreshData,
   } = useDayOffManagement();
+
+  // 선택 상태 관리
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+
+  // 모달 상태 관리
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+
+  // 로딩 상태 관리
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무관리" });
@@ -52,6 +72,64 @@ export default function DayOffManagementPage() {
     },
     [router]
   );
+
+  // 선택 변경 핸들러
+  const handleSelectChange = useCallback(
+    (keys: string[], _rows: DayOffRequest[]) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      setSelectedRowKeys(keys);
+    },
+    []
+  );
+
+  // 승인 핸들러
+  const handleApprove = useCallback(async () => {
+    if (selectedRowKeys.length === 0) return;
+
+    setIsApproving(true);
+    try {
+      await bulkApproveDayOffRequests(selectedRowKeys);
+      setSelectedRowKeys([]);
+      setIsApprovalModalOpen(false);
+      refreshData(); // 데이터 새로고침
+    } catch (error) {
+      console.error("승인 처리 중 오류:", error);
+    } finally {
+      setIsApproving(false);
+    }
+  }, [selectedRowKeys, refreshData]);
+
+  // 거절 핸들러
+  const handleReject = useCallback(
+    async (reason: string) => {
+      if (selectedRowKeys.length === 0) return;
+
+      setIsRejecting(true);
+      try {
+        await bulkRejectDayOffRequests(selectedRowKeys, reason);
+        setSelectedRowKeys([]);
+        setIsRejectionModalOpen(false);
+        refreshData(); // 데이터 새로고침
+      } catch (error) {
+        console.error("거절 처리 중 오류:", error);
+      } finally {
+        setIsRejecting(false);
+      }
+    },
+    [selectedRowKeys, refreshData]
+  );
+
+  // 승인 버튼 클릭 핸들러
+  const handleApproveClick = useCallback(() => {
+    if (selectedRowKeys.length === 0) return;
+    setIsApprovalModalOpen(true);
+  }, [selectedRowKeys.length]);
+
+  // 거절 버튼 클릭 핸들러
+  const handleRejectClick = useCallback(() => {
+    if (selectedRowKeys.length === 0) return;
+    setIsRejectionModalOpen(true);
+  }, [selectedRowKeys.length]);
 
   // 에러 상태 처리
   if (error) {
@@ -88,12 +166,42 @@ export default function DayOffManagementPage() {
       <AdminPageHeader title="휴무관리" />
 
       {/* 상단 액션 바 */}
-      <DayOffActionBar
-        totalCount={filteredCount}
-        selectedCount={0}
-        filters={filters}
-        loading={loading}
-      />
+      <div className="flex items-center justify-between">
+        {/* 왼쪽: 총 건수 */}
+        <div className="text-base font-bold text-gray-900">
+          총 {filteredCount}건
+        </div>
+
+        {/* 오른쪽: 검색 및 액션 버튼들 */}
+        <div className="flex items-center gap-4">
+          {/* 검색 */}
+          <SearchWithButton placeholder="검색어 입력" />
+
+          {/* 승인 버튼 */}
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleApproveClick}
+            disabled={selectedRowKeys.length === 0 || isApproving}
+            icon={<Check size={18} />}
+            className="w-28"
+          >
+            승인
+          </Button>
+
+          {/* 거절 버튼 */}
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handleRejectClick}
+            disabled={selectedRowKeys.length === 0 || isRejecting}
+            icon={<X size={18} />}
+            className="w-28"
+          >
+            거절
+          </Button>
+        </div>
+      </div>
 
       {/* 테이블 또는 로딩/빈 상태 */}
       {loading && !data.length ? (
@@ -109,10 +217,13 @@ export default function DayOffManagementPage() {
         <>
           {/* 테이블 */}
           <div className="rounded-md overflow-hidden">
-            <DataTable
+            <SelectableDataTable
               columns={columns}
               data={dataWithNumbers}
               onRowClick={handleRowClick}
+              selectable
+              selectedRowKeys={selectedRowKeys}
+              onSelectChange={handleSelectChange}
               layout="flexible"
               containerWidth="auto"
               emptyText={DAY_OFF_UI_TEXT.EMPTY_MESSAGE}
@@ -129,6 +240,31 @@ export default function DayOffManagementPage() {
           )}
         </>
       )}
+
+      {/* 승인 확인 모달 */}
+      <ConfirmationModal
+        isOpen={isApprovalModalOpen}
+        onClose={() => setIsApprovalModalOpen(false)}
+        onConfirm={handleApprove}
+        title="휴무 신청 승인"
+        message={`선택한 ${selectedRowKeys.length}개의 휴무 신청을 승인하시겠습니까?`}
+        confirmText="승인"
+        cancelText="취소"
+        isLoading={isApproving}
+      />
+
+      {/* 거절 사유 입력 모달 */}
+      <RejectionReasonModal
+        isOpen={isRejectionModalOpen}
+        onClose={() => setIsRejectionModalOpen(false)}
+        onConfirm={handleReject}
+        title="휴무 신청 거절"
+        message={`선택한 ${selectedRowKeys.length}개의 휴무 신청을 거절하시겠습니까?`}
+        confirmText="거절"
+        cancelText="취소"
+        isLoading={isRejecting}
+        placeholder="거절 사유를 입력하세요..."
+      />
     </div>
   );
 }

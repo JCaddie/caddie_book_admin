@@ -50,3 +50,27 @@ export const approveDayOffRequest = async (id: string): Promise<void> => {
 export const rejectDayOffRequest = async (id: string): Promise<void> => {
   await apiClient.patch(`/api/v1/users/day-off-requests/${id}/reject/`);
 };
+
+/**
+ * 휴무 신청 일괄 승인
+ */
+export const bulkApproveDayOffRequests = async (
+  requestIds: string[]
+): Promise<void> => {
+  await apiClient.post("/api/v1/users/day-off-requests/bulk_approve/", {
+    request_ids: requestIds,
+  });
+};
+
+/**
+ * 휴무 신청 일괄 거절
+ */
+export const bulkRejectDayOffRequests = async (
+  requestIds: string[],
+  rejectionReason: string
+): Promise<void> => {
+  await apiClient.post("/api/v1/users/day-off-requests/bulk_reject/", {
+    request_ids: requestIds,
+    rejection_reason: rejectionReason,
+  });
+};
