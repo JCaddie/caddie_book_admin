@@ -1,5 +1,5 @@
 import { AUTH_CONSTANTS } from "@/shared/constants/auth";
-import { cookieUtils } from "./utils";
+import { cookieUtils, tokenUtils } from "./utils";
 
 /**
  * API 클라이언트 옵션
@@ -97,16 +97,28 @@ class ApiClient {
       const errorData = await response.json().catch(() => ({}));
       console.error("❌ API 에러:", response.status, errorData);
 
-      // 401 에러인 경우 토큰 만료로 간주하고 로그아웃 처리
-      if (response.status === 401) {
+      // 401 또는 403 에러 처리
+      if (response.status === 401 || response.status === 403) {
         // 브라우저 환경에서만 실행
         if (typeof window !== "undefined") {
-          console.warn("🚨 인증 토큰 만료 - 로그아웃 처리");
-          cookieUtils.removeMultiple([
-            AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
-            AUTH_CONSTANTS.COOKIES.USER_DATA,
-          ]);
-          window.location.href = "/login";
+          const token = this.getAuthToken();
+
+          // 토큰이 있고 유효한 형식이라면 권한 부족으로 처리
+          if (token && tokenUtils.isValidFormat(token)) {
+            console.warn(
+              `🚨 권한 부족 (${response.status}) - 접근 권한이 없습니다`
+            );
+            // 권한 부족 에러는 별도 처리하지 않고 에러를 던져서 컴포넌트에서 처리하도록 함
+            throw new Error("이 작업을 수행할 권한이 없습니다.");
+          } else {
+            // 토큰이 없거나 유효하지 않으면 인증 실패로 처리
+            console.warn("🚨 인증 토큰 만료 - 로그아웃 처리");
+            cookieUtils.removeMultiple([
+              AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+              AUTH_CONSTANTS.COOKIES.USER_DATA,
+            ]);
+            window.location.href = "/login";
+          }
         }
       }
 
@@ -287,13 +299,28 @@ class ApiClient {
       const errorData = await response.json().catch(() => ({}));
       console.error("❌ FormData API 에러:", response.status, errorData);
 
-      if (response.status === 401 && typeof window !== "undefined") {
-        console.warn("🚨 인증 토큰 만료 - 로그아웃 처리");
-        cookieUtils.removeMultiple([
-          AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
-          AUTH_CONSTANTS.COOKIES.USER_DATA,
-        ]);
-        window.location.href = "/login";
+      // 401 또는 403 에러 처리
+      if (
+        (response.status === 401 || response.status === 403) &&
+        typeof window !== "undefined"
+      ) {
+        const token = this.getAuthToken();
+
+        // 토큰이 있고 유효한 형식이라면 권한 부족으로 처리
+        if (token && tokenUtils.isValidFormat(token)) {
+          console.warn(
+            `🚨 권한 부족 (${response.status}) - 접근 권한이 없습니다`
+          );
+          throw new Error("이 작업을 수행할 권한이 없습니다.");
+        } else {
+          // 토큰이 없거나 유효하지 않으면 인증 실패로 처리
+          console.warn("🚨 인증 토큰 만료 - 로그아웃 처리");
+          cookieUtils.removeMultiple([
+            AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+            AUTH_CONSTANTS.COOKIES.USER_DATA,
+          ]);
+          window.location.href = "/login";
+        }
       }
 
       throw new Error(
