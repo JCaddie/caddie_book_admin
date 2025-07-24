@@ -53,8 +53,8 @@ export const useDayOffColumns = (): Column<DayOffRequest>[] => {
         render: basicRenderers.text,
       },
       {
-        key: "approved_by_name",
-        title: "승인자",
+        key: "processed_by_name",
+        title: "처리자",
         width: 120,
         render: basicRenderers.text,
       },
@@ -67,6 +67,12 @@ export const useDayOffColumns = (): Column<DayOffRequest>[] => {
       {
         key: "created_at",
         title: "신청 날짜",
+        width: 160,
+        render: basicRenderers.date,
+      },
+      {
+        key: "processed_at",
+        title: "처리 날짜",
         width: 160,
         render: basicRenderers.date,
       },

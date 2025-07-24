@@ -23,8 +23,9 @@ export interface DayOffRequest extends Record<string, unknown> {
   golf_course_name: string;
   status: DayOffStatus;
   status_display: DayOffStatusDisplay;
-  approved_by: string | null;
-  approved_by_name: string | null;
+  processed_by: string | null;
+  processed_by_name: string | null;
+  processed_at: string | null;
   date: string;
   created_at: string;
   isEmpty?: boolean; // BaseTable 자동 패딩을 위한 속성
