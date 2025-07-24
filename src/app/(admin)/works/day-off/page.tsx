@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import { useDayOffColumns } from "@/modules/day-off/components";
-import { useDayOffManagement } from "@/modules/day-off/hooks";
+import { useDayOffActions, useDayOffList } from "@/modules/day-off/hooks";
 import { DAY_OFF_UI_TEXT } from "@/modules/day-off/constants";
 import { AdminPageHeader } from "@/shared/components/layout";
 import {
@@ -17,15 +17,12 @@ import {
 import { useDocumentTitle } from "@/shared/hooks";
 import { DayOffRequest } from "@/modules/day-off/types";
 import { useRouter } from "next/navigation";
-import {
-  bulkApproveDayOffRequests,
-  bulkRejectDayOffRequests,
-} from "@/modules/day-off/api/day-off-api";
 import { Check, X } from "lucide-react";
 
 export default function DayOffManagementPage() {
   const router = useRouter();
 
+  // 목록 데이터 및 상태
   const {
     data,
     filteredCount,
@@ -34,7 +31,11 @@ export default function DayOffManagementPage() {
     error,
     clearError,
     refreshData,
-  } = useDayOffManagement();
+  } = useDayOffList();
+
+  // 액션 처리
+  const { isApproving, isRejecting, approveRequests, rejectRequests } =
+    useDayOffActions();
 
   // 선택 상태 관리
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -43,14 +44,10 @@ export default function DayOffManagementPage() {
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
 
-  // 로딩 상태 관리
-  const [isApproving, setIsApproving] = useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
-
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무관리" });
 
-  // 테이블 컬럼 생성 (새로운 렌더러 시스템 사용)
+  // 테이블 컬럼 생성
   const columns = useDayOffColumns();
 
   // 페이지네이션을 고려한 번호가 포함된 데이터
@@ -74,49 +71,41 @@ export default function DayOffManagementPage() {
   );
 
   // 선택 변경 핸들러
-  const handleSelectChange = useCallback(
-    (keys: string[], _rows: DayOffRequest[]) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      setSelectedRowKeys(keys);
-    },
-    []
-  );
+  const handleSelectChange = useCallback((keys: string[]) => {
+    setSelectedRowKeys(keys);
+  }, []);
 
   // 승인 핸들러
   const handleApprove = useCallback(async () => {
     if (selectedRowKeys.length === 0) return;
 
-    setIsApproving(true);
     try {
-      await bulkApproveDayOffRequests(selectedRowKeys);
+      await approveRequests(selectedRowKeys);
       setSelectedRowKeys([]);
       setIsApprovalModalOpen(false);
       refreshData(); // 데이터 새로고침
     } catch (error) {
       console.error("승인 처리 중 오류:", error);
-    } finally {
-      setIsApproving(false);
+      // 실제 환경에서는 에러 토스트 표시
     }
-  }, [selectedRowKeys, refreshData]);
+  }, [selectedRowKeys, approveRequests, refreshData]);
 
   // 거절 핸들러
   const handleReject = useCallback(
     async (reason: string) => {
       if (selectedRowKeys.length === 0) return;
 
-      setIsRejecting(true);
       try {
-        await bulkRejectDayOffRequests(selectedRowKeys, reason);
+        await rejectRequests(selectedRowKeys, reason);
         setSelectedRowKeys([]);
         setIsRejectionModalOpen(false);
         refreshData(); // 데이터 새로고침
       } catch (error) {
         console.error("거절 처리 중 오류:", error);
-      } finally {
-        setIsRejecting(false);
+        // 실제 환경에서는 에러 토스트 표시
       }
     },
-    [selectedRowKeys, refreshData]
+    [selectedRowKeys, rejectRequests, refreshData]
   );
 
   // 승인 버튼 클릭 핸들러

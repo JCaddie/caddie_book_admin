@@ -9,11 +9,7 @@ import {
   RejectionReasonModal,
 } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
-import { useDayOffDetail } from "@/modules/day-off/hooks";
-import {
-  bulkApproveDayOffRequests,
-  bulkRejectDayOffRequests,
-} from "@/modules/day-off/api/day-off-api";
+import { useDayOffActions, useDayOffDetail } from "@/modules/day-off/hooks";
 
 interface DayOffDetailPageProps {
   params: Promise<{
@@ -28,7 +24,6 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
   // 모달 상태 관리
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "휴무 신청 상세" });
@@ -41,6 +36,10 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
     refreshData,
     clearError,
   } = useDayOffDetail(resolvedParams.id);
+
+  // 액션 처리
+  const { isApproving, isRejecting, approveRequests, rejectRequests } =
+    useDayOffActions();
 
   // 데이터가 없는 경우 처리
   if (error) {
@@ -96,33 +95,27 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
 
   // 승인 처리
   const handleApproveConfirm = async () => {
-    setIsProcessing(true);
     try {
-      await bulkApproveDayOffRequests([dayOffRequest.id]);
+      await approveRequests([dayOffRequest.id]);
       setIsApproveModalOpen(false);
       // 처리 후 목록으로 이동
       router.push("/works/day-off");
     } catch (error) {
       console.error("승인 처리 중 오류:", error);
       // 실제 환경에서는 에러 토스트 표시
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   // 반려 처리
   const handleRejectConfirm = async (reason: string) => {
-    setIsProcessing(true);
     try {
-      await bulkRejectDayOffRequests([dayOffRequest.id], reason);
+      await rejectRequests([dayOffRequest.id], reason);
       setIsRejectModalOpen(false);
       // 처리 후 목록으로 이동
       router.push("/works/day-off");
     } catch (error) {
       console.error("반려 처리 중 오류:", error);
       // 실제 환경에서는 에러 토스트 표시
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -398,14 +391,14 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
             <Button
               variant="primary"
               onClick={handleApproveClick}
-              disabled={isProcessing}
+              disabled={isApproving}
             >
               승인
             </Button>
             <Button
               variant="secondary"
               onClick={handleRejectClick}
-              disabled={isProcessing}
+              disabled={isRejecting}
             >
               반려
             </Button>
@@ -422,7 +415,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
         message="이 휴무 신청을 승인하시겠습니까?"
         confirmText="승인"
         cancelText="취소"
-        isLoading={isProcessing}
+        isLoading={isApproving}
       />
 
       {/* 반려 사유 입력 모달 */}
@@ -434,7 +427,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
         message="이 휴무 신청을 반려하시겠습니까?"
         confirmText="반려"
         cancelText="취소"
-        isLoading={isProcessing}
+        isLoading={isRejecting}
         placeholder="반려 사유를 입력하세요..."
       />
     </div>

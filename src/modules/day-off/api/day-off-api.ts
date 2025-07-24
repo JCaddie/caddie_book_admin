@@ -51,39 +51,78 @@ export const getDayOffRequests = async (
 };
 
 /**
- * 휴무 신청 승인
+ * 휴무 신청 승인 (단일 또는 일괄)
+ */
+export const approveDayOffRequests = async (
+  requestIds: string[]
+): Promise<void> => {
+  if (requestIds.length === 1) {
+    // 단일 승인
+    await apiClient.patch(
+      `/api/v1/users/day-off-requests/${requestIds[0]}/approve/`
+    );
+  } else {
+    // 일괄 승인
+    await apiClient.post("/api/v1/users/day-off-requests/bulk_approve/", {
+      request_ids: requestIds,
+    });
+  }
+};
+
+/**
+ * 휴무 신청 반려 (단일 또는 일괄)
+ */
+export const rejectDayOffRequests = async (
+  requestIds: string[],
+  rejectionReason?: string
+): Promise<void> => {
+  if (requestIds.length === 1) {
+    // 단일 반려
+    await apiClient.patch(
+      `/api/v1/users/day-off-requests/${requestIds[0]}/reject/`
+    );
+  } else {
+    // 일괄 반려
+    await apiClient.post("/api/v1/users/day-off-requests/bulk_reject/", {
+      request_ids: requestIds,
+      rejection_reason: rejectionReason || "",
+    });
+  }
+};
+
+// ================================
+// Deprecated Functions (하위 호환성을 위해 유지)
+// ================================
+
+/**
+ * @deprecated Use approveDayOffRequests instead
  */
 export const approveDayOffRequest = async (id: string): Promise<void> => {
-  await apiClient.patch(`/api/v1/users/day-off-requests/${id}/approve/`);
+  await approveDayOffRequests([id]);
 };
 
 /**
- * 휴무 신청 반려
+ * @deprecated Use rejectDayOffRequests instead
  */
 export const rejectDayOffRequest = async (id: string): Promise<void> => {
-  await apiClient.patch(`/api/v1/users/day-off-requests/${id}/reject/`);
+  await rejectDayOffRequests([id]);
 };
 
 /**
- * 휴무 신청 일괄 승인
+ * @deprecated Use approveDayOffRequests instead
  */
 export const bulkApproveDayOffRequests = async (
   requestIds: string[]
 ): Promise<void> => {
-  await apiClient.post("/api/v1/users/day-off-requests/bulk_approve/", {
-    request_ids: requestIds,
-  });
+  await approveDayOffRequests(requestIds);
 };
 
 /**
- * 휴무 신청 일괄 거절
+ * @deprecated Use rejectDayOffRequests instead
  */
 export const bulkRejectDayOffRequests = async (
   requestIds: string[],
   rejectionReason: string
 ): Promise<void> => {
-  await apiClient.post("/api/v1/users/day-off-requests/bulk_reject/", {
-    request_ids: requestIds,
-    rejection_reason: rejectionReason,
-  });
+  await rejectDayOffRequests(requestIds, rejectionReason);
 };
