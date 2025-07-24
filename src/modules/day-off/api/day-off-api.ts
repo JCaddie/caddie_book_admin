@@ -1,5 +1,18 @@
 import { apiClient } from "@/shared/lib/api-client";
-import { DayOffRequestListResponse, DayOffSearchParams } from "../types";
+import {
+  DayOffRequest,
+  DayOffRequestListResponse,
+  DayOffSearchParams,
+} from "../types";
+
+/**
+ * 휴무 신청 상세 조회
+ */
+export const getDayOffRequestDetail = async (
+  id: string
+): Promise<DayOffRequest> => {
+  return apiClient.get<DayOffRequest>(`/api/v1/users/day-off-requests/${id}/`);
+};
 
 /**
  * 휴무 신청 목록 조회
