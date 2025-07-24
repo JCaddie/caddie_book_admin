@@ -12,7 +12,7 @@ const AnnouncementDetailPage: React.FC = () => {
   const params = useParams();
   const id = params.id as string;
 
-  const { announcement, loading, error, fetchAnnouncement, clearError } =
+  const { announcement, loading, error, fetchAnnouncement } =
     useAnnouncementDetail(id);
   const { deleteAnnouncement, loading: deleteLoading } =
     useDeleteAnnouncement();
@@ -45,11 +45,11 @@ const AnnouncementDetailPage: React.FC = () => {
           <div className="flex justify-between items-start">
             <p className="text-red-600 text-sm">{error}</p>
             <button
-              onClick={clearError}
+              onClick={() => fetchAnnouncement()}
               className="text-red-500 hover:text-red-700 ml-4"
-              aria-label="에러 메시지 닫기"
+              aria-label="다시 시도"
             >
-              ✕
+              다시 시도
             </button>
           </div>
         </div>

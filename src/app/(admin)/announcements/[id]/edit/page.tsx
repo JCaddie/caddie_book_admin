@@ -13,7 +13,7 @@ const AnnouncementEditPage: React.FC = () => {
   const params = useParams();
   const id = params.id as string;
 
-  const { announcement, loading, error, fetchAnnouncement, clearError } =
+  const { announcement, loading, error, fetchAnnouncement } =
     useAnnouncementDetail(id);
   const {
     updateAnnouncement,
@@ -31,8 +31,8 @@ const AnnouncementEditPage: React.FC = () => {
       title: data.title,
       content: data.content,
       isPublished: data.isPublished,
-      files: data.files,
-      removeFileIds: data.removeFileIds,
+      // files: data.files, // AnnouncementFormData에 없음
+      // removeFileIds: data.removeFileIds, // AnnouncementFormData에 없음
     };
 
     await updateAnnouncement(updateData);
@@ -58,11 +58,11 @@ const AnnouncementEditPage: React.FC = () => {
           <div className="flex justify-between items-start">
             <p className="text-red-600 text-sm">{error}</p>
             <button
-              onClick={clearError}
+              onClick={() => fetchAnnouncement()}
               className="text-red-500 hover:text-red-700 ml-4"
-              aria-label="에러 메시지 닫기"
+              aria-label="다시 시도"
             >
-              ✕
+              다시 시도
             </button>
           </div>
         </div>

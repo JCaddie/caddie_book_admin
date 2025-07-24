@@ -8,3 +8,4 @@ export { useUrlSearchParams } from "./use-url-search-params";
 export { useCaddieList } from "./use-caddie-list";
 export { useGolfCourseFilter } from "./use-golf-course-filter";
 export { useCaddieOptions } from "./use-caddie-options";
+export { usePermissionError } from "./use-permission-error";

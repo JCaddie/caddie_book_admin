@@ -17,6 +17,8 @@ export { default as SearchWithButton } from "./search-with-button";
 export { default as SelectableDataTable } from "./selectable-data-table";
 export { default as TextField } from "./text-field";
 export { default as GolfCourseSelector } from "./golf-course-selector";
+export { default as PermissionError } from "./permission-error";
+export { default as RejectionReasonModal } from "./rejection-reason-modal";
 
 // 새로운 테이블 렌더러 (named export)
 export * from "./table-renderers";

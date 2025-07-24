@@ -8,6 +8,7 @@ import {
   ConfirmationModal,
   Dropdown,
   EmptyState,
+  PermissionError,
   SearchWithButton,
   SelectableDataTable,
 } from "@/shared/components/ui";
@@ -17,6 +18,7 @@ import Pagination from "@/shared/components/ui/pagination";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GOLF_COURSE_TABLE_COLUMNS } from "@/shared/constants/golf-course";
 import { deleteGolfCourse } from "@/modules/golf-course/api/golf-course-api";
+import { usePermissionError } from "@/shared/hooks";
 // import type { GolfCourse } from "@/modules/golf-course/types/golf-course";
 
 const FIELD_COUNT_OPTIONS = [
@@ -28,6 +30,9 @@ const FIELD_COUNT_OPTIONS = [
 ];
 
 const GolfCoursesPage: React.FC = () => {
+  // 권한 에러 처리
+  const { isPermissionError, permissionErrorMessage } = usePermissionError();
+
   // 드롭다운 옵션 상태
   const [contractOptions, setContractOptions] = useState<
     { label: string; value: string; rawId?: string }[]
@@ -226,6 +231,21 @@ const GolfCoursesPage: React.FC = () => {
       fields: item.field_count,
     };
   });
+
+  // 권한 에러가 있으면 권한 에러 컴포넌트 표시
+  if (isPermissionError) {
+    return (
+      <div className="bg-white rounded-xl p-8">
+        <PermissionError
+          title="골프장 목록 접근 권한이 없습니다"
+          message={
+            permissionErrorMessage ||
+            "골프장 목록을 조회할 권한이 없습니다. 관리자에게 문의하세요."
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <RoleGuard requiredRoles={["MASTER", "ADMIN"]}>

@@ -13,7 +13,7 @@ const NewAnnouncementPage: React.FC = () => {
       title: data.title,
       content: data.content,
       isPublished: data.isPublished,
-      files: data.files,
+      // files: data.files, // AnnouncementFormData에 없음
     };
 
     await createAnnouncement(announcementData);

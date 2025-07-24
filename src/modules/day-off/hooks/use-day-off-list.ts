@@ -9,28 +9,35 @@ import {
   DayOffSearchParams,
   DayOffStatus,
 } from "../types";
-import {
-  approveDayOffRequest,
-  getDayOffRequests,
-  rejectDayOffRequest,
-} from "../api/day-off-api";
+import { getDayOffRequests } from "../api/day-off-api";
 import { DAY_OFF_CONSTANTS, DAY_OFF_ERROR_MESSAGES } from "../constants";
 
-/**
- * @deprecated Use useDayOffList and useDayOffActions instead
- * This hook combines list management and actions, which violates single responsibility principle.
- *
- * For list management: use useDayOffList()
- * For actions: use useDayOffActions()
- */
-export const useDayOffManagement = () => {
+interface UseDayOffListReturn {
+  // 데이터
+  data: DayOffRequest[];
+  filteredCount: number;
+  totalPages: number;
+  currentPage: number;
+
+  // 필터
+  filters: DayOffRequestFilter;
+
+  // 상태
+  loading: boolean;
+  error: string | null;
+
+  // 유틸리티
+  clearError: () => void;
+  refreshData: () => void;
+}
+
+export const useDayOffList = (): UseDayOffListReturn => {
   const searchParams = useSearchParams();
 
   // 상태 관리
   const [data, setData] = useState<DayOffRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // 페이지네이션 상태
   const [totalPages, setTotalPages] = useState(1);
@@ -70,7 +77,7 @@ export const useDayOffManagement = () => {
     return params;
   }, [currentPage, currentFilters]);
 
-  // 초기 데이터 로드
+  // 데이터 로드
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -95,44 +102,6 @@ export const useDayOffManagement = () => {
     loadData();
   }, [loadData]);
 
-  // 승인 처리
-  const handleApprove = useCallback(
-    async (id: string) => {
-      setActionLoading(id);
-      setError(null);
-
-      try {
-        await approveDayOffRequest(id);
-        await loadData();
-      } catch (err) {
-        setError(DAY_OFF_ERROR_MESSAGES.APPROVE_FAILED);
-        console.error("Failed to approve day-off request:", err);
-      } finally {
-        setActionLoading(null);
-      }
-    },
-    [loadData]
-  );
-
-  // 반려 처리
-  const handleReject = useCallback(
-    async (id: string) => {
-      setActionLoading(id);
-      setError(null);
-
-      try {
-        await rejectDayOffRequest(id);
-        await loadData();
-      } catch (err) {
-        setError(DAY_OFF_ERROR_MESSAGES.REJECT_FAILED);
-        console.error("Failed to reject day-off request:", err);
-      } finally {
-        setActionLoading(null);
-      }
-    },
-    [loadData]
-  );
-
   // 에러 초기화
   const clearError = useCallback(() => {
     setError(null);
@@ -153,14 +122,9 @@ export const useDayOffManagement = () => {
     // 필터
     filters: currentFilters,
 
-    // 액션
-    handleApprove,
-    handleReject,
-
     // 상태
     loading,
     error,
-    actionLoading,
 
     // 유틸리티
     clearError,

@@ -8,7 +8,7 @@ interface GroupStatusActionBarProps {
   totalCount: number;
   selectedCount: number;
   filters: GroupStatusFilters;
-  onSearchChange: (value: string) => void;
+  // onSearchChange: (value: string) => void; // 현재 사용되지 않음
   onGroupChange: (value: string) => void;
   onDeleteSelected: () => void;
 }
@@ -32,13 +32,13 @@ const GroupStatusActionBar: React.FC<GroupStatusActionBarProps> = ({
   totalCount,
   selectedCount,
   filters,
-  onSearchChange,
+  // onSearchChange, // 현재 사용되지 않음
   onGroupChange,
   onDeleteSelected,
 }) => {
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onSearchChange(e.target.value);
-  };
+  // const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   onSearchChange(e.target.value);
+  // };
 
   return (
     <div className="flex items-center justify-between">
@@ -60,11 +60,7 @@ const GroupStatusActionBar: React.FC<GroupStatusActionBarProps> = ({
             placeholder="그룹"
           />
 
-          <SearchWithButton
-            placeholder="그룹명 또는 그룹장 검색"
-            containerClassName="w-[420px]"
-            searchClassName="w-[360px]"
-          />
+          <SearchWithButton placeholder="그룹명 또는 그룹장 검색" />
         </div>
 
         {/* 버튼 그룹 */}
