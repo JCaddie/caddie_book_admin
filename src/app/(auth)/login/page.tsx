@@ -106,8 +106,7 @@ export default function LoginPage() {
         email: data.user.email,
         role: data.user.role as "MASTER" | "ADMIN",
         golfCourseId: data.user.golf_course_id || undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date().toISOString(),
       };
 
       // 로그인 함수 호출
@@ -119,6 +118,7 @@ export default function LoginPage() {
           ? error.message
           : "로그인 중 오류가 발생했습니다.";
       setError(errorMessage);
+      // 로그인 실패 시 입력 필드 값 유지 (새로고침 방지)
     } finally {
       setIsSubmitting(false);
     }
@@ -154,8 +154,7 @@ export default function LoginPage() {
         email: data.user.email,
         role: data.user.role as "MASTER" | "ADMIN",
         golfCourseId: data.user.golf_course_id || undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date().toISOString(),
       };
 
       // 로그인 함수 호출
@@ -167,6 +166,7 @@ export default function LoginPage() {
           ? error.message
           : "로그인 중 오류가 발생했습니다.";
       setError(errorMessage);
+      // 로그인 실패 시 입력 필드 값 유지 (새로고침 방지)
     } finally {
       setIsSubmitting(false);
     }

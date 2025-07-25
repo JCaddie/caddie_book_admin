@@ -5,12 +5,28 @@ import { X } from "lucide-react";
 import { Button } from "@/shared/components/ui";
 import { RoundingSettings } from "@/modules/work/types";
 
+// 골프장 간소 타입 정의
+interface GolfCourseSimple {
+  id: string;
+  name: string;
+}
+
 interface RoundingSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (settings: RoundingSettings) => void;
+  onSave: (
+    settings: RoundingSettings,
+    date: string,
+    golfCourseName?: string
+  ) => void;
   initialSettings?: RoundingSettings;
   isLoading?: boolean;
+  golfCourseName?: string;
+  showGolfCourseSelect?: boolean;
+  onGolfCourseSelect?: (golfCourseId: string) => void;
+  golfCourses?: GolfCourseSimple[];
+  isGolfCoursesLoading?: boolean;
+  initialDate?: string;
 }
 
 const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
@@ -19,12 +35,22 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
   onSave,
   initialSettings,
   isLoading = false,
+  golfCourseName,
+  showGolfCourseSelect = false,
+  onGolfCourseSelect,
+  golfCourses = [],
+  isGolfCoursesLoading = false,
+  initialDate,
 }) => {
   const [settings, setSettings] = useState<RoundingSettings>({
     numberOfRounds: 1,
     timeUnit: 10,
     roundTimes: [{ round: 1, startTime: "06:00", endTime: "08:00" }],
   });
+
+  const [selectedDate, setSelectedDate] = useState<string>(
+    initialDate || new Date().toISOString().split("T")[0]
+  );
 
   // 모달이 열릴 때마다 초기 설정으로 리셋
   useEffect(() => {
@@ -102,6 +128,18 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
   };
 
   const handleSave = () => {
+    // 날짜 검증
+    if (!selectedDate) {
+      alert("날짜를 선택해주세요.");
+      return;
+    }
+
+    // 골프장 선택 검증
+    if (showGolfCourseSelect && !golfCourseName) {
+      alert("골프장을 선택해주세요.");
+      return;
+    }
+
     // 유효성 검사
     for (const roundTime of settings.roundTimes) {
       if (!roundTime.startTime || !roundTime.endTime) {
@@ -120,7 +158,7 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
       }
     }
 
-    onSave(settings);
+    onSave(settings, selectedDate, golfCourseName);
   };
 
   return (
@@ -147,6 +185,45 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
 
         {/* 컨텐츠 */}
         <div className="p-6 space-y-6">
+          {/* 날짜 선택 */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-700">
+              날짜 선택
+            </label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+            />
+          </div>
+
+          {/* 골프장 선택 */}
+          {showGolfCourseSelect && (
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-gray-700">
+                골프장 선택
+              </label>
+              {isGolfCoursesLoading ? (
+                <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                  골프장 목록을 불러오는 중...
+                </div>
+              ) : (
+                <select
+                  onChange={(e) => onGolfCourseSelect?.(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                >
+                  <option value="">골프장을 선택하세요</option>
+                  {golfCourses.map((golfCourse) => (
+                    <option key={golfCourse.id} value={golfCourse.id}>
+                      {golfCourse.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
           {/* 부 수 선택 */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">부 수</label>

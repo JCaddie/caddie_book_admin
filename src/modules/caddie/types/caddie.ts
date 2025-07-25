@@ -12,21 +12,8 @@ export type EmploymentType =
   | "CONTRACT"
   | "TEMPORARY";
 
-// 골프장 정보 타입
-export interface GolfCourse {
-  id: string;
-  name: string;
-  region: string;
-}
-
-// 그룹 정보 타입
-export interface Group {
-  id: string;
-  name: string;
-  golf_course_name: string;
-  group_type: string;
-  order: number;
-}
+// 통합된 도메인 타입 사용
+import type { GolfCourse, Group } from "@/shared/types/domain";
 
 // 특수 그룹 타입
 export interface SpecialGroup {
@@ -59,7 +46,7 @@ export interface AssignedWork {
 }
 
 // 캐디 기본 정보 인터페이스
-export interface Caddie {
+export interface Caddie extends Record<string, unknown> {
   id: string;
   name: string;
   golf_course: GolfCourse;

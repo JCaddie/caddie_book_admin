@@ -255,8 +255,8 @@ export default function WorkSchedule({
         <CaddieCard
           key={`${caddie.id}-${fieldIndex}-${timeIndex}-${part}`}
           caddie={caddie}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
+          onDragStart={() => handleDragStart(caddie)}
+          onDragEnd={() => handleDragEnd()}
           isDragging={draggedCaddie?.id === caddie.id}
         />
       );

@@ -3,6 +3,18 @@
 // API 카트 상태 타입
 export type ApiCartStatus = "available" | "in_use" | "maintenance";
 
+// API 상태 선택지 타입
+export interface ApiStatusChoice {
+  value: ApiCartStatus;
+  label: string;
+}
+
+// API 배터리 레벨 선택지 타입
+export interface ApiBatteryLevelChoice {
+  value: number;
+  label: string;
+}
+
 // API 골프장 정보
 export interface ApiGolfCourse {
   id: string;
@@ -109,18 +121,12 @@ export interface ApiCartHistoryResponse {
 export interface ApiStatusChoicesResponse {
   success: boolean;
   message: string;
-  choices: Array<{
-    value: ApiCartStatus;
-    label: string;
-  }>;
+  status_choices: ApiStatusChoice[];
 }
 
 // API 배터리 레벨 선택지 응답
 export interface ApiBatteryLevelChoicesResponse {
   success: boolean;
   message: string;
-  choices: Array<{
-    value: number;
-    label: string;
-  }>;
+  battery_level_choices: ApiBatteryLevelChoice[];
 }

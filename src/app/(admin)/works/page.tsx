@@ -1,23 +1,41 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { ConfirmationModal, Pagination } from "@/shared/components/ui";
 import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
-import { Work } from "@/modules/work/types";
+import { RoundingSettings, Work } from "@/modules/work/types";
 import {
   useWorksData,
   useWorksDelete,
   useWorksSelection,
 } from "@/modules/work/hooks";
 import { WorksActionBar, WorksTable } from "@/modules/work/components";
+import RoundingSettingsModal from "@/modules/work/components/rounding-settings-modal";
+import { createWorkSchedule } from "@/modules/work/api";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { useGolfCoursesSimple } from "@/modules/golf-course/hooks/use-golf-courses-simple";
 
 const WorksPage: React.FC = () => {
   const router = useRouter();
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: PAGE_TITLES.WORKS });
+
+  // 권한 및 골프장 데이터
+  const { user, hasRole } = useAuth();
+  const { data: golfCoursesData, isLoading: isGolfCoursesLoading } =
+    useGolfCoursesSimple();
+
+  // 라운딩 설정 모달 상태
+  const [isRoundingSettingsModalOpen, setIsRoundingSettingsModalOpen] =
+    useState(false);
+  const [selectedGolfCourseId, setSelectedGolfCourseId] = useState<string>("");
+  const [selectedGolfCourseName, setSelectedGolfCourseName] =
+    useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [isCreating, setIsCreating] = useState(false);
 
   // 커스텀 훅들 사용
   const {
@@ -62,9 +80,79 @@ const WorksPage: React.FC = () => {
     router.push(`/works/${work.golfCourseId}${dateParam}`);
   };
 
-  // 생성 핸들러 - 생성 페이지로 이동
+  // 생성 핸들러 - 라운딩 설정 모달 열기
   const handleCreate = () => {
-    router.push("/works/create");
+    // 현재 날짜를 기본값으로 설정
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today);
+
+    // 권한에 따라 골프장 설정
+    if (hasRole("MASTER")) {
+      // MASTER: 골프장 선택 가능
+      setSelectedGolfCourseId("");
+      setSelectedGolfCourseName("");
+    } else if (hasRole("ADMIN") && user?.golfCourseId) {
+      // ADMIN: 고정된 골프장 사용
+      setSelectedGolfCourseId(user.golfCourseId);
+      // 골프장 이름은 API에서 가져온 데이터에서 찾기
+      const golfCourse = golfCoursesData?.results.find(
+        (gc) => gc.id === user.golfCourseId
+      );
+      setSelectedGolfCourseName(golfCourse?.name || "");
+    }
+
+    setIsRoundingSettingsModalOpen(true);
+  };
+
+  // 라운딩 설정 모달 핸들러
+  const handleCloseRoundingSettings = () => {
+    setIsRoundingSettingsModalOpen(false);
+    setSelectedGolfCourseId("");
+    setSelectedDate("");
+  };
+
+  const handleGolfCourseSelect = (golfCourseId: string) => {
+    setSelectedGolfCourseId(golfCourseId);
+    // API에서 가져온 골프장 데이터에서 이름 찾기
+    const golfCourse = golfCoursesData?.results.find(
+      (gc) => gc.id === golfCourseId
+    );
+    setSelectedGolfCourseName(golfCourse?.name || "");
+  };
+
+  const handleSaveRoundingSettings = async (
+    settings: RoundingSettings,
+    date: string
+  ) => {
+    try {
+      setIsCreating(true);
+
+      // 근무표 생성 API 호출
+      const result = await createWorkSchedule(
+        selectedGolfCourseId,
+        date,
+        settings.timeUnit,
+        settings.roundTimes.map((roundTime) => ({
+          part_number: roundTime.round,
+          start_time: roundTime.startTime,
+          end_time: roundTime.endTime,
+        }))
+      );
+
+      // 모달 닫기
+      setIsRoundingSettingsModalOpen(false);
+
+      // 성공 메시지 표시
+      alert("근무표가 성공적으로 생성되었습니다.");
+
+      // 상세 페이지로 이동
+      router.push(`/works/${result.golfCourseId}?date=${result.date}`);
+    } catch (error) {
+      console.error("근무표 생성 실패:", error);
+      alert("근무표 생성에 실패했습니다.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   // 삭제 확인 핸들러
@@ -138,6 +226,20 @@ const WorksPage: React.FC = () => {
         confirmText="삭제"
         cancelText="취소"
         isLoading={isDeleting}
+      />
+
+      {/* 라운딩 설정 모달 */}
+      <RoundingSettingsModal
+        isOpen={isRoundingSettingsModalOpen}
+        onClose={handleCloseRoundingSettings}
+        onSave={handleSaveRoundingSettings}
+        isLoading={isCreating}
+        showGolfCourseSelect={hasRole("MASTER")}
+        onGolfCourseSelect={handleGolfCourseSelect}
+        golfCourseName={selectedGolfCourseName}
+        golfCourses={golfCoursesData?.results || []}
+        isGolfCoursesLoading={isGolfCoursesLoading}
+        initialDate={selectedDate}
       />
     </div>
   );

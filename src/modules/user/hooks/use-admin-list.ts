@@ -7,7 +7,7 @@ import { AdminsApiResponse, getAdmins } from "../api/user-api";
 export const useAdminList = () => {
   return useQuery<AdminsApiResponse, Error>({
     queryKey: ["admin-list"],
-    queryFn: getAdmins,
+    queryFn: () => getAdmins(),
     staleTime: 5 * 60 * 1000, // 5분
     retry: 3,
     retryDelay: 1000,

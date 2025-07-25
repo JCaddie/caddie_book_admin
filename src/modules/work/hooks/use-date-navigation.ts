@@ -18,7 +18,7 @@ export function useDateNavigation(golfCourseId: string, dateParam?: string) {
     }
   }, [dateParam, golfCourseId, router]);
 
-  // 날짜 변경 시 currentDate 업데이트
+  // 날짜 변경 시 currentDate 업데이트 (한 번만 실행)
   useEffect(() => {
     if (dateParam) {
       setCurrentDate(new Date(dateParam));

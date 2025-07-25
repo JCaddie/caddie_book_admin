@@ -1,21 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  createUser,
-  deleteMultipleUsers,
-  deleteUser,
-  updateUser,
-  updateUserPassword,
-} from "../api/user-api";
+// import {
+//   createUser,
+//   deleteMultipleUsers,
+//   deleteUser,
+//   updateUser,
+//   updateUserPassword,
+// } from "../api/user-api";
 import { ADMIN_LIST_QUERY_KEY } from "./use-admin-list";
 
 /**
- * 사용자 생성 mutation 훅
+ * 사용자 생성 mutation 훅 (임시 주석 처리)
  */
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createUser,
+    mutationFn: async () => {
+      throw new Error("사용자 생성 기능이 아직 구현되지 않았습니다.");
+    },
     onSuccess: () => {
       // 관리자 목록 쿼리 무효화하여 재페치
       queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
@@ -27,13 +29,15 @@ export const useCreateUser = () => {
 };
 
 /**
- * 단일 사용자 삭제 mutation 훅
+ * 단일 사용자 삭제 mutation 훅 (임시 주석 처리)
  */
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteUser,
+    mutationFn: async () => {
+      throw new Error("사용자 삭제 기능이 아직 구현되지 않았습니다.");
+    },
     onSuccess: () => {
       // 관리자 목록 쿼리 무효화하여 재페치
       queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
@@ -45,13 +49,15 @@ export const useDeleteUser = () => {
 };
 
 /**
- * 여러 사용자 삭제 mutation 훅
+ * 여러 사용자 삭제 mutation 훅 (임시 주석 처리)
  */
 export const useDeleteUsers = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteMultipleUsers,
+    mutationFn: async () => {
+      throw new Error("사용자 삭제 기능이 아직 구현되지 않았습니다.");
+    },
     onSuccess: () => {
       // 관리자 목록 쿼리 무효화하여 재페치
       queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
@@ -63,32 +69,18 @@ export const useDeleteUsers = () => {
 };
 
 /**
- * 사용자 기본 정보 수정 mutation 훅
+ * 사용자 기본 정보 수정 mutation 훅 (임시 주석 처리)
  */
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      userId,
-      userData,
-    }: {
-      userId: string;
-      userData: Partial<{
-        username: string;
-        name: string;
-        phone: string;
-        email: string;
-        golf_course_id: string;
-      }>;
-    }) => updateUser(userId, userData),
-    onSuccess: (data, variables) => {
+    mutationFn: async () => {
+      throw new Error("사용자 정보 수정 기능이 아직 구현되지 않았습니다.");
+    },
+    onSuccess: () => {
       // 관리자 목록 쿼리 무효화하여 재페치
       queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
-      // 개별 사용자 상세 쿼리도 무효화
-      queryClient.invalidateQueries({
-        queryKey: ["admin-detail", variables.userId],
-      });
     },
     onError: (error) => {
       console.error("사용자 정보 수정 중 오류 발생:", error);
@@ -97,26 +89,19 @@ export const useUpdateUser = () => {
 };
 
 /**
- * 사용자 비밀번호 수정 mutation 훅
+ * 사용자 비밀번호 수정 mutation 훅 (임시 주석 처리)
  */
 export const useUpdateUserPassword = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      userId,
-      passwordData,
-    }: {
-      userId: string;
-      passwordData: {
-        password: string;
-        password_confirm: string;
-      };
-    }) => updateUserPassword(userId, passwordData),
-    onSuccess: (data, variables) => {
+    mutationFn: async () => {
+      throw new Error("사용자 비밀번호 수정 기능이 아직 구현되지 않았습니다.");
+    },
+    onSuccess: () => {
       // 개별 사용자 상세 쿼리 무효화
       queryClient.invalidateQueries({
-        queryKey: ["admin-detail", variables.userId],
+        queryKey: ["admin-detail"],
       });
     },
     onError: (error) => {

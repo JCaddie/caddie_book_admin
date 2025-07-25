@@ -1,6 +1,8 @@
 import { User } from "../types";
 
-// Mock 데이터 (25개)
+// Mock 데이터 (25개) - 임시로 주석 처리
+export const mockUsers: User[] = [];
+/*
 export const mockUsers: User[] = [
   {
     id: "1",
@@ -9,6 +11,10 @@ export const mockUsers: User[] = [
     phone: "010-1234-5678",
     email: "master1@company.com",
     role: "MASTER",
+    role_display: "마스터",
+    golf_course_id: null,
+    golf_course_name: null,
+    created_at: "2024-01-01T00:00:00Z",
   },
   {
     id: "2",
@@ -203,3 +209,4 @@ export const mockUsers: User[] = [
     role: "ADMIN",
   },
 ];
+*/

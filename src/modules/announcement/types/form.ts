@@ -43,7 +43,9 @@ export type UpdateAnnouncementData = Partial<AnnouncementFormData>;
  */
 
 // 테이블 행 번호가 포함된 공지사항
-export interface AnnouncementWithNo extends Announcement {
+export interface AnnouncementWithNo
+  extends Announcement,
+    Record<string, unknown> {
   no: number;
 }
 

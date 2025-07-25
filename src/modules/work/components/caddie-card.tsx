@@ -37,11 +37,11 @@ export default function CaddieCard({
     };
     e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
     e.dataTransfer.effectAllowed = "move";
-    onDragStart?.(caddie);
+    onDragStart?.(e);
   };
 
-  const handleDragEnd = () => {
-    onDragEnd?.(caddie);
+  const handleDragEnd = (e: React.DragEvent) => {
+    onDragEnd?.(e);
   };
 
   return (
