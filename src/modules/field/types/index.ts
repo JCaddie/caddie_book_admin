@@ -1,12 +1,10 @@
 // ================================
 // 필드 기준 타입 (상세 API 기준)
 // ================================
-export interface Field {
+import type { Field as BaseField } from "@/shared/types/domain";
+
+export interface Field extends Omit<BaseField, "id"> {
   id: number;
-  name: string;
-  golf_course_id: string;
-  golf_course_name: string;
-  is_active: boolean;
   hole_count: number;
   description: string;
   created_at: string;

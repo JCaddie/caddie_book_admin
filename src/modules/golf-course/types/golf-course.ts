@@ -1,14 +1,13 @@
-export interface GolfCourse {
-  id: string;
+// 통합된 도메인 타입 사용
+import type { GolfCourse as BaseGolfCourse } from "@/shared/types/domain";
+
+export interface GolfCourse extends BaseGolfCourse {
   no: number;
-  name: string;
-  region: string;
   contractStatus: string;
   phone: string;
   membershipType: string;
   caddies: number;
   fields: number;
-  isEmpty?: boolean;
 }
 
 export interface GolfCourseDetail {
