@@ -19,8 +19,6 @@ function toApiPayload(formData: EditableGolfCourse) {
     region: formData.region,
     address: formData.address,
     contract_status: formData.contractStatus,
-    contract_start_date: formData.contractStartDate,
-    contract_end_date: formData.contractEndDate,
     phone: formData.phone,
     ceo_name: formData.representative.name,
     manager_name: formData.manager.name,
@@ -62,8 +60,6 @@ const GolfCourseEditPage: React.FC = () => {
         region: detail.region,
         address: detail.address,
         contractStatus: detail.contract_status,
-        contractStartDate: detail.contract_start_date,
-        contractEndDate: detail.contract_end_date,
         phone: detail.phone,
         representative: {
           name: detail.ceo_name,

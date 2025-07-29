@@ -6,14 +6,17 @@ import RoleGuard from "@/shared/components/auth/role-guard";
 import { Button } from "@/shared/components/ui";
 import { GolfCourseForm } from "@/shared/components/golf-course";
 import { EditableGolfCourse } from "@/modules/golf-course/types/golf-course";
-import { PAGE_TITLES, useDocumentTitle } from "@/shared/hooks";
+import {
+  PAGE_TITLES,
+  useConstantOptions,
+  useDocumentTitle,
+} from "@/shared/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import { useGolfCourseOptions } from "@/shared/hooks/use-golf-course-options";
 import { apiClient } from "@/shared/lib/api-client";
 
 // 골프장 생성 API 직접 구현 (POST)
 const createGolfCourse = async (data: EditableGolfCourse) => {
-  return apiClient.post("/api/v1/golf-courses/", data);
+  return apiClient.post("/api/v1/golf-courses/courses/", data);
 };
 
 const EMPTY_FORM: EditableGolfCourse = {
@@ -22,8 +25,6 @@ const EMPTY_FORM: EditableGolfCourse = {
   region: "",
   address: "",
   contractStatus: "",
-  contractStartDate: "",
-  contractEndDate: "",
   phone: "",
   representative: { name: "", contact: "", email: "" },
   manager: { name: "", contact: "", email: "" },
@@ -38,7 +39,14 @@ const GolfCourseCreatePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
-  const { contractOptions, loading: optionsLoading } = useGolfCourseOptions();
+  const { options: contractOptionsRaw, isLoading: optionsLoading } =
+    useConstantOptions("contract_statuses");
+
+  // value를 string으로 변환
+  const contractOptions = contractOptionsRaw.map((opt) => ({
+    ...opt,
+    value: String(opt.value),
+  }));
 
   const handleInputChange = (field: string, value: string) => {
     if (field.includes(".")) {

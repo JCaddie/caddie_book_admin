@@ -65,21 +65,6 @@ const GolfCourseForm: React.FC<GolfCourseFormProps> = ({
               placeholder="계약현황"
               disabled={contractStatusLoading}
             />
-            <Input
-              value={formData.contractStartDate ?? ""}
-              onChange={(e) =>
-                onInputChange("contractStartDate", e.target.value)
-              }
-              className="w-[200px] border-gray-200"
-              placeholder="시작일"
-            />
-            <span className="text-sm text-gray-900">~</span>
-            <Input
-              value={formData.contractEndDate ?? ""}
-              onChange={(e) => onInputChange("contractEndDate", e.target.value)}
-              className="w-[200px] border-gray-200"
-              placeholder="종료일"
-            />
           </div>
         </div>
 

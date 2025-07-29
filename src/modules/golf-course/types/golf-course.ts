@@ -73,8 +73,6 @@ export interface EditableGolfCourse {
   region: string;
   address: string;
   contractStatus: string;
-  contractStartDate: string;
-  contractEndDate: string;
   phone: string;
   representative: {
     name: string;
