@@ -13,3 +13,6 @@ export * from "./use-url-search-params";
 
 // 새로운 통합 훅
 export * from "./use-api-mutation";
+
+// 백엔드 상수 관련 훅
+export * from "./use-constants";

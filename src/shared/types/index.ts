@@ -44,6 +44,31 @@ export type {
 // 사용자 관련 타입
 export type { User, UserRole } from "./domain";
 
+// 백엔드 상수 관련 타입
+export type {
+  ConstantItem,
+  NumericConstantItem,
+  BooleanConstantItem,
+  BackendConstants,
+  ConstantsApiResponse,
+  ConstantCategory,
+  Gender as ConstantGender,
+  EmploymentType as ConstantEmploymentType,
+  RegistrationStatus,
+  DayOffRequestType,
+  DayOffRequestStatus,
+  ContractStatus,
+  MembershipType,
+  GroupType,
+  WorkScheduleType,
+  WorkScheduleStatus,
+  WorkSlotStatus,
+  ShiftSwapStatus,
+  RoundingStatus,
+  CartStatus as ConstantCartStatus,
+  BatteryLevel,
+} from "./constants";
+
 // 공통 타입
 export type { WithId, ApiResponse, ApiError, DragData } from "./domain";
 
