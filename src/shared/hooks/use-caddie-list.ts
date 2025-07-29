@@ -19,6 +19,7 @@ export const useCaddieList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
 
   // 필터 상태
@@ -69,8 +70,18 @@ export const useCaddieList = () => {
 
       const response = await getCaddieList(params);
 
-      setCaddies(response.results);
-      setTotalCount(response.count);
+      // 새로운 API 응답 구조에 맞게 데이터 추출
+      const caddies = response.data.results.map((caddie) => ({
+        ...caddie,
+        // 호환성을 위한 필드 매핑
+        name: caddie.user_name,
+        phone: caddie.user_phone,
+        id: String(caddie.id), // UI에서 string ID를 사용하므로 변환
+      }));
+
+      setCaddies(caddies);
+      setTotalCount(response.data.count);
+      setTotalPages(response.data.total_pages);
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -145,8 +156,7 @@ export const useCaddieList = () => {
   // 선택된 항목 수
   const selectedCount = selection.selectedRows.length;
 
-  // 페이지네이션 계산
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+  // 페이지네이션 계산 (API에서 제공하는 total_pages 사용)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

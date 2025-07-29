@@ -3,19 +3,19 @@ import type { CaddieDetail, UpdateCaddieRequest } from "../types";
 
 /**
  * 캐디 상세정보 조회
- * GET /api/v1/auth/caddies/{id}/
+ * GET /api/v1/caddies/{id}/
  */
 export const getCaddieDetail = async (id: string): Promise<CaddieDetail> => {
-  const endpoint = `/api/v1/auth/caddies/${id}/`;
+  const endpoint = `/api/v1/caddies/${id}/`;
   return apiClient.get<CaddieDetail>(endpoint);
 };
 
 /**
  * 캐디 삭제
- * DELETE /api/v1/auth/caddies/{id}/
+ * DELETE /api/v1/caddies/{id}/
  */
 export const deleteCaddie = async (id: string): Promise<void> => {
-  const endpoint = `/api/v1/auth/caddies/${id}/`;
+  const endpoint = `/api/v1/caddies/${id}/`;
   return apiClient.delete<void>(endpoint);
 };
 
@@ -29,13 +29,13 @@ export const deleteCaddies = async (ids: string[]): Promise<void> => {
 
 /**
  * 캐디 정보 업데이트
- * PATCH /api/v1/auth/caddies/{id}/
+ * PATCH /api/v1/caddies/{id}/
  */
 export const updateCaddie = async (
   id: string,
   data: UpdateCaddieRequest
 ): Promise<CaddieDetail> => {
-  const endpoint = `/api/v1/auth/caddies/${id}/`;
+  const endpoint = `/api/v1/caddies/${id}/`;
   return apiClient.patch<CaddieDetail>(endpoint, data);
 };
 
