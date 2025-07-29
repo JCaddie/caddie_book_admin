@@ -84,8 +84,7 @@ export interface GolfCourseSimple {
 export interface GolfCourseSimpleResponse {
   success: boolean;
   message: string;
-  count: number;
-  results: GolfCourseSimple[];
+  data: GolfCourseSimple[];
 }
 
 /**

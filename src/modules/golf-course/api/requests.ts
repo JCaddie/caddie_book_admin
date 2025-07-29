@@ -16,7 +16,6 @@ import type {
   GolfCourseGroupDetailResponse,
   GolfCourseGroupStatusResponse,
   GolfCourseListResponse,
-  GolfCourseSimple,
   GolfCourseSimpleResponse,
 } from "../types";
 
@@ -92,12 +91,12 @@ export const bulkDeleteGolfCourses = async (ids: string[]): Promise<void> => {
 /**
  * 골프장 간소 목록 조회 (드롭다운용)
  */
-export const fetchGolfCoursesSimple = async (): Promise<GolfCourseSimple[]> => {
-  const response = await apiClient.get<GolfCourseSimpleResponse>(
-    GOLF_COURSE_ENDPOINTS.SIMPLE_LIST
-  );
-  return response.results;
-};
+export const fetchGolfCoursesSimple =
+  async (): Promise<GolfCourseSimpleResponse> => {
+    return await apiClient.get<GolfCourseSimpleResponse>(
+      GOLF_COURSE_ENDPOINTS.SIMPLE_LIST
+    );
+  };
 
 /**
  * 골프장 그룹 상세 정보 조회

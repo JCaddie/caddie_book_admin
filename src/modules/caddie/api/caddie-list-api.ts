@@ -26,7 +26,7 @@ export const getCaddieList = async (
     searchParams.append("special_team", params.special_team);
   }
   if (params?.golf_course_id) {
-    searchParams.append("golf_course_id", params.golf_course_id);
+    searchParams.append("golf_course", params.golf_course_id);
   }
 
   const queryString = searchParams.toString();
