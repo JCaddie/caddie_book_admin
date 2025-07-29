@@ -1,31 +1,28 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  getCaddieGroups,
   updateCaddieEmploymentType,
-  updateCaddieGolfCourse,
   updateCaddiePrimaryGroup,
   updateCaddieSpecialGroups,
   updateCaddieTeamLeader,
   updateCaddieWorkScore,
 } from "../../api";
 import type { CaddieDetail } from "../../types";
-import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
 
 interface UseCaddieEditProps {
   caddieId: string;
+  golfCourseId?: string; // 골프장 ID 추가
   onUpdate?: (updatedCaddie: CaddieDetail) => void;
 }
 
 interface UseCaddieEditReturn {
   employmentTypeChoices: Array<{ value: string; label: string }>;
-  golfCourseChoices: Array<{ value: string; label: string }>;
   teamLeaderChoices: Array<{ value: string; label: string }>;
-  // TODO: 주 그룹과 특수반 선택지는 실제 API에서 가져와야 함
   primaryGroupChoices: Array<{ value: string; label: string }>;
   specialGroupChoices: Array<{ value: string; label: string }>;
   updateEmploymentType: (employmentType: string) => Promise<void>;
-  updateGolfCourse: (golfCourseId: string) => Promise<void>;
   updateWorkScore: (workScore: number) => Promise<void>;
   updateTeamLeader: (isTeamLeader: string) => Promise<void>;
   updatePrimaryGroup: (primaryGroupId: string) => Promise<void>;
@@ -36,10 +33,21 @@ interface UseCaddieEditReturn {
 
 export const useCaddieEdit = ({
   caddieId,
+  golfCourseId,
   onUpdate,
 }: UseCaddieEditProps): UseCaddieEditReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 골프장은 변경 불가능하므로 옵션 제거
+
+  // 그룹 옵션 상태
+  const [primaryGroupChoices, setPrimaryGroupChoices] = useState<
+    Array<{ value: string; label: string }>
+  >([{ value: "", label: "그룹 선택" }]);
+  const [specialGroupChoices, setSpecialGroupChoices] = useState<
+    Array<{ value: string; label: string }>
+  >([{ value: "", label: "특수반 선택" }]);
 
   // 고용형태 선택지
   const employmentTypeChoices = [
@@ -55,21 +63,40 @@ export const useCaddieEdit = ({
     { value: "false", label: "일반" },
   ];
 
-  // TODO: 실제로는 API에서 가져와야 함
-  const primaryGroupChoices = [
-    { value: "", label: "그룹 선택" },
-    { value: "group-1", label: "A조" },
-    { value: "group-2", label: "B조" },
-    { value: "group-3", label: "C조" },
-  ];
+  // 그룹 목록 로드
+  useEffect(() => {
+    if (!golfCourseId) return;
 
-  // TODO: 실제로는 API에서 가져와야 함 (다중 선택이지만 일단 단일 선택으로)
-  const specialGroupChoices = [
-    { value: "", label: "특수반 선택" },
-    { value: "special-1", label: "마스터반" },
-    { value: "special-2", label: "VIP반" },
-    { value: "special-3", label: "프리미엄반" },
-  ];
+    const loadGroups = async () => {
+      try {
+        // 주 그룹 목록 조회
+        const primaryResponse = await getCaddieGroups(golfCourseId, "PRIMARY");
+        const primaryOptions = [
+          { value: "", label: "그룹 선택" },
+          ...primaryResponse.data.map((group) => ({
+            value: group.id,
+            label: group.name,
+          })),
+        ];
+        setPrimaryGroupChoices(primaryOptions);
+
+        // 특수반 목록 조회
+        const specialResponse = await getCaddieGroups(golfCourseId, "SPECIAL");
+        const specialOptions = [
+          { value: "", label: "특수반 선택" },
+          ...specialResponse.data.map((group) => ({
+            value: group.id,
+            label: group.name,
+          })),
+        ];
+        setSpecialGroupChoices(specialOptions);
+      } catch (err) {
+        console.error("그룹 목록 로드 오류:", err);
+      }
+    };
+
+    loadGroups();
+  }, [golfCourseId]);
 
   // 고용형태 수정
   const updateEmploymentType = useCallback(
@@ -87,31 +114,6 @@ export const useCaddieEdit = ({
           err instanceof Error
             ? err.message
             : "고용형태 수정 중 오류가 발생했습니다.";
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [caddieId, onUpdate]
-  );
-
-  // 골프장 수정
-  const updateGolfCourse = useCallback(
-    async (golfCourseId: string) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const updatedCaddie = await updateCaddieGolfCourse(
-          caddieId,
-          golfCourseId
-        );
-        onUpdate?.(updatedCaddie);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "골프장 수정 중 오류가 발생했습니다.";
         setError(errorMessage);
         throw new Error(errorMessage);
       } finally {
@@ -219,12 +221,10 @@ export const useCaddieEdit = ({
 
   return {
     employmentTypeChoices,
-    golfCourseChoices: GOLF_COURSE_DROPDOWN_OPTIONS,
     teamLeaderChoices,
     primaryGroupChoices,
     specialGroupChoices,
     updateEmploymentType,
-    updateGolfCourse,
     updateWorkScore,
     updateTeamLeader,
     updatePrimaryGroup,

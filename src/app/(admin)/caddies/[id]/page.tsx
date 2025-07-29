@@ -5,13 +5,9 @@ import { AdminPageHeader } from "@/shared/components/layout";
 import { Pagination } from "@/shared/components/ui";
 import { useCaddieDetail, useCaddieEdit } from "@/modules/caddie/hooks";
 import { EditableCaddieField } from "@/modules/caddie/components";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useGolfCourseSimpleOptions } from "@/shared/hooks";
 
-import type {
-  CaddieCareer,
-  CaddieDetail,
-  SpecialGroup,
-} from "@/modules/caddie/types";
+import type { CaddieCareer } from "@/modules/caddie/types";
 
 interface CaddieDetailPageProps {
   params: Promise<{
@@ -21,23 +17,32 @@ interface CaddieDetailPageProps {
 
 const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
   const resolvedParams = use(params);
-  const { user } = useAuth();
-  const isMaster = user?.role === "MASTER";
 
   // 캐디 상세정보 API 연결
   const { caddie, isLoading, error, refreshData } = useCaddieDetail(
     resolvedParams.id
   );
 
+  // 골프장 목록 가져오기 (ID 찾기용)
+  const { options: golfCourseOptions } = useGolfCourseSimpleOptions();
+
+  // 캐디의 골프장 이름으로 ID 찾기
+  const golfCourseId = useMemo(() => {
+    if (!caddie || !golfCourseOptions.length) return undefined;
+
+    const foundGolfCourse = golfCourseOptions.find(
+      (option) => option.label === caddie.golf_course_name
+    );
+    return foundGolfCourse?.value || undefined;
+  }, [caddie, golfCourseOptions]);
+
   // 캐디 편집 기능 훅
   const {
     employmentTypeChoices,
-    golfCourseChoices,
     teamLeaderChoices,
     primaryGroupChoices,
     specialGroupChoices,
     updateEmploymentType,
-    updateGolfCourse,
     updateWorkScore,
     updateTeamLeader,
     updatePrimaryGroup,
@@ -46,6 +51,7 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
     error: editError,
   } = useCaddieEdit({
     caddieId: resolvedParams.id,
+    golfCourseId,
     onUpdate: () => {
       // 상세 정보가 업데이트되면 다시 로드
       refreshData();
@@ -55,10 +61,6 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
   // 편집 함수 래퍼들 (타입 호환성을 위해)
   const handleEmploymentTypeUpdate = async (value: string | number) => {
     await updateEmploymentType(String(value));
-  };
-
-  const handleGolfCourseUpdate = async (value: string | number) => {
-    await updateGolfCourse(String(value));
   };
 
   const handleWorkScoreUpdate = async (value: string | number) => {
@@ -88,39 +90,50 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
         TEMPORARY: "임시직",
       };
 
+      // 등록 상태 한글 변환
+      const registrationStatusMap: Record<string, string> = {
+        PENDING: "승인 대기",
+        APPROVED: "승인됨",
+        REJECTED: "거부됨",
+      };
+
       return {
-        id: caddie.id,
-        name: caddie.name,
+        id: String(caddie.id),
+        name: caddie.user_name,
         gender: caddie.gender,
         genderDisplay: caddie.gender === "M" ? "남" : "여",
         employmentType: caddie.employment_type,
         employmentTypeDisplay:
           employmentTypeMap[caddie.employment_type] || caddie.employment_type,
-        golfCourse: caddie.golf_course.id, // 골프장 ID를 value로 사용
-        golfCourseName: `${caddie.golf_course.name} (${caddie.golf_course.region})`, // 표시용
-        role: caddie.role_display?.role || "캐디",
-        isTeamLeader: caddie.role_display?.is_team_leader || false,
-        primaryGroup:
-          (caddie as unknown as CaddieDetail).primary_group?.name || "없음",
-        primaryGroupDescription: (caddie as unknown as CaddieDetail)
-          .primary_group
-          ? `${
-              (caddie as unknown as CaddieDetail).primary_group!.group_type
-            } (순서: ${
-              (caddie as unknown as CaddieDetail).primary_group!.order
-            })`
-          : "",
-        specialGroups: (caddie as unknown as CaddieDetail).special_groups
-          ? (caddie as unknown as CaddieDetail)
-              .special_groups!.map((sg: SpecialGroup) => sg.name)
-              .join(", ")
+        golfCourse: golfCourseId || "", // 골프장 ID
+        golfCourseName: caddie.golf_course_name,
+        role: "캐디",
+        isTeamLeader: caddie.is_team_leader,
+        primaryGroup: caddie.primary_group
+          ? `그룹 ${caddie.primary_group}`
           : "없음",
-        phone: caddie.phone,
-        email: caddie.email,
+        primaryGroupDescription: caddie.primary_group
+          ? `그룹 (순서: ${caddie.primary_group_order})`
+          : "",
+        specialGroups: caddie.special_group
+          ? `특수반 ${caddie.special_group}`
+          : "없음",
+        phone: caddie.user_phone,
+        email: caddie.user_email,
         address: caddie.address,
         workScore: caddie.work_score.toString(),
-        assignedWork: caddie.assigned_work,
-        careers: caddie.careers,
+        registrationStatus: caddie.registration_status,
+        registrationStatusDisplay:
+          registrationStatusMap[caddie.registration_status] ||
+          caddie.registration_status,
+        remainingDaysOff: caddie.remaining_days_off,
+        isOnDuty: caddie.is_on_duty,
+        assignedWork: {
+          message: "배정 근무 정보",
+          upcoming_schedules: [],
+          current_assignment: null,
+        },
+        careers: [],
       };
     }
 
@@ -254,27 +267,16 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
 
               {/* 세 번째 행 */}
               <div className="border-b border-gray-200">
-                {isMaster ? (
-                  <EditableCaddieField
-                    label="골프장"
-                    value={caddieData.golfCourse || ""}
-                    onSave={handleGolfCourseUpdate}
-                    type="select"
-                    options={golfCourseChoices}
-                    disabled={isEditLoading}
-                  />
-                ) : (
-                  <div className="flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">골프장</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {caddieData.golfCourseName}
-                      </span>
-                    </div>
+                <div className="flex">
+                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                    <span className="text-sm font-bold">골프장</span>
                   </div>
-                )}
+                  <div className="flex-1 flex items-center px-4 py-3">
+                    <span className="text-sm text-black">
+                      {caddieData.golfCourseName}
+                    </span>
+                  </div>
+                </div>
               </div>
               <div className="border-b border-gray-200">
                 <EditableCaddieField

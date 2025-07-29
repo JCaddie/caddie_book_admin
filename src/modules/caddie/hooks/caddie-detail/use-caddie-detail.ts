@@ -25,7 +25,17 @@ export const useCaddieDetail = (id: string): UseCaddieDetailReturn => {
 
     try {
       const response = await getCaddieDetail(id);
-      setCaddie(response);
+
+      // 새로운 API 응답 구조에서 데이터 추출 및 호환성 필드 매핑
+      const caddieDetail = {
+        ...response.data,
+        // 호환성을 위한 필드 매핑
+        name: response.data.user_name,
+        phone: response.data.user_phone,
+        email: response.data.user_email,
+      };
+
+      setCaddie(caddieDetail);
     } catch (err) {
       const errorMessage =
         err instanceof Error

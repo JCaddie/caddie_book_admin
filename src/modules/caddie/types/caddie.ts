@@ -13,7 +13,7 @@ export type EmploymentType =
   | "TEMPORARY";
 
 // 통합된 도메인 타입 사용
-import type { GolfCourse, Group } from "@/shared/types/domain";
+import type { GolfCourse } from "@/shared/types/domain";
 
 // 특수 그룹 타입
 export interface SpecialGroup {
@@ -74,23 +74,32 @@ export interface Caddie extends Record<string, unknown> {
   phone?: string;
 }
 
-// 캐디 상세 정보 인터페이스 (새로운 API 구조)
+// 캐디 상세 정보 인터페이스 (새로운 API 응답에 맞게 업데이트)
 export interface CaddieDetail {
-  id: string;
-  name: string;
-  employment_type: EmploymentType;
-  golf_course: GolfCourse;
-  role_display: RoleDisplay;
-  primary_group?: Group;
-  special_groups?: SpecialGroup[];
-  phone: string;
-  email: string;
-  address: string;
+  id: number;
+  user: string;
+  user_name: string;
+  user_email: string;
+  user_phone: string;
+  golf_course_name: string;
   gender: Gender;
+  employment_type: EmploymentType;
+  address: string;
+  is_on_duty: boolean;
+  primary_group: number | null;
+  primary_group_order: number;
+  special_group: number | null;
+  special_group_order: number;
   work_score: number;
   is_team_leader: boolean;
-  careers: CaddieCareer[];
-  assigned_work: AssignedWork;
+  registration_status: string;
+  remaining_days_off: number;
+  created_at: string;
+  updated_at: string;
+  // 호환성을 위한 computed 필드들
+  name?: string;
+  phone?: string;
+  email?: string;
 }
 
 // ================================
@@ -111,6 +120,33 @@ export interface CaddieListResponse {
   success: boolean;
   message: string;
   data: CaddieListData;
+}
+
+// 캐디 상세 정보 API 응답
+export interface CaddieDetailResponse {
+  success: boolean;
+  message: string;
+  data: CaddieDetail;
+}
+
+// 캐디 그룹 타입
+export interface CaddieGroup {
+  id: string;
+  name: string;
+  group_type: "PRIMARY" | "SPECIAL";
+  order: number;
+  is_active: boolean;
+  description: string;
+  golf_course: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 캐디 그룹 목록 API 응답
+export interface CaddieGroupListResponse {
+  success: boolean;
+  message: string;
+  data: CaddieGroup[];
 }
 
 // 캐디 목록 조회 파라미터

@@ -1,13 +1,20 @@
 import { apiClient } from "@/shared/lib/api-client";
-import type { CaddieDetail, UpdateCaddieRequest } from "../types";
+import type {
+  CaddieDetail,
+  CaddieDetailResponse,
+  CaddieGroupListResponse,
+  UpdateCaddieRequest,
+} from "../types";
 
 /**
  * 캐디 상세정보 조회
  * GET /api/v1/caddies/{id}/
  */
-export const getCaddieDetail = async (id: string): Promise<CaddieDetail> => {
+export const getCaddieDetail = async (
+  id: string
+): Promise<CaddieDetailResponse> => {
   const endpoint = `/api/v1/caddies/${id}/`;
-  return apiClient.get<CaddieDetail>(endpoint);
+  return apiClient.get<CaddieDetailResponse>(endpoint);
 };
 
 /**
@@ -147,4 +154,19 @@ export const updateCaddieSpecialGroups = async (
   special_group_ids: string[]
 ): Promise<CaddieDetail> => {
   return updateCaddie(id, { special_group_ids });
+};
+
+/**
+ * 캐디 그룹 목록 조회
+ * GET /api/v1/golf-courses/{golf_course_id}/groups/?group_type=TYPE
+ */
+export const getCaddieGroups = async (
+  golfCourseId: string,
+  groupType: "PRIMARY" | "SPECIAL"
+): Promise<CaddieGroupListResponse> => {
+  const searchParams = new URLSearchParams();
+  searchParams.append("group_type", groupType);
+
+  const endpoint = `/api/v1/golf-courses/${golfCourseId}/groups/?${searchParams.toString()}`;
+  return apiClient.get<CaddieGroupListResponse>(endpoint);
 };
