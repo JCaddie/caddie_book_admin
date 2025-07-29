@@ -61,7 +61,7 @@ export const fetchGolfCourses = async ({
   // 기타 필터도 필요시 추가
 
   return apiClient.get<GolfCourseListResponse>(
-    `/api/v1/golf-courses/?${params}`
+    `/api/v1/golf-courses/courses/?${params}`
   );
 };
 
@@ -81,6 +81,19 @@ export const updateGolfCourse = async (
 export async function deleteGolfCourse(id: string) {
   await apiClient.delete(`/api/v1/golf-courses/${id}/`);
   return true;
+}
+
+/**
+ * 골프장 벌크 삭제
+ */
+export async function bulkDeleteGolfCourses(ids: string[]) {
+  const response = await apiClient.post(
+    "/api/v1/golf-courses/courses/bulk-delete/",
+    {
+      ids: ids,
+    }
+  );
+  return response;
 }
 
 /**

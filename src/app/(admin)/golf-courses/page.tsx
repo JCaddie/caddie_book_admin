@@ -21,7 +21,7 @@ import type {
 import Pagination from "@/shared/components/ui/pagination";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GOLF_COURSE_TABLE_COLUMNS } from "@/shared/constants/golf-course";
-import { deleteGolfCourse } from "@/modules/golf-course/api/golf-course-api";
+import { bulkDeleteGolfCourses } from "@/modules/golf-course/api/golf-course-api";
 import {
   useConstantOptions,
   useConstantValue,
@@ -140,7 +140,8 @@ const GolfCoursesPage: React.FC = () => {
     if (selectedRowKeys.length === 0) return;
     setIsDeleting(true);
     try {
-      await Promise.all(selectedRowKeys.map((id) => deleteGolfCourse(id)));
+      // 새로운 bulk-delete API 사용
+      await bulkDeleteGolfCourses(selectedRowKeys);
       // 삭제 후 리스트 새로고침 (React Query invalidate 등 필요시 추가)
       window.location.reload();
       setSelectedRowKeys([]);
