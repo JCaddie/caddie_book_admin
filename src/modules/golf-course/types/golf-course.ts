@@ -10,6 +10,18 @@ export interface GolfCourse extends BaseGolfCourse {
   fields: number;
 }
 
+// 실제 API 응답 구조에 맞는 골프장 타입
+export interface GolfCourseApiResponse {
+  id: string; // UUID 형태의 골프장 ID
+  name: string; // 골프장명
+  region: string; // 지역
+  contract_status: string; // 계약 상태 (snake_case)
+  phone: string; // 전화번호 (빈 문자열 가능)
+  membership_type: string; // 회원제 타입 (snake_case)
+  total_caddies: number; // 총 캐디 수 (snake_case)
+  field_count: number; // 필드 수 (snake_case)
+}
+
 export interface GolfCourseDetail {
   id: string;
   name: string;
@@ -34,14 +46,18 @@ export interface GolfCourseDetail {
   is_active: boolean;
 }
 
-export interface GolfCourseListResponse {
-  success: boolean;
-  message: string;
+export interface GolfCourseListData {
   count: number;
   page: number;
   page_size: number;
   total_pages: number;
-  results: GolfCourse[];
+  results: GolfCourseApiResponse[];
+}
+
+export interface GolfCourseListResponse {
+  success: boolean;
+  message: string;
+  data: GolfCourseListData;
 }
 
 export interface GolfCourseFilters {
