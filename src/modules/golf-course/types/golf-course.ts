@@ -31,8 +31,8 @@ export interface GolfCourseDetail {
   ceo_name: string;
   membership_type: string;
   contract_status: string;
-  contract_start_date: string;
-  contract_end_date: string;
+  contract_start_date: string | null;
+  contract_end_date: string | null;
   manager_name: string;
   manager_contact: string;
   manager_email: string;
@@ -44,6 +44,13 @@ export interface GolfCourseDetail {
   created_at: string;
   updated_at: string;
   is_active: boolean;
+}
+
+// 골프장 상세 정보 API 응답 타입
+export interface GolfCourseDetailResponse {
+  success: boolean;
+  message: string;
+  data: GolfCourseDetail;
 }
 
 export interface GolfCourseListData {
@@ -73,7 +80,9 @@ export interface EditableGolfCourse {
   region: string;
   address: string;
   contractStatus: string;
+  membershipType: string;
   phone: string;
+  isActive: boolean;
   representative: {
     name: string;
     contact: string;

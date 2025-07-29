@@ -16,7 +16,7 @@ import { apiClient } from "@/shared/lib/api-client";
 
 // 골프장 생성 API 직접 구현 (POST)
 const createGolfCourse = async (data: EditableGolfCourse) => {
-  return apiClient.post("/api/v1/golf-courses/courses/", data);
+  return apiClient.post("/api/v1/golf-courses/", data);
 };
 
 const EMPTY_FORM: EditableGolfCourse = {
@@ -25,7 +25,9 @@ const EMPTY_FORM: EditableGolfCourse = {
   region: "",
   address: "",
   contractStatus: "",
+  membershipType: "",
   phone: "",
+  isActive: true,
   representative: { name: "", contact: "", email: "" },
   manager: { name: "", contact: "", email: "" },
 };
@@ -39,11 +41,23 @@ const GolfCourseCreatePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
-  const { options: contractOptionsRaw, isLoading: optionsLoading } =
+  const { options: contractOptionsRaw, isLoading: contractLoading } =
     useConstantOptions("contract_statuses");
+  const { options: membershipOptionsRaw, isLoading: membershipLoading } =
+    useConstantOptions("membership_types");
+  const { options: isActiveOptionsRaw } =
+    useConstantOptions("is_active_choices");
 
   // value를 string으로 변환
   const contractOptions = contractOptionsRaw.map((opt) => ({
+    ...opt,
+    value: String(opt.value),
+  }));
+  const membershipOptions = membershipOptionsRaw.map((opt) => ({
+    ...opt,
+    value: String(opt.value),
+  }));
+  const isActiveOptions = isActiveOptionsRaw.map((opt) => ({
     ...opt,
     value: String(opt.value),
   }));
@@ -124,7 +138,10 @@ const GolfCourseCreatePage: React.FC = () => {
             formData={formData}
             onInputChange={handleInputChange}
             contractStatusOptions={contractOptions}
-            contractStatusLoading={optionsLoading}
+            contractStatusLoading={contractLoading}
+            membershipTypeOptions={membershipOptions}
+            membershipTypeLoading={membershipLoading}
+            isActiveOptions={isActiveOptions}
           />
         </div>
       </div>

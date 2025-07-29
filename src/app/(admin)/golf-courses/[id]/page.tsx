@@ -1,17 +1,15 @@
 "use client";
 
 import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
-import { Button } from "@/shared/components/ui";
 import {
-  GolfCourseInfo,
+  EditableGolfCourseInfo,
   OperationCards,
 } from "@/shared/components/golf-course";
 import { useGolfCourseDetail } from "@/modules/golf-course/hooks/use-golf-course-detail";
 
 const GolfCourseDetailPage: React.FC = () => {
-  const router = useRouter();
   const params = useParams();
   const golfCourseId = params.id as string;
 
@@ -85,16 +83,9 @@ const GolfCourseDetailPage: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">상세정보</h2>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => router.push(`/golf-courses/${golfCourseId}/edit`)}
-            >
-              수정
-            </Button>
           </div>
 
-          <GolfCourseInfo golfCourse={golfCourse} />
+          <EditableGolfCourseInfo golfCourse={golfCourse} />
         </div>
 
         {/* 운영현황 섹션 */}

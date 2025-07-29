@@ -1,6 +1,7 @@
 import {
   EditableGolfCourse,
   GolfCourseDetail,
+  GolfCourseDetailResponse,
   GolfCourseFilters,
   GolfCourseGroupDetailResponse,
   GolfCourseGroupStatusResponse,
@@ -61,21 +62,24 @@ export const fetchGolfCourses = async ({
   // 기타 필터도 필요시 추가
 
   return apiClient.get<GolfCourseListResponse>(
-    `/api/v1/golf-courses/courses/?${params}`
+    `/api/v1/golf-courses/?${params}`
   );
 };
 
 export const fetchGolfCourseDetail = async (
   id: string
-): Promise<GolfCourseDetail> => {
-  return apiClient.get<GolfCourseDetail>(`/api/v1/golf-courses/${id}/`);
+): Promise<GolfCourseDetailResponse> => {
+  return apiClient.get<GolfCourseDetailResponse>(`/api/v1/golf-courses/${id}/`);
 };
 
 export const updateGolfCourse = async (
   id: string,
   data: Partial<GolfCourseDetail> | Partial<EditableGolfCourse>
-): Promise<GolfCourseDetail> => {
-  return apiClient.patch<GolfCourseDetail>(`/api/v1/golf-courses/${id}/`, data);
+): Promise<GolfCourseDetailResponse> => {
+  return apiClient.patch<GolfCourseDetailResponse>(
+    `/api/v1/golf-courses/${id}/`,
+    data
+  );
 };
 
 export async function deleteGolfCourse(id: string) {
@@ -87,12 +91,9 @@ export async function deleteGolfCourse(id: string) {
  * 골프장 벌크 삭제
  */
 export async function bulkDeleteGolfCourses(ids: string[]) {
-  const response = await apiClient.post(
-    "/api/v1/golf-courses/courses/bulk-delete/",
-    {
-      ids: ids,
-    }
-  );
+  const response = await apiClient.post("/api/v1/golf-courses/bulk-delete/", {
+    ids: ids,
+  });
   return response;
 }
 
