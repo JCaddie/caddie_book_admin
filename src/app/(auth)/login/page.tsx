@@ -88,7 +88,7 @@ export default function LoginPage() {
     try {
       // 실제 API 호출 (인증 토큰 불필요)
       const data = await apiClient.post<LoginResponse>(
-        "/api/token/",
+        "/api/v1/users/auth/login/",
         {
           username: email,
           password: password,
@@ -136,7 +136,7 @@ export default function LoginPage() {
     try {
       // 실제 API 호출 (인증 토큰 불필요)
       const data = await apiClient.post<LoginResponse>(
-        "/api/token/",
+        "/api/v1/users/auth/login/",
         {
           username: testEmail,
           password: testPassword,
