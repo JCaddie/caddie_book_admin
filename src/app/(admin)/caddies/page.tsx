@@ -1,82 +1,51 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  ConfirmationModal,
+  DataTable,
   Pagination,
-  SelectableDataTable,
+  SearchWithButton,
+  URLDropdown,
 } from "@/shared/components/ui";
-import { AdminPageHeader } from "@/shared/components/layout";
-import { PAGE_TITLES, useCaddieList, useDocumentTitle } from "@/shared/hooks";
+
+import {
+  PAGE_TITLES,
+  useCaddieList,
+  useDocumentTitle,
+  useGolfCourseSimpleOptions,
+} from "@/shared/hooks";
 import { CADDIE_COLUMNS } from "@/shared/constants/caddie";
 import { Caddie } from "@/modules/caddie/types";
-import { CaddieFilterBar } from "@/modules/caddie/components";
 
 const CaddieListPage: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: PAGE_TITLES.CADDIES });
 
-  // 삭제 모달 상태 관리
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // 골프장 옵션 가져오기
+  const { options: golfCourseOptions } = useGolfCourseSimpleOptions();
+
+  // URL 파라미터에서 필터 값 읽기
+  const golfCourseValue = searchParams.get("golf_course") || "";
 
   // 캐디 리스트 상태 관리
-  const {
-    currentData,
-    realDataCount,
-    totalCount,
-    isLoading,
-    error,
-    filters,
-    updateSelectedGroup,
-    updateSelectedSpecialTeam,
-    updateSelectedGolfCourse,
-
-    selection,
-    updateSelection,
-    deleteSelectedItems,
-    canDelete,
-    selectedCount,
-    totalPages,
-    refreshData,
-  } = useCaddieList();
+  const { currentData, totalCount, isLoading, error, totalPages, refreshData } =
+    useCaddieList();
 
   // 행 클릭 핸들러 (상세 페이지로 이동)
   const handleRowClick = (caddie: Caddie) => {
     router.push(`/caddies/${caddie.id}`);
   };
 
-  // 삭제 버튼 클릭 핸들러
-  const handleDeleteClick = () => {
-    if (canDelete) {
-      setIsDeleteModalOpen(true);
-    }
-  };
-
-  // 삭제 확인 핸들러
-  const handleDeleteConfirm = async () => {
-    setIsDeleting(true);
-    try {
-      await deleteSelectedItems();
-      setIsDeleteModalOpen(false);
-    } catch (error) {
-      console.error("삭제 중 오류 발생:", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  // 삭제 취소 핸들러
-  const handleDeleteCancel = () => {
-    setIsDeleteModalOpen(false);
-  };
-
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
-      <AdminPageHeader title="캐디" />
+      {/* 제목 */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">캐디</h2>
+      </div>
 
       {/* 에러 상태 표시 */}
       {error && (
@@ -96,15 +65,32 @@ const CaddieListPage: React.FC = () => {
         </div>
       )}
 
-      <CaddieFilterBar
-        totalCount={totalCount}
-        selectedCount={selectedCount}
-        filters={filters}
-        onGroupChange={updateSelectedGroup}
-        onSpecialTeamChange={updateSelectedSpecialTeam}
-        onGolfCourseChange={updateSelectedGolfCourse}
-        onDeleteSelected={handleDeleteClick}
-      />
+      {/* 액션바 */}
+      <div className="flex items-center justify-between">
+        {/* 왼쪽: 총 건수 */}
+        <div className="text-base font-bold text-gray-900">
+          총 {totalCount}명
+        </div>
+
+        {/* 오른쪽: 필터 및 액션 버튼들 */}
+        <div className="flex items-center gap-8">
+          {/* 골프장 드롭다운 */}
+          <div className="flex items-center gap-2">
+            <URLDropdown
+              options={golfCourseOptions}
+              value={golfCourseValue}
+              paramName="golf_course"
+              placeholder="골프장 선택"
+              containerClassName="w-[120px]"
+            />
+          </div>
+
+          {/* 검색 */}
+          <div className="flex items-center gap-4">
+            <SearchWithButton placeholder="캐디 이름으로 검색" />
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-6">
         {/* 로딩 상태 표시 */}
@@ -114,13 +100,9 @@ const CaddieListPage: React.FC = () => {
             <span className="text-gray-600">캐디 목록을 불러오는 중...</span>
           </div>
         ) : (
-          <SelectableDataTable
+          <DataTable
             columns={CADDIE_COLUMNS}
             data={currentData}
-            realDataCount={realDataCount}
-            selectable={true}
-            selectedRowKeys={selection.selectedRowKeys}
-            onSelectChange={updateSelection}
             onRowClick={handleRowClick}
             rowKey="id"
             layout="flexible"
@@ -129,16 +111,6 @@ const CaddieListPage: React.FC = () => {
 
         <Pagination totalPages={totalPages} />
       </div>
-
-      {/* 삭제 확인 모달 */}
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
-        title="삭제할까요?"
-        message={`선택한 ${selectedCount}개의 캐디를 삭제합니다. 삭제 시 복원이 불가합니다.`}
-        isLoading={isDeleting}
-      />
     </div>
   );
 };
