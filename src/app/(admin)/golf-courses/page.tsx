@@ -15,6 +15,7 @@ import {
 
 import { useGolfCourseList } from "@/modules/golf-course/hooks/use-golf-course-list";
 import type {
+  GolfCourseFilters,
   GolfCourseListData,
   GolfCourseListResponse,
 } from "@/modules/golf-course/types/golf-course";
@@ -90,12 +91,12 @@ const GolfCoursesPage: React.FC = () => {
   };
 
   // URL 파라미터 기반 필터 객체 생성
-  const filters = {
+  const filters: GolfCourseFilters = {
     contract: searchParams.get("contract") || "",
     field_count: "", // 사용하지 않지만 타입 호환성을 위해 빈 문자열
     membership_type: searchParams.get("membership_type") || "",
     category: "", // 필요시 추가 구현
-  } as import("@/modules/golf-course/types/golf-course").GolfCourseFilters;
+  };
   const { data, isLoading, isError } = useGolfCourseList(
     currentPage,
     searchTerm,
