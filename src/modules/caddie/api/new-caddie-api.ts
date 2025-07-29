@@ -17,7 +17,7 @@ export interface NewCaddieListParams {
 
 /**
  * 신규 캐디 목록 조회
- * GET /api/v1/auth/new-caddies/
+ * GET /api/v1/new-caddies/
  */
 export const getNewCaddieList = async (
   params?: NewCaddieListParams
@@ -35,7 +35,7 @@ export const getNewCaddieList = async (
   }
 
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/auth/new-caddies/${
+  const endpoint = `/api/v1/new-caddies/${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -44,22 +44,22 @@ export const getNewCaddieList = async (
 
 /**
  * 신규 캐디 일괄 승인
- * POST /api/v1/auth/new-caddies/bulk-approve/
+ * POST /api/v1/new-caddies/bulk-approve/
  */
 export const bulkApproveNewCaddies = async (
   request: BulkApproveRequest
 ): Promise<ApiResponse> => {
-  const endpoint = `/api/v1/auth/new-caddies/bulk-approve/`;
+  const endpoint = `/api/v1/new-caddies/bulk-approve/`;
   return apiClient.post<ApiResponse>(endpoint, request);
 };
 
 /**
  * 신규 캐디 일괄 거절
- * POST /api/v1/auth/new-caddies/bulk-reject/
+ * POST /api/v1/new-caddies/bulk-reject/
  */
 export const bulkRejectNewCaddies = async (
   request: BulkRejectRequest
 ): Promise<ApiResponse> => {
-  const endpoint = `/api/v1/auth/new-caddies/bulk-reject/`;
+  const endpoint = `/api/v1/new-caddies/bulk-reject/`;
   return apiClient.post<ApiResponse>(endpoint, request);
 };

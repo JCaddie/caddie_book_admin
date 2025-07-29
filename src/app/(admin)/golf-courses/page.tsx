@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import {
@@ -14,85 +14,53 @@ import {
 } from "@/shared/components/ui";
 
 import { useGolfCourseList } from "@/modules/golf-course/hooks/use-golf-course-list";
+import type {
+  GolfCourseFilters,
+  GolfCourseListData,
+  GolfCourseListResponse,
+} from "@/modules/golf-course/types/golf-course";
 import Pagination from "@/shared/components/ui/pagination";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GOLF_COURSE_TABLE_COLUMNS } from "@/shared/constants/golf-course";
-import { deleteGolfCourse } from "@/modules/golf-course/api/golf-course-api";
-import { usePermissionError } from "@/shared/hooks";
+import { bulkDeleteGolfCourses } from "@/modules/golf-course/api/golf-course-api";
+import {
+  useConstantOptions,
+  useConstantValue,
+  usePermissionError,
+} from "@/shared/hooks";
 // import type { GolfCourse } from "@/modules/golf-course/types/golf-course";
-
-const FIELD_COUNT_OPTIONS = [
-  { label: "필드 수", value: "" },
-  ...Array.from({ length: 9 }, (_, i) => ({
-    label: `${i + 1}`,
-    value: String(i + 1),
-  })),
-];
 
 const GolfCoursesPage: React.FC = () => {
   // 권한 에러 처리
   const { isPermissionError, permissionErrorMessage } = usePermissionError();
 
-  // 드롭다운 옵션 상태
-  const [contractOptions, setContractOptions] = useState<
-    { label: string; value: string; rawId?: string }[]
-  >([{ label: "계약현황", value: "" }]);
-  const [membershipOptions, setMembershipOptions] = useState<
-    { label: string; value: string; rawId?: string }[]
-  >([{ label: "종류", value: "" }]);
-  const [isActiveOptions, setIsActiveOptions] = useState<
-    { label: string; value: string }[]
-  >([{ label: "활성 여부", value: "" }]);
-  const [loadingOptions, setLoadingOptions] = useState(true);
+  // 백엔드 상수값들을 훅으로 조회
+  const { options: contractOptions, isLoading: isContractLoading } =
+    useConstantOptions("contract_statuses");
+  const { options: membershipOptions, isLoading: isMembershipLoading } =
+    useConstantOptions("membership_types");
+  const { options: isActiveOptions, isLoading: isActiveLoading } =
+    useConstantOptions("is_active_choices");
 
-  // 옵션 fetch
-  useEffect(() => {
-    setLoadingOptions(true);
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-    Promise.all([
-      fetch(
-        `${API_BASE_URL}/api/v1/golf-courses/constants/contract_status/`
-      ).then((res) => res.json()),
-      fetch(
-        `${API_BASE_URL}/api/v1/golf-courses/constants/membership_type/`
-      ).then((res) => res.json()),
-      fetch(`${API_BASE_URL}/api/v1/golf-courses/constants/is_active/`).then(
-        (res) => res.json()
-      ),
-    ])
-      .then(
-        ([contract, membership, isActive]: [
-          Array<{ id: string | boolean; value: string }>,
-          Array<{ id: string; value: string }>,
-          Array<{ id: boolean; value: string }>
-        ]) => {
-          setContractOptions([
-            { label: "계약현황", value: "" },
-            ...contract.map((opt) => ({
-              label: opt.value,
-              value: String(opt.id),
-              rawId: String(opt.id),
-            })),
-          ]);
-          setMembershipOptions([
-            { label: "종류", value: "" },
-            ...membership.map((opt) => ({
-              label: opt.value,
-              value: String(opt.id),
-              rawId: String(opt.id),
-            })),
-          ]);
-          setIsActiveOptions([
-            { label: "활성 여부", value: "" },
-            ...isActive.map((opt) => ({
-              label: opt.value,
-              value: String(opt.id),
-            })),
-          ]);
-        }
-      )
-      .finally(() => setLoadingOptions(false));
-  }, []);
+  // Constants 값 변환 유틸리티
+  const { getValueById } = useConstantValue();
+
+  // 드롭다운 옵션에 기본값 추가 (value를 string으로 변환)
+  const contractOptionsWithDefault = [
+    { label: "계약현황", value: "" },
+    ...contractOptions.map((opt) => ({ ...opt, value: String(opt.value) })),
+  ];
+  const membershipOptionsWithDefault = [
+    { label: "종류", value: "" },
+    ...membershipOptions.map((opt) => ({ ...opt, value: String(opt.value) })),
+  ];
+  const isActiveOptionsWithDefault = [
+    { label: "활성 여부", value: "" },
+    ...isActiveOptions.map((opt) => ({ ...opt, value: String(opt.value) })),
+  ];
+
+  const loadingOptions =
+    isContractLoading || isMembershipLoading || isActiveLoading;
 
   // 선택 상태 관리
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -107,7 +75,6 @@ const GolfCoursesPage: React.FC = () => {
 
   // 드롭다운 value는 URL에서 읽음
   const contractValue = searchParams.get("contract") || "";
-  const fieldCountValue = searchParams.get("field_count") || "";
   const membershipValue = searchParams.get("membership_type") || "";
   const isActiveValue = searchParams.get("isActive") || "";
 
@@ -124,17 +91,25 @@ const GolfCoursesPage: React.FC = () => {
   };
 
   // URL 파라미터 기반 필터 객체 생성
-  const filters = {
+  const filters: GolfCourseFilters = {
     contract: searchParams.get("contract") || "",
-    field_count: searchParams.get("field_count") || "",
+    field_count: "", // 사용하지 않지만 타입 호환성을 위해 빈 문자열
     membership_type: searchParams.get("membership_type") || "",
     category: "", // 필요시 추가 구현
-  } as import("@/modules/golf-course/types/golf-course").GolfCourseFilters;
+  };
   const { data, isLoading, isError } = useGolfCourseList(
     currentPage,
     searchTerm,
     filters
-  );
+  ) as {
+    data: GolfCourseListResponse | undefined;
+    isLoading: boolean;
+    isError: boolean;
+  };
+
+  // API 응답 구조에 맞게 타입 안전하게 접근
+  const responseData = (data as GolfCourseListResponse)
+    ?.data as GolfCourseListData;
 
   // 행 클릭 핸들러
   const handleRowClick = (record: Record<string, unknown>) => {
@@ -146,7 +121,9 @@ const GolfCoursesPage: React.FC = () => {
   const handleUpdateSelection = useCallback(
     (keys: string[]) => {
       const filteredKeys = keys.filter((key) => {
-        const record = (data?.results ?? []).find((item) => item.id === key);
+        const record = (responseData?.results ?? []).find(
+          (item) => item.id === key
+        );
         return record && !(record as { isEmpty?: boolean }).isEmpty;
       });
       setSelectedRowKeys(filteredKeys);
@@ -164,7 +141,8 @@ const GolfCoursesPage: React.FC = () => {
     if (selectedRowKeys.length === 0) return;
     setIsDeleting(true);
     try {
-      await Promise.all(selectedRowKeys.map((id) => deleteGolfCourse(id)));
+      // 새로운 bulk-delete API 사용
+      await bulkDeleteGolfCourses(selectedRowKeys);
       // 삭제 후 리스트 새로고침 (React Query invalidate 등 필요시 추가)
       window.location.reload();
       setSelectedRowKeys([]);
@@ -196,32 +174,26 @@ const GolfCoursesPage: React.FC = () => {
     );
   }
 
-  const hasNoResults = (data?.results?.length ?? 0) === 0;
+  const hasNoResults = (responseData?.results?.length ?? 0) === 0;
 
-  // no(목록 번호) 자동 부여
-  interface GolfCourseAPI {
-    id: string;
-    name: string;
-    region: string;
-    contract_status: string;
-    phone: string;
-    membership_type: string;
-    total_caddies: number;
-    field_count: number;
-  }
+  // no(목록 번호) 자동 부여 - modules에서 정의한 GolfCourseApiResponse 타입 사용
   const tableData: Record<string, unknown>[] = (
-    (data?.results ?? []) as unknown as GolfCourseAPI[]
+    responseData?.results ?? []
   ).map((item, idx) => {
+    // Constants를 사용한 값 변환 (더 깔끔한 방식)
     const contractLabel =
-      contractOptions.find((opt) => opt.value === String(item.contract_status))
-        ?.label || item.contract_status;
+      getValueById("contract_statuses", item.contract_status) ||
+      item.contract_status;
     const membershipLabel =
-      membershipOptions.find(
-        (opt) => opt.value === String(item.membership_type)
-      )?.label || item.membership_type;
+      getValueById("membership_types", item.membership_type) ||
+      item.membership_type;
+
     return {
       id: item.id,
-      no: ((data?.page ?? 1) - 1) * (data?.page_size ?? 20) + idx + 1,
+      no:
+        ((responseData?.page ?? 1) - 1) * (responseData?.page_size ?? 20) +
+        idx +
+        1,
       name: item.name,
       region: item.region,
       contractStatus: contractLabel,
@@ -259,7 +231,7 @@ const GolfCoursesPage: React.FC = () => {
         <div className="flex items-center justify-between">
           {/* 왼쪽: 총 건수 */}
           <div className="text-base font-bold text-gray-900">
-            총 {data?.count ?? 0}건
+            총 {responseData?.count ?? 0}건
           </div>
 
           {/* 오른쪽: 필터 및 액션 버튼들 */}
@@ -267,7 +239,7 @@ const GolfCoursesPage: React.FC = () => {
             {/* 필터 드롭다운들 */}
             <div className="flex items-center gap-2">
               <Dropdown
-                options={contractOptions}
+                options={contractOptionsWithDefault}
                 value={contractValue}
                 onChange={(value) => handleDropdownChange("contract", value)}
                 placeholder="계약상태"
@@ -275,14 +247,7 @@ const GolfCoursesPage: React.FC = () => {
                 disabled={loadingOptions}
               />
               <Dropdown
-                options={FIELD_COUNT_OPTIONS}
-                value={fieldCountValue}
-                onChange={(value) => handleDropdownChange("field_count", value)}
-                placeholder="필드수"
-                containerClassName="w-[106px]"
-              />
-              <Dropdown
-                options={membershipOptions}
+                options={membershipOptionsWithDefault}
                 value={membershipValue}
                 onChange={(value) =>
                   handleDropdownChange("membership_type", value)
@@ -292,7 +257,7 @@ const GolfCoursesPage: React.FC = () => {
                 disabled={loadingOptions}
               />
               <Dropdown
-                options={isActiveOptions}
+                options={isActiveOptionsWithDefault}
                 value={isActiveValue}
                 onChange={(value) => handleDropdownChange("isActive", value)}
                 placeholder="활성화 여부"
@@ -387,7 +352,7 @@ const GolfCoursesPage: React.FC = () => {
               className="w-full"
             />
 
-            <Pagination totalPages={data?.total_pages ?? 1} />
+            <Pagination totalPages={responseData?.total_pages ?? 1} />
           </div>
         )}
 

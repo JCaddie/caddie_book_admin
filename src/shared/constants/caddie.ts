@@ -19,14 +19,10 @@ export const CADDIE_COLUMNS = [
     align: "center" as const,
   },
   {
-    key: "golf_course",
+    key: "golf_course_name",
     title: "골프장",
     width: 200,
     align: "center" as const,
-    render: (value: unknown) => {
-      const golf_course = value as { name: string; region: string };
-      return `${golf_course.name} (${golf_course.region})`;
-    },
   },
   {
     key: "gender",
@@ -60,22 +56,22 @@ export const CADDIE_COLUMNS = [
     width: 120,
     align: "center" as const,
     render: (value: unknown) => {
-      const group = value as { name: string };
-      return group.name;
+      const groupId = value as number | null;
+      return groupId ? `그룹 ${groupId}` : "-";
     },
   },
   {
-    key: "special_groups",
+    key: "special_group",
     title: "특수반",
     width: 120,
     align: "center" as const,
     render: (value: unknown) => {
-      const groups = value as { name: string }[];
-      return groups.length > 0 ? groups.map((g) => g.name).join(", ") : "-";
+      const groupId = value as number | null;
+      return groupId ? `특수반 ${groupId}` : "-";
     },
   },
   {
-    key: "phone",
+    key: "user_phone",
     title: "연락처",
     width: 200,
     align: "center" as const,

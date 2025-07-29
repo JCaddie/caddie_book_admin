@@ -13,7 +13,7 @@ export type EmploymentType =
   | "TEMPORARY";
 
 // 통합된 도메인 타입 사용
-import type { GolfCourse, Group } from "@/shared/types/domain";
+import type { GolfCourse } from "@/shared/types/domain";
 
 // 특수 그룹 타입
 export interface SpecialGroup {
@@ -45,47 +45,108 @@ export interface AssignedWork {
   current_assignment: unknown | null;
 }
 
-// 캐디 기본 정보 인터페이스
+// 캐디 기본 정보 인터페이스 (새로운 API 응답에 맞게 업데이트)
 export interface Caddie extends Record<string, unknown> {
-  id: string;
-  name: string;
-  golf_course: GolfCourse;
+  id: string; // UI에서 string ID를 사용하므로 string으로 유지
+  user: string;
+  user_name: string;
+  user_email: string;
+  user_phone: string;
+  golf_course_name: string;
   gender: Gender;
   employment_type: EmploymentType;
-  phone: string;
-  work_score: number;
-  isEmpty?: boolean;
-}
-
-// 캐디 상세 정보 인터페이스 (새로운 API 구조)
-export interface CaddieDetail {
-  id: string;
-  name: string;
-  employment_type: EmploymentType;
-  golf_course: GolfCourse;
-  role_display: RoleDisplay;
-  primary_group?: Group;
-  special_groups?: SpecialGroup[];
-  phone: string;
-  email: string;
   address: string;
-  gender: Gender;
+  is_on_duty: boolean;
+  primary_group: number | null;
+  primary_group_order: number;
+  special_group: number | null;
+  special_group_order: number;
   work_score: number;
   is_team_leader: boolean;
-  careers: CaddieCareer[];
-  assigned_work: AssignedWork;
+  registration_status: string;
+  remaining_days_off: number;
+  created_at: string;
+  updated_at: string;
+  isEmpty?: boolean;
+  // 호환성을 위한 computed 필드들
+  name?: string;
+  golf_course?: GolfCourse;
+  phone?: string;
+}
+
+// 캐디 상세 정보 인터페이스 (새로운 API 응답에 맞게 업데이트)
+export interface CaddieDetail {
+  id: number;
+  user: string;
+  user_name: string;
+  user_email: string;
+  user_phone: string;
+  golf_course_name: string;
+  gender: Gender;
+  employment_type: EmploymentType;
+  address: string;
+  is_on_duty: boolean;
+  primary_group: number | null;
+  primary_group_order: number;
+  special_group: number | null;
+  special_group_order: number;
+  work_score: number;
+  is_team_leader: boolean;
+  registration_status: string;
+  remaining_days_off: number;
+  created_at: string;
+  updated_at: string;
+  // 호환성을 위한 computed 필드들
+  name?: string;
+  phone?: string;
+  email?: string;
 }
 
 // ================================
 // API 관련 타입
 // ================================
 
+// 캐디 목록 API 응답 데이터
+export interface CaddieListData {
+  count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  results: Caddie[];
+}
+
 // 캐디 목록 API 응답
 export interface CaddieListResponse {
-  results: Caddie[];
-  count: number;
-  next?: string;
-  previous?: string;
+  success: boolean;
+  message: string;
+  data: CaddieListData;
+}
+
+// 캐디 상세 정보 API 응답
+export interface CaddieDetailResponse {
+  success: boolean;
+  message: string;
+  data: CaddieDetail;
+}
+
+// 캐디 그룹 타입
+export interface CaddieGroup {
+  id: string;
+  name: string;
+  group_type: "PRIMARY" | "SPECIAL";
+  order: number;
+  is_active: boolean;
+  description: string;
+  golf_course: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 캐디 그룹 목록 API 응답
+export interface CaddieGroupListResponse {
+  success: boolean;
+  message: string;
+  data: CaddieGroup[];
 }
 
 // 캐디 목록 조회 파라미터

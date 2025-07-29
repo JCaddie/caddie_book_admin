@@ -37,7 +37,7 @@ export const AUTH_CONSTANTS = {
   // 라우트 권한 설정
   PROTECTED_ROUTES: {
     // 마스터만 접근 가능한 라우트
-    MASTER_ONLY: ["/golf-courses/new", "/golf-courses/*/edit"],
+    MASTER_ONLY: ["/golf-courses/new"],
 
     // 로그인 필요한 라우트 (모든 권한)
     AUTH_REQUIRED: ["/dashboard", "/caddies", "/fields", "/works", "/users"],

@@ -3,7 +3,7 @@ import type { CaddieListParams, CaddieListResponse } from "../types";
 
 /**
  * 캐디 목록 조회
- * GET /api/v1/auth/caddies/
+ * GET /api/v1/caddies/
  */
 export const getCaddieList = async (
   params?: CaddieListParams
@@ -26,13 +26,11 @@ export const getCaddieList = async (
     searchParams.append("special_team", params.special_team);
   }
   if (params?.golf_course_id) {
-    searchParams.append("golf_course_id", params.golf_course_id);
+    searchParams.append("golf_course", params.golf_course_id);
   }
 
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/auth/caddies/${
-    queryString ? `?${queryString}` : ""
-  }`;
+  const endpoint = `/api/v1/caddies/${queryString ? `?${queryString}` : ""}`;
 
   return apiClient.get<CaddieListResponse>(endpoint);
 };

@@ -15,7 +15,7 @@ export const useGolfCourseList = (
 
   const query = useQuery<GolfCourseListResponse, Error>({
     queryKey: ["golf-courses", page, searchTerm, filters],
-    queryFn: () => fetchGolfCourses({ page, searchTerm, filters }),
+    queryFn: () => fetchGolfCourses(page, searchTerm, filters),
     staleTime: 120000, // 2분
   });
 

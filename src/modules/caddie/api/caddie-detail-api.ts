@@ -1,21 +1,28 @@
 import { apiClient } from "@/shared/lib/api-client";
-import type { CaddieDetail, UpdateCaddieRequest } from "../types";
+import type {
+  CaddieDetail,
+  CaddieDetailResponse,
+  CaddieGroupListResponse,
+  UpdateCaddieRequest,
+} from "../types";
 
 /**
  * 캐디 상세정보 조회
- * GET /api/v1/auth/caddies/{id}/
+ * GET /api/v1/caddies/{id}/
  */
-export const getCaddieDetail = async (id: string): Promise<CaddieDetail> => {
-  const endpoint = `/api/v1/auth/caddies/${id}/`;
-  return apiClient.get<CaddieDetail>(endpoint);
+export const getCaddieDetail = async (
+  id: string
+): Promise<CaddieDetailResponse> => {
+  const endpoint = `/api/v1/caddies/${id}/`;
+  return apiClient.get<CaddieDetailResponse>(endpoint);
 };
 
 /**
  * 캐디 삭제
- * DELETE /api/v1/auth/caddies/{id}/
+ * DELETE /api/v1/caddies/{id}/
  */
 export const deleteCaddie = async (id: string): Promise<void> => {
-  const endpoint = `/api/v1/auth/caddies/${id}/`;
+  const endpoint = `/api/v1/caddies/${id}/`;
   return apiClient.delete<void>(endpoint);
 };
 
@@ -29,13 +36,13 @@ export const deleteCaddies = async (ids: string[]): Promise<void> => {
 
 /**
  * 캐디 정보 업데이트
- * PATCH /api/v1/auth/caddies/{id}/
+ * PATCH /api/v1/caddies/{id}/
  */
 export const updateCaddie = async (
   id: string,
   data: UpdateCaddieRequest
 ): Promise<CaddieDetail> => {
-  const endpoint = `/api/v1/auth/caddies/${id}/`;
+  const endpoint = `/api/v1/caddies/${id}/`;
   return apiClient.patch<CaddieDetail>(endpoint, data);
 };
 
@@ -147,4 +154,19 @@ export const updateCaddieSpecialGroups = async (
   special_group_ids: string[]
 ): Promise<CaddieDetail> => {
   return updateCaddie(id, { special_group_ids });
+};
+
+/**
+ * 캐디 그룹 목록 조회
+ * GET /api/v1/golf-courses/{golf_course_id}/groups/?group_type=TYPE
+ */
+export const getCaddieGroups = async (
+  golfCourseId: string,
+  groupType: "PRIMARY" | "SPECIAL"
+): Promise<CaddieGroupListResponse> => {
+  const searchParams = new URLSearchParams();
+  searchParams.append("group_type", groupType);
+
+  const endpoint = `/api/v1/golf-courses/${golfCourseId}/groups/?${searchParams.toString()}`;
+  return apiClient.get<CaddieGroupListResponse>(endpoint);
 };

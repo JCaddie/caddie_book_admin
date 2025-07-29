@@ -9,6 +9,9 @@ export interface GolfCourseFormProps {
   onInputChange: (field: string, value: string) => void;
   contractStatusOptions: { label: string; value: string }[];
   contractStatusLoading: boolean;
+  membershipTypeOptions?: { label: string; value: string }[];
+  membershipTypeLoading?: boolean;
+  isActiveOptions?: { label: string; value: string }[];
 }
 
 const GolfCourseForm: React.FC<GolfCourseFormProps> = ({
@@ -16,6 +19,9 @@ const GolfCourseForm: React.FC<GolfCourseFormProps> = ({
   onInputChange,
   contractStatusOptions,
   contractStatusLoading,
+  membershipTypeOptions = [],
+  membershipTypeLoading = false,
+  isActiveOptions = [],
 }) => {
   return (
     <div className="space-y-6">
@@ -65,20 +71,38 @@ const GolfCourseForm: React.FC<GolfCourseFormProps> = ({
               placeholder="계약현황"
               disabled={contractStatusLoading}
             />
-            <Input
-              value={formData.contractStartDate ?? ""}
-              onChange={(e) =>
-                onInputChange("contractStartDate", e.target.value)
-              }
-              className="w-[200px] border-gray-200"
-              placeholder="시작일"
+          </div>
+        </div>
+
+        {/* 회원제 타입 */}
+        <div className="flex border-b border-gray-200">
+          <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
+            <span className="text-sm font-bold text-gray-900">회원제 구분</span>
+          </div>
+          <div className="flex-1 px-4 py-3 flex items-center gap-6">
+            <Dropdown
+              options={membershipTypeOptions}
+              value={formData.membershipType}
+              onChange={(value) => onInputChange("membershipType", value)}
+              containerClassName="w-[106px]"
+              placeholder="회원제 구분"
+              disabled={membershipTypeLoading}
             />
-            <span className="text-sm text-gray-900">~</span>
-            <Input
-              value={formData.contractEndDate ?? ""}
-              onChange={(e) => onInputChange("contractEndDate", e.target.value)}
-              className="w-[200px] border-gray-200"
-              placeholder="종료일"
+          </div>
+        </div>
+
+        {/* 활성 상태 */}
+        <div className="flex border-b border-gray-200">
+          <div className="bg-gray-50 px-4 py-3 w-32 flex items-center justify-center">
+            <span className="text-sm font-bold text-gray-900">활성 상태</span>
+          </div>
+          <div className="flex-1 px-4 py-3 flex items-center gap-6">
+            <Dropdown
+              options={isActiveOptions}
+              value={String(formData.isActive)}
+              onChange={(value) => onInputChange("isActive", value)}
+              containerClassName="w-[106px]"
+              placeholder="활성 상태"
             />
           </div>
         </div>
