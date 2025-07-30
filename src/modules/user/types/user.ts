@@ -99,14 +99,21 @@ export interface GolfCourseInfo {
 export interface GroupMember {
   id: string;
   name: string;
-  order: number;
-  is_team_leader: boolean;
+  phone: string;
+  email: string;
+  is_active: boolean;
+  employment_type: "FULL_TIME" | "PART_TIME";
+  order?: number;
+  is_team_leader?: boolean;
 }
 
-export interface Group extends Record<string, unknown> {
-  id: number;
+export interface PrimaryGroup extends Record<string, unknown> {
+  id: string;
   name: string;
+  group_type: "PRIMARY";
   order: number;
+  is_active: boolean;
+  description: string;
   member_count: number;
   members: GroupMember[];
 }
@@ -114,25 +121,50 @@ export interface Group extends Record<string, unknown> {
 export interface UnassignedCaddie {
   id: string;
   name: string;
-  golf_course: string;
+  phone: string;
+  email: string;
+  is_active: boolean;
+  employment_type: "FULL_TIME" | "PART_TIME";
 }
 
+export interface GolfCourseGroupStatus {
+  id: string;
+  name: string;
+  contract_status: string;
+  primary_group_count: number;
+  total_caddies: number;
+  grouped_caddies_count: number;
+  ungrouped_caddies_count: number;
+  primary_groups: PrimaryGroup[];
+  ungrouped_caddies: UnassignedCaddie[];
+}
+
+export interface CaddieAssignmentOverviewResponse {
+  success: boolean;
+  message: string;
+  data: GolfCourseGroupStatus;
+}
+
+// 하위 호환성을 위한 기존 타입들
+/** @deprecated 새로운 PrimaryGroup 타입 사용 권장 */
+export interface Group extends Record<string, unknown> {
+  id: string;
+  name: string;
+  order: number;
+  member_count: number;
+  members: GroupMember[];
+}
+
+/** @deprecated 새로운 GolfCourseGroupStatus 타입 사용 권장 */
 export interface AssignmentSummary {
   total_groups: number;
   total_assigned_caddies: number;
   total_unassigned_caddies: number;
 }
 
-export interface CaddieAssignmentOverviewResponse {
-  golf_course: GolfCourseInfo;
-  groups: Group[];
-  unassigned_caddies: UnassignedCaddie[];
-  summary: AssignmentSummary;
-}
-
 // 기존 타입들은 호환성을 위해 유지하되 deprecated로 표시
 /** @deprecated 새로운 API 구조로 변경됨 */
-export interface PrimaryGroup {
+export interface LegacyPrimaryGroup {
   id: string;
   name: string;
   group_type_name: string;
@@ -140,19 +172,19 @@ export interface PrimaryGroup {
 }
 
 /** @deprecated 새로운 API 구조로 변경됨 */
-export interface SpecialGroup {
+export interface LegacySpecialGroup {
   id: string;
   name: string;
   order: number;
 }
 
 /** @deprecated 새로운 API 구조로 변경됨 */
-export interface UserAssignment {
+export interface LegacyUserAssignment {
   id: string;
   name: string;
-  primary_group: PrimaryGroup | null;
+  primary_group: LegacyPrimaryGroup | null;
   primary_group_order: number | null;
-  special_group: SpecialGroup | null;
+  special_group: LegacySpecialGroup | null;
   special_group_order: number | null;
 }
 
@@ -161,5 +193,5 @@ export interface UserAssignmentResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: UserAssignment[];
+  results: LegacyUserAssignment[];
 }

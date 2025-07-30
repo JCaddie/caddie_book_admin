@@ -11,6 +11,7 @@ import {
   ReorderResponse,
 } from "../types/group-status";
 import { GolfCourseGroupStatusListResponse } from "@/modules/golf-course/types/api";
+import { CaddieAssignmentOverviewResponse } from "@/modules/user/types/user";
 
 /**
  * 그룹 목록 조회
@@ -109,7 +110,7 @@ export const removePrimaryGroup = async (
 };
 
 /**
- * 골프장별 그룹 현황 조회 API (Overview)
+ * 골프장별 그룹 현황 조회 API (Overview) - 목록용
  */
 export const getGroupAssignmentOverview = async ({
   page = 1,
@@ -132,4 +133,14 @@ export const getGroupAssignmentOverview = async ({
   }`;
 
   return apiClient.get<GolfCourseGroupStatusListResponse>(endpoint);
+};
+
+/**
+ * 특정 골프장의 그룹 상태 조회 API (상세용)
+ */
+export const getGolfCourseGroupStatus = async (
+  golfCourseId: string
+): Promise<CaddieAssignmentOverviewResponse> => {
+  const endpoint = `/api/v1/golf-courses/${golfCourseId}/group-status/`;
+  return apiClient.get<CaddieAssignmentOverviewResponse>(endpoint);
 };
