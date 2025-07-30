@@ -1,40 +1,18 @@
 // ================================
-// 캐디 UI 관련 타입
+// 캐디 UI 전용 타입 (중복 제거됨)
 // ================================
 
-import type { GolfCourse } from "@/shared/types/domain";
-import type { EmploymentType, Gender } from "./domain";
+// 기본 타입들은 caddie.ts에서 import
+export type {
+  Caddie,
+  CaddieFilters,
+  CaddieSelection,
+  SelectOption,
+  Gender,
+  EmploymentType,
+} from "./caddie";
 
-// UI에서 사용하는 캐디 정보 (호환성 필드 포함)
-export interface Caddie extends Record<string, unknown> {
-  id: string; // UI에서 string ID를 사용하므로 string으로 유지
-  user: string;
-  user_name: string;
-  user_email: string;
-  user_phone: string;
-  golf_course_name: string;
-  gender: Gender;
-  employment_type: EmploymentType;
-  address: string;
-  is_on_duty: boolean;
-  primary_group: number | null;
-  primary_group_order: number;
-  special_group: number | null;
-  special_group_order: number;
-  work_score: number;
-  is_team_leader: boolean;
-  registration_status: string;
-  remaining_days_off: number;
-  created_at: string;
-  updated_at: string;
-  isEmpty?: boolean;
-  // 호환성을 위한 computed 필드들
-  name?: string;
-  golf_course?: GolfCourse;
-  phone?: string;
-}
-
-// 편집 가능한 캐디 필드들
+// UI 전용 타입들만 여기에 정의
 export interface EditableCaddie {
   id: string;
   name: string;
@@ -48,26 +26,6 @@ export interface EditableCaddie {
   phone: string;
   email: string;
   address: string;
-}
-
-// 캐디 필터 상태 타입
-export interface CaddieFilters {
-  searchTerm: string;
-  selectedGroup: string;
-  selectedSpecialTeam: string;
-  selectedGolfCourseId: string;
-}
-
-// 캐디 선택 상태 타입
-export interface CaddieSelection {
-  selectedRowKeys: string[];
-  selectedRows: Caddie[];
-}
-
-// 선택지 옵션 타입
-export interface SelectOption {
-  value: string | number;
-  label: string;
 }
 
 // 캐디 폼 에러 타입

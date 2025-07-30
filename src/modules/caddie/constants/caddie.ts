@@ -1,16 +1,16 @@
 import type { SelectOption } from "../types";
 
 // ================================
-// 캐디 기본 상수
+// 캐디 기본 상수 (정적 - 변경되지 않음)
 // ================================
 
-// 성별 선택지
+// 성별 선택지 (정적)
 export const GENDER_CHOICES: SelectOption[] = [
   { value: "M", label: "남" },
   { value: "F", label: "여" },
 ];
 
-// 고용형태 선택지
+// 고용형태 선택지 (정적)
 export const EMPLOYMENT_TYPE_CHOICES: SelectOption[] = [
   { value: "FULL_TIME", label: "정규직" },
   { value: "PART_TIME", label: "시간제" },
@@ -18,10 +18,36 @@ export const EMPLOYMENT_TYPE_CHOICES: SelectOption[] = [
   { value: "TEMPORARY", label: "임시직" },
 ];
 
-// 팀장 여부 선택지
+// 팀장 여부 선택지 (정적)
 export const TEAM_LEADER_CHOICES: SelectOption[] = [
   { value: "true", label: "팀장" },
   { value: "false", label: "일반" },
+];
+
+// 등록 상태 선택지 (정적)
+export const REGISTRATION_STATUS_CHOICES: SelectOption[] = [
+  { value: "PENDING", label: "승인 대기" },
+  { value: "APPROVED", label: "승인됨" },
+  { value: "REJECTED", label: "거절됨" },
+];
+
+// ================================
+// 동적 옵션 기본값 (API에서 로드해야 함)
+// ================================
+
+// 그룹 옵션 기본값 (실제로는 API에서 로드)
+export const DEFAULT_GROUP_OPTIONS: SelectOption[] = [
+  { value: "", label: "전체 그룹" },
+];
+
+// 특수반 옵션 기본값 (실제로는 API에서 로드)
+export const DEFAULT_SPECIAL_TEAM_OPTIONS: SelectOption[] = [
+  { value: "", label: "전체 특수반" },
+];
+
+// 골프장 옵션 기본값 (실제로는 API에서 로드)
+export const DEFAULT_GOLF_COURSE_OPTIONS: SelectOption[] = [
+  { value: "", label: "전체 골프장" },
 ];
 
 // ================================
@@ -35,6 +61,15 @@ export const CADDIE_CONSTANTS = {
   CANCEL_BUTTON_TEXT: "취소",
   DELETE_MODAL_TITLE: "캐디를 삭제하시겠습니까?",
   DELETE_MODAL_MESSAGE: "이 작업은 되돌릴 수 없습니다",
+
+  // 필터 관련
+  ITEMS_PER_PAGE: 20,
+  DEFAULT_FILTERS: {
+    searchTerm: "",
+    selectedGroup: "",
+    selectedSpecialTeam: "",
+    selectedGolfCourseId: "",
+  },
 } as const;
 
 // ================================

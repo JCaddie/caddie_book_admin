@@ -1,20 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  getCaddieGroups,
+  EMPLOYMENT_TYPE_CHOICES,
+  TEAM_LEADER_CHOICES,
+} from "../../constants/caddie";
+import {
+  fetchCaddieGroups,
   updateCaddieEmploymentType,
   updateCaddiePrimaryGroup,
   updateCaddieSpecialGroups,
   updateCaddieTeamLeader,
   updateCaddieWorkScore,
 } from "../../api";
-import type { CaddieDetail } from "../../types";
 
 interface UseCaddieEditProps {
   caddieId: string;
-  golfCourseId?: string; // 골프장 ID 추가
-  onUpdate?: (updatedCaddie: CaddieDetail) => void;
+  golfCourseId: string;
+  onUpdate: () => void;
 }
 
 interface UseCaddieEditReturn {
@@ -22,11 +25,11 @@ interface UseCaddieEditReturn {
   teamLeaderChoices: Array<{ value: string; label: string }>;
   primaryGroupChoices: Array<{ value: string; label: string }>;
   specialGroupChoices: Array<{ value: string; label: string }>;
-  updateEmploymentType: (employmentType: string) => Promise<void>;
-  updateWorkScore: (workScore: number) => Promise<void>;
-  updateTeamLeader: (isTeamLeader: string) => Promise<void>;
-  updatePrimaryGroup: (primaryGroupId: string) => Promise<void>;
-  updateSpecialGroups: (specialGroupIds: string) => Promise<void>;
+  updateEmploymentType: (value: string) => Promise<void>;
+  updateWorkScore: (value: string) => Promise<void>;
+  updateTeamLeader: (value: string) => Promise<void>;
+  updatePrimaryGroup: (value: string) => Promise<void>;
+  updateSpecialGroups: (value: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
@@ -39,29 +42,25 @@ export const useCaddieEdit = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 골프장은 변경 불가능하므로 옵션 제거
+  // 정적 옵션들 (상수 사용) - string 타입으로 변환
+  const employmentTypeChoices = EMPLOYMENT_TYPE_CHOICES.map(choice => ({
+    value: String(choice.value),
+    label: choice.label,
+  }));
+  
+  const teamLeaderChoices = TEAM_LEADER_CHOICES.map(choice => ({
+    value: String(choice.value),
+    label: choice.label,
+  }));
 
-  // 그룹 옵션 상태
+  // 동적 그룹 옵션 상태 (API에서 로드)
   const [primaryGroupChoices, setPrimaryGroupChoices] = useState<
     Array<{ value: string; label: string }>
   >([{ value: "", label: "그룹 선택" }]);
+
   const [specialGroupChoices, setSpecialGroupChoices] = useState<
     Array<{ value: string; label: string }>
   >([{ value: "", label: "특수반 선택" }]);
-
-  // 고용형태 선택지
-  const employmentTypeChoices = [
-    { value: "FULL_TIME", label: "정규직" },
-    { value: "PART_TIME", label: "시간제" },
-    { value: "CONTRACT", label: "계약직" },
-    { value: "TEMPORARY", label: "임시직" },
-  ];
-
-  // 팀장 여부 선택지
-  const teamLeaderChoices = [
-    { value: "true", label: "팀장" },
-    { value: "false", label: "일반" },
-  ];
 
   // 그룹 목록 로드
   useEffect(() => {
@@ -69,8 +68,10 @@ export const useCaddieEdit = ({
 
     const loadGroups = async () => {
       try {
-        // 주 그룹 목록 조회
-        const primaryResponse = await getCaddieGroups(golfCourseId, "PRIMARY");
+        // 주 그룹 목록 로드
+        const primaryResponse = await fetchCaddieGroups(golfCourseId, {
+          group_type: "PRIMARY",
+        });
         const primaryOptions = [
           { value: "", label: "그룹 선택" },
           ...primaryResponse.data.map((group) => ({
@@ -80,8 +81,10 @@ export const useCaddieEdit = ({
         ];
         setPrimaryGroupChoices(primaryOptions);
 
-        // 특수반 목록 조회
-        const specialResponse = await getCaddieGroups(golfCourseId, "SPECIAL");
+        // 특수 그룹 목록 로드
+        const specialResponse = await fetchCaddieGroups(golfCourseId, {
+          group_type: "SPECIAL",
+        });
         const specialOptions = [
           { value: "", label: "특수반 선택" },
           ...specialResponse.data.map((group) => ({
@@ -90,134 +93,84 @@ export const useCaddieEdit = ({
           })),
         ];
         setSpecialGroupChoices(specialOptions);
-      } catch (err) {
-        console.error("그룹 목록 로드 오류:", err);
+      } catch (error) {
+        console.error("그룹 목록 로드 실패:", error);
       }
     };
 
     loadGroups();
   }, [golfCourseId]);
 
-  // 고용형태 수정
-  const updateEmploymentType = useCallback(
-    async (employmentType: string) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const updatedCaddie = await updateCaddieEmploymentType(
-          caddieId,
-          employmentType
-        );
-        onUpdate?.(updatedCaddie);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "고용형태 수정 중 오류가 발생했습니다.";
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [caddieId, onUpdate]
-  );
+  // 업데이트 함수들
+  const updateEmploymentType = async (value: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await updateCaddieEmploymentType(caddieId, value);
+      onUpdate();
+    } catch (error) {
+      setError("고용형태 업데이트에 실패했습니다");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // 근무점수 수정
-  const updateWorkScore = useCallback(
-    async (workScore: number) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const updatedCaddie = await updateCaddieWorkScore(caddieId, workScore);
-        onUpdate?.(updatedCaddie);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "근무점수 수정 중 오류가 발생했습니다.";
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [caddieId, onUpdate]
-  );
+  const updateWorkScore = async (value: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await updateCaddieWorkScore(caddieId, Number(value));
+      onUpdate();
+    } catch (error) {
+      setError("근무점수 업데이트에 실패했습니다");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // 팀장 여부 수정
-  const updateTeamLeader = useCallback(
-    async (isTeamLeader: string) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const boolValue = isTeamLeader === "true";
-        const updatedCaddie = await updateCaddieTeamLeader(caddieId, boolValue);
-        onUpdate?.(updatedCaddie);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "팀장 여부 수정 중 오류가 발생했습니다.";
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [caddieId, onUpdate]
-  );
+  const updateTeamLeader = async (value: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await updateCaddieTeamLeader(caddieId, value === "true");
+      onUpdate();
+    } catch (error) {
+      setError("팀장여부 업데이트에 실패했습니다");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // 주 그룹 수정
-  const updatePrimaryGroup = useCallback(
-    async (primaryGroupId: string) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const updatedCaddie = await updateCaddiePrimaryGroup(
-          caddieId,
-          primaryGroupId
-        );
-        onUpdate?.(updatedCaddie);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "주 그룹 수정 중 오류가 발생했습니다.";
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [caddieId, onUpdate]
-  );
+  const updatePrimaryGroup = async (value: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await updateCaddiePrimaryGroup(caddieId, value);
+      onUpdate();
+    } catch (error) {
+      setError("주 그룹 업데이트에 실패했습니다");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // 특수반 수정 (일단 단일 선택으로 구현, 실제로는 다중 선택)
-  const updateSpecialGroups = useCallback(
-    async (specialGroupId: string) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const specialGroupIds = specialGroupId ? [specialGroupId] : [];
-        const updatedCaddie = await updateCaddieSpecialGroups(
-          caddieId,
-          specialGroupIds
-        );
-        onUpdate?.(updatedCaddie);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "특수반 수정 중 오류가 발생했습니다.";
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [caddieId, onUpdate]
-  );
+  const updateSpecialGroups = async (value: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await updateCaddieSpecialGroups(caddieId, [value]);
+      onUpdate();
+    } catch (error) {
+      setError("특수 그룹 업데이트에 실패했습니다");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
     employmentTypeChoices,

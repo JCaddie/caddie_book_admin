@@ -95,7 +95,7 @@ const WorksPage: React.FC = () => {
       // ADMIN: 고정된 골프장 사용
       setSelectedGolfCourseId(user.golfCourseId);
       // 골프장 이름은 API에서 가져온 데이터에서 찾기
-      const golfCourse = golfCoursesData?.results.find(
+      const golfCourse = golfCoursesData?.data.find(
         (gc) => gc.id === user.golfCourseId
       );
       setSelectedGolfCourseName(golfCourse?.name || "");
@@ -114,7 +114,7 @@ const WorksPage: React.FC = () => {
   const handleGolfCourseSelect = (golfCourseId: string) => {
     setSelectedGolfCourseId(golfCourseId);
     // API에서 가져온 골프장 데이터에서 이름 찾기
-    const golfCourse = golfCoursesData?.results.find(
+    const golfCourse = golfCoursesData?.data.find(
       (gc) => gc.id === golfCourseId
     );
     setSelectedGolfCourseName(golfCourse?.name || "");
@@ -237,7 +237,7 @@ const WorksPage: React.FC = () => {
         showGolfCourseSelect={hasRole("MASTER")}
         onGolfCourseSelect={handleGolfCourseSelect}
         golfCourseName={selectedGolfCourseName}
-        golfCourses={golfCoursesData?.results || []}
+        golfCourses={golfCoursesData?.data || []}
         isGolfCoursesLoading={isGolfCoursesLoading}
         initialDate={selectedDate}
       />

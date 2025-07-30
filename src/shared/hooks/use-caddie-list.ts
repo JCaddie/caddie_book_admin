@@ -8,7 +8,7 @@ import type {
   CaddieListParams,
   CaddieSelection,
 } from "@/modules/caddie/types";
-import { deleteCaddies, getCaddieList } from "@/modules/caddie/api";
+import { bulkDeleteCaddies, getCaddieList } from "@/modules/caddie/api";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 
 export const useCaddieList = () => {
@@ -124,7 +124,7 @@ export const useCaddieList = () => {
     }
 
     try {
-      await deleteCaddies(selection.selectedRowKeys);
+      await bulkDeleteCaddies({ ids: selection.selectedRowKeys });
 
       // 삭제 후 데이터 새로고침
       await loadCaddies();

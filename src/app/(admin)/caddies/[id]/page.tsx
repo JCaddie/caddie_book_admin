@@ -114,7 +114,7 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
   };
 
   const handleWorkScoreUpdate = async (value: string | number) => {
-    await updateWorkScore(Number(value));
+    await updateWorkScore(String(value));
   };
 
   const handleTeamLeaderUpdate = async (value: string | number) => {
