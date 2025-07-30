@@ -21,7 +21,7 @@ export {
   deleteGolfCourse,
   fetchGolfCourseDetail,
   fetchGolfCourseGroupDetail,
-  fetchGolfCourseGroupStatus,
+  fetchGolfCourseGroups,
   fetchGolfCourses,
   fetchGolfCoursesSimple,
   filterGolfCourses,

@@ -18,7 +18,7 @@ export const GOLF_COURSE_ENDPOINTS = {
 
   // 그룹 관련
   GROUP_DETAIL: (id: string) => `${BASE_URL}/${id}/groups/`,
-  GROUP_STATUS: (id: string) => `${BASE_URL}/${id}/status/`,
+  GROUPS_LIST: `${BASE_URL}/groups/`,
 
   // 통계 및 분석
   STATS: `${BASE_URL}/stats/`,
