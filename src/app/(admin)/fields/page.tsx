@@ -10,6 +10,7 @@ import {
 import {
   FIELD_CONSTANTS,
   FieldActionBar,
+  FieldCreateModal,
   FieldTableRow,
 } from "@/modules/field";
 import { useDocumentTitle } from "@/shared/hooks";
@@ -25,9 +26,14 @@ export default function FieldsPage() {
     tableData,
     selectedRowKeys,
     isDeleteModalOpen,
+    isCreateModalOpen,
     deleteFieldsBulkMutation,
+    createFieldMutation,
     handleSelectChange,
     handleRowClick,
+    handleCreateClick,
+    handleCreateModalClose,
+    handleCreateSubmit,
     handleDeleteClick,
     handleConfirmDelete,
   } = useFieldListPage();
@@ -41,7 +47,7 @@ export default function FieldsPage() {
           totalCount={data?.count ?? 0}
           selectedCount={selectedRowKeys.length}
           onDeleteClick={handleDeleteClick}
-          onCreateClick={() => handleRowClick({ id: "new" } as FieldTableRow)}
+          onCreateClick={handleCreateClick}
         />
 
         <div className="space-y-6">
@@ -72,6 +78,14 @@ export default function FieldsPage() {
           confirmText="삭제"
           cancelText="취소"
           isLoading={deleteFieldsBulkMutation.isPending}
+        />
+
+        {/* 필드 생성 모달 */}
+        <FieldCreateModal
+          isOpen={isCreateModalOpen}
+          onClose={handleCreateModalClose}
+          onSubmit={handleCreateSubmit}
+          isLoading={createFieldMutation.isPending}
         />
       </div>
     </RoleGuard>

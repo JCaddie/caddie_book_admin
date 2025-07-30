@@ -4,8 +4,10 @@ import {
   FieldTableRow,
   useDeleteFieldsBulk,
   useFieldList,
+  useCreateField,
 } from "@/modules/field";
 import { transformFieldsToTableRows } from "@/modules/field/utils";
+import { FieldFormData } from "@/modules/field/types";
 
 export function useFieldListPage() {
   const router = useRouter();
@@ -20,6 +22,10 @@ export function useFieldListPage() {
   // 삭제 모달/로딩 상태
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const deleteFieldsBulkMutation = useDeleteFieldsBulk();
+
+  // 생성 모달 상태
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const createFieldMutation = useCreateField();
 
   // search 파라미터를 URL에서 읽어옴
   const searchParamValue = searchParams.get("search") || "";
@@ -38,11 +44,36 @@ export function useFieldListPage() {
   // row 클릭 시 상세화면 이동
   const handleRowClick = useCallback(
     (row: FieldTableRow) => {
-      if (row && row.id) {
+      if (row && row.id && row.id !== "new") {
         router.push(`/fields/${row.id}`);
       }
     },
     [router]
+  );
+
+  // 생성 버튼 클릭
+  const handleCreateClick = useCallback(() => {
+    setIsCreateModalOpen(true);
+  }, []);
+
+  // 생성 모달 닫기
+  const handleCreateModalClose = useCallback(() => {
+    setIsCreateModalOpen(false);
+  }, []);
+
+  // 필드 생성 제출
+  const handleCreateSubmit = useCallback(
+    async (formData: FieldFormData) => {
+      try {
+        await createFieldMutation.mutateAsync(formData);
+        setIsCreateModalOpen(false);
+        queryResult.refetch(); // 목록 새로고침
+      } catch (error) {
+        console.error("필드 생성 실패:", error);
+        throw error; // 모달에서 에러 처리
+      }
+    },
+    [createFieldMutation, queryResult]
   );
 
   // 검색어 변경
@@ -95,12 +126,17 @@ export function useFieldListPage() {
     isDeleteModalOpen,
     setIsDeleteModalOpen,
     deleteFieldsBulkMutation,
+    isCreateModalOpen,
+    createFieldMutation,
     searchInput,
     setSearchInput,
     queryResult,
     data,
     tableData,
     handleRowClick,
+    handleCreateClick,
+    handleCreateModalClose,
+    handleCreateSubmit,
     handleSearchChange,
     handleSearchSubmit,
     handleSelectChange,
