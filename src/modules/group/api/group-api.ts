@@ -1,12 +1,18 @@
 import { apiClient } from "@/shared/lib/api-client";
 import {
+  AddGroupMemberRequest,
+  AddGroupMemberResponse,
   AssignPrimaryRequest,
   AssignPrimaryResponse,
   CreateGroupRequest,
   CreateGroupResponse,
   GroupListResponse,
+  RemoveGroupMemberRequest,
+  RemoveGroupMemberResponse,
   RemovePrimaryRequest,
   RemovePrimaryResponse,
+  ReorderGroupMemberRequest,
+  ReorderGroupMemberResponse,
   ReorderRequest,
   ReorderResponse,
 } from "../types/group-status";
@@ -45,7 +51,7 @@ export const createGroup = async (
   data: CreateGroupRequest
 ): Promise<CreateGroupResponse> => {
   return apiClient.post<CreateGroupResponse>(
-    "/api/v1/caddie-groups/groups/",
+    "/api/v1/golf-courses/groups/",
     data
   );
 };
@@ -58,7 +64,7 @@ export const updateGroup = async (
   data: Partial<CreateGroupRequest>
 ): Promise<CreateGroupResponse> => {
   return apiClient.patch<CreateGroupResponse>(
-    `/api/v1/caddie-groups/groups/${groupId}/`,
+    `/api/v1/golf-courses/groups/${groupId}/`,
     data
   );
 };
@@ -67,11 +73,25 @@ export const updateGroup = async (
  * 그룹 삭제
  */
 export const deleteGroup = async (groupId: number): Promise<void> => {
-  return apiClient.delete(`/api/v1/caddie-groups/groups/${groupId}/`);
+  return apiClient.delete(`/api/v1/golf-courses/groups/${groupId}/`);
 };
 
 /**
- * 조 배정 API
+ * 그룹 멤버 추가 API
+ */
+export const addGroupMember = async (
+  groupId: string,
+  data: AddGroupMemberRequest
+): Promise<AddGroupMemberResponse> => {
+  return apiClient.post<AddGroupMemberResponse>(
+    `/api/v1/golf-courses/groups/${groupId}/members/`,
+    data
+  );
+};
+
+/**
+ * 조 배정 API (Deprecated - addGroupMember 사용 권장)
+ * @deprecated 새로운 addGroupMember 함수 사용을 권장합니다
  */
 export const assignPrimaryGroup = async (
   groupId: number,
@@ -84,7 +104,21 @@ export const assignPrimaryGroup = async (
 };
 
 /**
- * 조 순서 변경 API
+ * 그룹 멤버 순서 변경 API
+ */
+export const reorderGroupMember = async (
+  groupId: string,
+  data: ReorderGroupMemberRequest
+): Promise<ReorderGroupMemberResponse> => {
+  return apiClient.put<ReorderGroupMemberResponse>(
+    `/api/v1/golf-courses/groups/${groupId}/members/`,
+    data
+  );
+};
+
+/**
+ * 조 순서 변경 API (Deprecated - reorderGroupMember 사용 권장)
+ * @deprecated 새로운 reorderGroupMember 함수 사용을 권장합니다
  */
 export const reorderPrimaryGroup = async (
   groupId: number,
@@ -97,7 +131,21 @@ export const reorderPrimaryGroup = async (
 };
 
 /**
- * 조 배정 해제 API
+ * 그룹 멤버 제거 API
+ */
+export const removeGroupMember = async (
+  groupId: string,
+  data: RemoveGroupMemberRequest
+): Promise<RemoveGroupMemberResponse> => {
+  return apiClient.deleteWithBody<RemoveGroupMemberResponse>(
+    `/api/v1/golf-courses/groups/${groupId}/members/`,
+    data
+  );
+};
+
+/**
+ * 조 배정 해제 API (Deprecated - removeGroupMember 사용 권장)
+ * @deprecated 새로운 removeGroupMember 함수 사용을 권장합니다
  */
 export const removePrimaryGroup = async (
   groupId: number,

@@ -146,3 +146,51 @@ export interface RemovePrimaryResponse {
     }[];
   };
 }
+
+// 새로운 그룹 멤버 관리 API 타입들
+export interface AddGroupMemberRequest {
+  user_id: string;
+  order?: number; // 선택적: 지정하지 않으면 맨 뒤에 추가
+  membership_type: "PRIMARY" | "SPECIAL";
+}
+
+export interface AddGroupMemberResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: string;
+    user_id: string;
+    order: number;
+    membership_type: string;
+  };
+}
+
+export interface RemoveGroupMemberRequest {
+  user_id: string;
+}
+
+export interface RemoveGroupMemberResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: string;
+    user_id: string;
+    removed: boolean;
+  };
+}
+
+export interface ReorderGroupMemberRequest {
+  user_id: string;
+  order: number; // 새로운 순서
+}
+
+export interface ReorderGroupMemberResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: string;
+    user_id: string;
+    old_order: number;
+    new_order: number;
+  };
+}

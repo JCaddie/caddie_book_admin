@@ -21,11 +21,11 @@ import {
 
 import { CaddieData } from "@/modules/work/types";
 import {
-  assignPrimaryGroup,
+  addGroupMember,
   deleteGroup,
   getGolfCourseGroupStatus,
-  removePrimaryGroup,
-  reorderPrimaryGroup,
+  removeGroupMember,
+  reorderGroupMember,
   updateGroup,
 } from "@/modules/group/api/group-api";
 
@@ -271,10 +271,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         if (currentGroupId > 0) {
           console.log("배정 해제 요청:", {
             groupId: currentGroupId,
-            caddie_ids: [draggedCaddie.originalId],
+            user_id: draggedCaddie.originalId,
           });
-          await removePrimaryGroup(currentGroupId, {
-            caddie_ids: [draggedCaddie.originalId],
+          await removeGroupMember(currentGroupId.toString(), {
+            user_id: draggedCaddie.originalId,
           });
         }
       } else {
@@ -300,34 +300,32 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           // 현재 위치와 목표 위치가 다를 때만 순서 변경
           if (currentIndex !== dropIndex) {
             console.log("순서 변경 요청:", {
-              groupId: targetGroupIdNum,
-              caddie_id: draggedCaddie.originalId,
+              groupId: targetGroupIdStr,
+              user_id: draggedCaddie.originalId,
               currentIndex,
               newIndex: dropIndex,
-              new_order: newOrder,
+              order: newOrder,
             });
 
-            await reorderPrimaryGroup(targetGroupIdNum, {
-              reorders: [
-                {
-                  caddie_id: draggedCaddie.originalId,
-                  new_order: newOrder,
-                },
-              ],
+            await reorderGroupMember(targetGroupIdStr, {
+              user_id: draggedCaddie.originalId,
+              order: newOrder,
             });
           }
         } else {
           // 다른 그룹으로 이동 또는 미배정 캐디를 그룹에 배정
           console.log("배정 요청:", {
-            groupId: targetGroupIdNum,
-            caddie_ids: [draggedCaddie.originalId],
-            orders: [newOrder],
+            groupId: targetGroupIdStr,
+            user_id: draggedCaddie.originalId,
+            order: newOrder,
+            membership_type: "PRIMARY",
             isFromUnassigned: currentGroupId === 0,
           });
 
-          await assignPrimaryGroup(targetGroupIdNum, {
-            caddie_ids: [draggedCaddie.originalId],
-            orders: [newOrder],
+          await addGroupMember(targetGroupIdStr, {
+            user_id: draggedCaddie.originalId,
+            order: newOrder,
+            membership_type: "PRIMARY",
           });
         }
       }
