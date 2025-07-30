@@ -48,14 +48,6 @@ export interface CaddieGroupManagement {
   }>;
 }
 
-// 그룹 관리 필터 상태 타입
-export interface GroupManagementFilters {
-  selectedGroup: string;
-  selectedSpecialTeam: string;
-  selectedStatus: string;
-  searchTerm: string;
-}
-
 // 그룹 생성 API 요청 타입
 export interface CreateGroupRequest {
   name: string;
