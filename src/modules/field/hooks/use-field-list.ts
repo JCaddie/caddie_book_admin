@@ -1,14 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchFields } from "../api/field-api";
-import { Field } from "../types";
-
-export interface FieldListApiResponse {
-  results: Field[];
-  count: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-}
+import { FieldListApiResponse } from "../types";
 
 export const useFieldList = (page: number, searchTerm: string) => {
   return useQuery<FieldListApiResponse, Error>({

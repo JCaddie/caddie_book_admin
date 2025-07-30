@@ -1,5 +1,10 @@
-import { FieldListApiResponse } from "../hooks/use-field-list";
-import { CreateFieldRequest, Field, UpdateFieldRequest } from "../types";
+import {
+  CreateFieldRequest,
+  Field,
+  FieldDetailApiResponse,
+  FieldListApiResponse,
+  UpdateFieldRequest,
+} from "../types";
 import { apiClient } from "@/shared/lib/api-client";
 
 // 필드 목록 조회
@@ -14,17 +19,19 @@ export const fetchFields = async ({
   params.append("page", String(page));
   if (searchTerm) params.append("search", searchTerm);
 
-  return apiClient.get<FieldListApiResponse>(`/api/v1/fields/?${params}`);
+  return apiClient.get<FieldListApiResponse>(
+    `/api/v1/golf-courses/fields/?${params}`
+  );
 };
 
 // 필드 상세 조회
-export const fetchFieldDetail = async (id: string): Promise<Field> => {
-  return apiClient.get<Field>(`/api/v1/fields/${id}/`);
+export const fetchFieldDetail = async (id: string): Promise<FieldDetailApiResponse> => {
+  return apiClient.get<FieldDetailApiResponse>(`/api/v1/golf-courses/fields/${id}/`);
 };
 
 // 필드 생성
 export const createField = async (data: CreateFieldRequest): Promise<Field> => {
-  return apiClient.post<Field>(`/api/v1/fields/`, data);
+  return apiClient.post<Field>(`/api/v1/golf-courses/fields/`, data);
 };
 
 // 필드 수정
@@ -32,18 +39,18 @@ export const updateField = async (
   id: string,
   data: UpdateFieldRequest
 ): Promise<Field> => {
-  return apiClient.patch<Field>(`/api/v1/fields/${id}/`, data);
+  return apiClient.patch<Field>(`/api/v1/golf-courses/fields/${id}/`, data);
 };
 
 // 필드 삭제
 export const deleteField = async (id: string): Promise<boolean> => {
-  await apiClient.delete(`/api/v1/fields/${id}/`);
+  await apiClient.delete(`/api/v1/golf-courses/fields/${id}/`);
   return true;
 };
 
 // 필드 일괄 삭제
 export const deleteFieldsBulk = async (ids: string[]): Promise<boolean> => {
-  await apiClient.delete(`/api/v1/fields/bulk_delete/`, {
+  await apiClient.delete(`/api/v1/golf-courses/fields/bulk_delete/`, {
     body: JSON.stringify({ ids }),
   });
   return true;

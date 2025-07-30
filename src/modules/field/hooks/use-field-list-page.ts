@@ -27,7 +27,8 @@ export function useFieldListPage() {
   const [searchInput, setSearchInput] = useState(searchParamValue);
   // 데이터 fetch는 URL 파라미터 기준
   const queryResult = useFieldList(currentPage, searchParamValue);
-  const data = queryResult.data;
+  const apiResponse = queryResult.data;
+  const data = apiResponse?.data; // API 응답의 data 필드에서 실제 데이터 추출
 
   // 테이블 데이터 변환
   const tableData: FieldTableRow[] = data

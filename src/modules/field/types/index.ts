@@ -4,18 +4,19 @@
 import type { Field as BaseField } from "@/shared/types/domain";
 
 export interface Field extends Omit<BaseField, "id"> {
-  id: number;
+  id: string; // UUID string으로 변경
+  golf_course_name: string; // 골프장명 추가
   hole_count: number;
-  description: string;
-  created_at: string;
-  updated_at: string;
+  description: string; // 필수 필드로 변경
+  created_at: string; // 필수 필드로 변경
+  updated_at: string; // 필수 필드로 변경
 }
 
 // ================================
-// 테이블/리스트용 타입 (id는 string으로 변환)
+// 테이블/리스트용 타입 (id는 이미 string)
 // ================================
 export type FieldTableRow = {
-  id: string; // 테이블에서는 string id 사용
+  id: string; // 이미 string
   name: string;
   golf_course_name: string;
   is_active: boolean;
@@ -53,14 +54,26 @@ export interface FieldSelection {
 }
 
 // ================================
-// API 관련 타입
+// API 관련 타입 - 새로운 응답 구조
 // ================================
-export interface FieldListApiResponse {
-  results: Field[];
+export interface FieldListApiData {
   count: number;
   page: number;
   page_size: number;
   total_pages: number;
+  results: Field[];
+}
+
+export interface FieldListApiResponse {
+  success: boolean;
+  message: string;
+  data: FieldListApiData;
+}
+
+export interface FieldDetailApiResponse {
+  success: boolean;
+  message: string;
+  data: Field;
 }
 
 export type CreateFieldRequest = FieldFormData;
