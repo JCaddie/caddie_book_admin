@@ -2,7 +2,8 @@ import React from "react";
 import TextField from "@/shared/components/ui/text-field";
 import Dropdown from "@/shared/components/ui/dropdown";
 import { FieldFormData } from "../types";
-import { useGolfCourseOptions } from "../hooks/use-golf-course-options";
+import { useGolfCoursesSimple } from "@/modules/golf-course/hooks/use-golf-courses-simple";
+import { GolfCourseSimple } from "@/modules/golf-course/types/api";
 import { useAuth } from "@/shared/hooks";
 
 interface FieldFormProps {
@@ -23,10 +24,17 @@ const FieldForm: React.FC<FieldFormProps> = ({ formData, onInputChange }) => {
   const isAdmin = user?.role === "ADMIN";
 
   const {
-    options: golfCourseOptions,
+    data: golfCoursesResponse,
     isLoading: golfCourseLoading,
     isError: golfCourseError,
-  } = useGolfCourseOptions();
+  } = useGolfCoursesSimple();
+
+  // 골프장 옵션 변환
+  const golfCourseOptions =
+    golfCoursesResponse?.data?.map((course: GolfCourseSimple) => ({
+      value: course.id,
+      label: course.name,
+    })) || [];
 
   return (
     <div className="space-y-6">
@@ -61,8 +69,11 @@ const FieldForm: React.FC<FieldFormProps> = ({ formData, onInputChange }) => {
         <TextField
           label="홀 수"
           type="number"
-          value={formData.hole_count}
-          onChange={(e) => onInputChange("hole_count", Number(e.target.value))}
+          value={formData.hole_count === 0 ? "" : formData.hole_count}
+          onChange={(e) =>
+            onInputChange("hole_count", Number(e.target.value) || 0)
+          }
+          placeholder="홀 수를 입력하세요"
           required
         />
         <div>

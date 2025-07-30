@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks";
-import { useGolfCoursesSimple } from "@/modules/golf-course/hooks/use-golf-courses-simple";
 import { FieldFormData } from "../types";
 import FieldForm from "./field-form";
 
