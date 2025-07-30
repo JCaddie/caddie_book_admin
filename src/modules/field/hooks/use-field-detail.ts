@@ -5,7 +5,10 @@ import { Field } from "../types";
 export const useFieldDetail = (id: string) => {
   return useQuery<Field, Error>({
     queryKey: ["field", id],
-    queryFn: () => fetchFieldDetail(id),
+    queryFn: async () => {
+      const response = await fetchFieldDetail(id);
+      return response.data; // API 응답의 data 필드에서 Field 데이터 추출
+    },
     enabled: !!id,
     staleTime: 0,
   });

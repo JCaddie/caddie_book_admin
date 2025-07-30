@@ -79,7 +79,7 @@ export function transformFieldsToTableRows(
   pageSize = 20
 ): FieldTableRow[] {
   return fields.map((item, idx) => ({
-    id: String(item.id),
+    id: item.id, // 이미 string이므로 변환 불필요
     name: item.name,
     golf_course_name: item.golf_course_name,
     is_active: item.is_active,
