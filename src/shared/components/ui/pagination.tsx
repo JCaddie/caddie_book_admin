@@ -11,20 +11,28 @@ import { useRouter, useSearchParams } from "next/navigation";
 export interface PaginationProps {
   totalPages: number;
   className?: string;
+  onPageChange?: (page: number) => void;
 }
 
 export default function Pagination({
   totalPages,
   className = "",
+  onPageChange,
 }: PaginationProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentPage = Number(searchParams.get("page") || 1);
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(Array.from(searchParams.entries()));
-    params.set("page", String(page));
-    router.push(`?${params.toString()}`);
+    if (onPageChange) {
+      // 외부에서 제공한 페이지 변경 핸들러 사용
+      onPageChange(page);
+    } else {
+      // 기본 동작: URL 파라미터 직접 업데이트
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.set("page", String(page));
+      router.push(`?${params.toString()}`);
+    }
   };
 
   const generatePageNumbers = () => {

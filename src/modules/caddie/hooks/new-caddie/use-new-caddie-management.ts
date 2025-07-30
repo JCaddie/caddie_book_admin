@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { NewCaddieApplication } from "../../types";
-import { REGISTRATION_STATUS } from "../../constants";
 import {
   bulkApproveNewCaddies,
   bulkRejectNewCaddies,
@@ -16,8 +15,9 @@ export const useNewCaddieManagement = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // URL에서 검색어 읽기
+  // URL에서 검색어와 골프장 필터 읽기
   const searchTerm = searchParams.get("search") || "";
+  const golfCourseFilter = searchParams.get("golf_course") || "";
 
   // 상태 관리
   const [applications, setApplications] = useState<NewCaddieApplication[]>([]);
@@ -40,7 +40,7 @@ export const useNewCaddieManagement = () => {
     (apiData: NewCaddieApplication[]): NewCaddieApplication[] => {
       return apiData.map((item) => ({
         ...item,
-        // 기존 호환성을 위해 추가 필드 매핑
+        // 기존 호환성을 위한 추가 필드 매핑
         requestDate: item.created_at
           ? new Date(item.created_at)
               .toLocaleDateString("ko-KR", {
@@ -52,11 +52,12 @@ export const useNewCaddieManagement = () => {
               .replace(/\s/g, "")
           : "",
         status:
-          item.registration_status === REGISTRATION_STATUS.PENDING
+          item.registration_status === "PENDING"
             ? ("pending" as const)
-            : item.registration_status === REGISTRATION_STATUS.APPROVED
+            : item.registration_status === "APPROVED"
             ? ("approved" as const)
             : ("rejected" as const),
+        // registration_status_display는 컬럼에서 직접 처리하므로 여기서는 불필요
       }));
     },
     []
@@ -71,15 +72,16 @@ export const useNewCaddieManagement = () => {
 
         const response = await getNewCaddieList({
           search: searchTerm || undefined,
+          golf_course: golfCourseFilter || undefined,
           page: page,
           page_size: PAGE_SIZE,
         });
 
-        if (response.success && response.results) {
-          const transformedData = transformApiData(response.results);
+        if (response.success && response.data?.results) {
+          const transformedData = transformApiData(response.data.results);
           setApplications(transformedData);
-          setCurrentPage(response.page);
-          setTotalPages(response.total_pages);
+          setCurrentPage(response.data.page);
+          setTotalPages(response.data.total_pages);
         } else {
           console.error("신규 캐디 목록 조회 실패:", response);
           setError("데이터를 불러오는데 실패했습니다.");
@@ -91,7 +93,7 @@ export const useNewCaddieManagement = () => {
         setIsLoading(false);
       }
     },
-    [searchTerm, transformApiData]
+    [searchTerm, golfCourseFilter, transformApiData]
   );
 
   // URL 파라미터 변경 시 데이터 리로드
@@ -110,13 +112,13 @@ export const useNewCaddieManagement = () => {
   // 필터링된 데이터 (승인 대기 + 거부된 캐디들)
   const filteredApplications = applications.filter(
     (app) =>
-      app.registration_status === REGISTRATION_STATUS.PENDING ||
-      app.registration_status === REGISTRATION_STATUS.REJECTED
+      app.registration_status === "PENDING" ||
+      app.registration_status === "REJECTED"
   );
 
   // 승인 대기 개수
   const pendingCount = applications.filter(
-    (app) => app.registration_status === REGISTRATION_STATUS.PENDING
+    (app) => app.registration_status === "PENDING"
   ).length;
 
   // 모달 열기 함수들
@@ -147,7 +149,7 @@ export const useNewCaddieManagement = () => {
         user_ids: selectedRowKeys,
       });
 
-      if (response.success) {
+      if ((response as { success: boolean }).success) {
         console.log("일괄 승인 성공");
         setSelectedRowKeys([]);
         setIsApprovalModalOpen(false);
@@ -161,14 +163,14 @@ export const useNewCaddieManagement = () => {
   };
 
   // 일괄 거절 처리
-  const handleBulkReject = async () => {
+  const handleBulkReject = async (rejectionReason: string) => {
     try {
       const response = await bulkRejectNewCaddies({
         user_ids: selectedRowKeys,
-        rejection_reason: "서류 미비",
+        rejection_reason: rejectionReason,
       });
 
-      if (response.success) {
+      if ((response as { success: boolean }).success) {
         console.log("일괄 거절 성공");
         setSelectedRowKeys([]);
         setIsRejectModalOpen(false);
@@ -188,8 +190,10 @@ export const useNewCaddieManagement = () => {
         user_ids: [selectedCaddieId],
       });
 
-      if (response.success) {
+      if ((response as { success: boolean }).success) {
         console.log("개별 승인 성공");
+        setSelectedCaddieId("");
+        setSelectedCaddieName("");
         setIsIndividualApprovalModalOpen(false);
         refreshData();
       } else {
@@ -201,15 +205,17 @@ export const useNewCaddieManagement = () => {
   };
 
   // 개별 거절 처리
-  const handleIndividualReject = async () => {
+  const handleIndividualReject = async (rejectionReason: string) => {
     try {
       const response = await bulkRejectNewCaddies({
         user_ids: [selectedCaddieId],
-        rejection_reason: "서류 미비",
+        rejection_reason: rejectionReason,
       });
 
-      if (response.success) {
+      if ((response as { success: boolean }).success) {
         console.log("개별 거절 성공");
+        setSelectedCaddieId("");
+        setSelectedCaddieName("");
         setIsIndividualRejectModalOpen(false);
         refreshData();
       } else {

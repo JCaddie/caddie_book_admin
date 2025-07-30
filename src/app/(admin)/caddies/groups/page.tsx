@@ -11,7 +11,7 @@ import {
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
-import { getGolfCourseGroupStatus } from "@/modules/golf-course/api/golf-course-api";
+import { fetchGolfCourseGroupStatus } from "@/modules/golf-course/api/golf-course-api";
 import { GolfCourseGroupStatus } from "@/modules/golf-course/types/golf-course";
 
 // 골프장 그룹 현황 테이블 컬럼
@@ -91,18 +91,17 @@ const GolfCourseStatsPage: React.FC = () => {
   const currentSearch = searchParams.get("search") || "";
 
   // 데이터 로드 함수
-  const loadData = async (page: number = 1, search: string = "") => {
+  const loadData = async () => {
     setLoading(true);
 
     try {
-      const response = await getGolfCourseGroupStatus({
-        page,
-        search: search || undefined,
-      });
+      // Note: 이 함수는 특정 골프장 ID가 필요합니다.
+      // 현재는 임시로 빈 문자열을 사용하며, 실제 구현 시 적절한 골프장 ID를 전달해야 합니다.
+      const response = await fetchGolfCourseGroupStatus("");
 
-      setData(response.results as unknown as Record<string, unknown>[]);
-      setTotalPages(response.total_pages);
-      setTotalCount(response.count);
+      setData(response.data?.groups || []);
+      setTotalPages(1);
+      setTotalCount(response.data?.groups?.length || 0);
     } catch (err) {
       console.error("골프장 그룹 현황 조회 실패:", err);
     } finally {
@@ -112,13 +111,13 @@ const GolfCourseStatsPage: React.FC = () => {
 
   // URL 파라미터 변경 시 데이터 로드
   useEffect(() => {
-    loadData(currentPage, currentSearch);
+    loadData();
   }, [currentPage, currentSearch]);
 
   // 행 클릭 핸들러 (해당 골프장의 그룹 관리 페이지로 이동)
   const handleRowClick = (record: Record<string, unknown>) => {
     const golfCourse = record as unknown as GolfCourseGroupStatus;
-    router.push(`/caddies/groups/${golfCourse.id}`);
+    router.push(`/caddies/groups/${golfCourse.groupId}`);
   };
 
   // 선택 업데이트

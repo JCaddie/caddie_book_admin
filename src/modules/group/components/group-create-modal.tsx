@@ -6,7 +6,7 @@ import { Button, Input } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks";
 import { createGroup } from "../api/group-api";
 import { CreateGroupRequest } from "../types";
-import { getGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
+import { fetchGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
 
 export interface GroupCreateModalProps {
   isOpen: boolean;
@@ -39,10 +39,12 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
       const fetchGolfCourseName = async () => {
         try {
           if (isMaster && golfCourseId) {
-            const response = await getGolfCourseGroupDetail(golfCourseId);
+            const response = await fetchGolfCourseGroupDetail(golfCourseId);
             setGolfCourseName(response.golf_course.name);
           } else if (user?.golfCourseId) {
-            const response = await getGolfCourseGroupDetail(user.golfCourseId);
+            const response = await fetchGolfCourseGroupDetail(
+              user.golfCourseId
+            );
             setGolfCourseName(response.golf_course.name);
           }
         } catch (error) {

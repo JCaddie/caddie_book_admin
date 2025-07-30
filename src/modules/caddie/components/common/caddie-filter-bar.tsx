@@ -2,9 +2,12 @@
 
 import React from "react";
 import { Button, Dropdown, SearchWithButton } from "@/shared/components/ui";
-import { CaddieFilters } from "@/shared/types/caddie";
-import { GROUP_OPTIONS, SPECIAL_TEAM_OPTIONS } from "@/shared/constants/caddie";
 import { useAuth, useGolfCourseSimpleOptions } from "@/shared/hooks";
+import {
+  DEFAULT_GROUP_OPTIONS,
+  DEFAULT_SPECIAL_TEAM_OPTIONS,
+} from "../../constants/caddie";
+import { CaddieFilters } from "../../types";
 
 interface CaddieFilterBarProps {
   totalCount: number;
@@ -32,6 +35,12 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
   const isAdmin = user?.role === "ADMIN";
   const canViewAllGolfCourses =
     user?.role === "MASTER" || user?.role === "ADMIN";
+
+  // TODO: API에서 동적으로 로드해야 할 옵션들
+  // 현재는 기본값 사용, 추후 커스텀 훅으로 대체 예정
+  const groupOptions = DEFAULT_GROUP_OPTIONS;
+  const specialTeamOptions = DEFAULT_SPECIAL_TEAM_OPTIONS;
+
   return (
     <div className="space-y-4">
       {/* 기존 필터 영역 */}
@@ -62,14 +71,14 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
             {isAdmin && (
               <>
                 <Dropdown
-                  options={GROUP_OPTIONS}
+                  options={groupOptions}
                   value={filters.selectedGroup}
                   onChange={onGroupChange}
                   placeholder="그룹"
                 />
 
                 <Dropdown
-                  options={SPECIAL_TEAM_OPTIONS}
+                  options={specialTeamOptions}
                   value={filters.selectedSpecialTeam}
                   onChange={onSpecialTeamChange}
                   placeholder="특수반"

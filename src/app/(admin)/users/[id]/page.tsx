@@ -5,11 +5,7 @@ import { useParams } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { Badge } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
-import {
-  useUpdateUser,
-  useUpdateUserPassword,
-  useUserDetail,
-} from "@/modules/user/hooks";
+import { useUpdateUserPassword, useUserDetail } from "@/modules/user/hooks";
 import {
   EditableDropdownField,
   EditableField,
@@ -31,7 +27,7 @@ export default function UserDetailPage() {
     useGolfCoursesSimple();
 
   // Mutation 훅들
-  const updateUserMutation = useUpdateUser();
+  // const updateUserMutation = useUpdateUser(); // 현재 사용하지 않음
   const updatePasswordMutation = useUpdateUserPassword();
 
   // 개별 필드 저장 핸들러들 (임시 주석 처리)
@@ -60,7 +56,7 @@ export default function UserDetailPage() {
 
   // 골프장 옵션 변환
   const golfCourseOptions =
-    golfCoursesData?.results?.map((course) => ({
+    golfCoursesData?.data?.map((course) => ({
       value: course.id,
       label: course.name,
     })) || [];
@@ -145,7 +141,6 @@ export default function UserDetailPage() {
                   value={user.name}
                   onSave={async () => {}}
                   placeholder="이름을 입력하세요"
-                  isLoading={updateUserMutation.isPending}
                   hideLabel={true}
                 />
               </div>
@@ -157,10 +152,9 @@ export default function UserDetailPage() {
                 <EditableField
                   label=""
                   value={user.phone || ""}
-                  type="tel"
+                  type="phone"
                   onSave={async () => {}}
                   placeholder="전화번호를 입력하세요"
-                  isLoading={updateUserMutation.isPending}
                   hideLabel={true}
                 />
               </div>
@@ -175,7 +169,6 @@ export default function UserDetailPage() {
                   type="email"
                   onSave={async () => {}}
                   placeholder="이메일을 입력하세요"
-                  isLoading={updateUserMutation.isPending}
                   hideLabel={true}
                 />
               </div>
@@ -190,7 +183,6 @@ export default function UserDetailPage() {
                   options={golfCourseOptions}
                   onSave={async () => {}}
                   placeholder="골프장을 선택하세요"
-                  isLoading={updateUserMutation.isPending}
                   optionsLoading={golfCoursesLoading}
                   hideLabel={true}
                 />

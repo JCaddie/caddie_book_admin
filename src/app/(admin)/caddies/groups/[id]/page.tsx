@@ -11,7 +11,7 @@ import { GroupSummary } from "@/modules/group/components/group-summary";
 import { CaddieStatusPanel } from "@/modules/group/components/caddie-status-panel";
 import { UnassignedCaddieList } from "@/modules/group/components/unassigned-caddie-list";
 import { GroupManagementArea } from "@/modules/group/components/group-management-area";
-import { getGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
+import { fetchGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
 import { GolfCourseGroupDetailResponse } from "@/modules/golf-course/types/golf-course";
 import {
   CaddieAssignmentOverviewResponse,
@@ -101,8 +101,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   // 페이지 타이틀 설정
   const pageTitle = isOwnGolfCourse
     ? "내 골프장 그룹현황"
-    : data?.golf_course.name
-    ? `${data.golf_course.name} 그룹현황`
+    : data?.data.name
+    ? `${data.data.name} 그룹현황`
     : "그룹현황";
   useDocumentTitle({ title: pageTitle });
 
@@ -116,14 +116,14 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         // 현재 사용자의 골프장 ID를 사용
         if (user?.golfCourseId) {
           console.log("현재 사용자의 골프장 정보 로드:", user.golfCourseId);
-          const response = await getGolfCourseGroupDetail(user.golfCourseId);
+          const response = await fetchGolfCourseGroupDetail(user.golfCourseId);
           setData(response);
         } else {
           setError("현재 사용자에게 할당된 골프장이 없습니다.");
         }
       } else {
         // 전달받은 ID로 골프장 정보 조회
-        const response = await getGolfCourseGroupDetail(id);
+        const response = await fetchGolfCourseGroupDetail(id);
         setData(response);
       }
     } catch (err) {
@@ -381,15 +381,18 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
       {/* 골프장 정보 */}
       <GolfCourseInfo
-        name={data.golf_course.name}
-        address={data.golf_course.address}
-        contractStatus={data.golf_course.contract_status}
+        name={data.data.name}
+        address={data.data.region}
+        contractStatus="ACTIVE"
       />
 
       {/* 그룹 요약 정보 */}
       <GroupSummary
-        primaryGroupCount={data.group_summary.primary_group_count}
-        totalCaddies={data.caddie_summary.total_caddies}
+        primaryGroupCount={data.data.groups.length}
+        totalCaddies={data.data.groups.reduce(
+          (total, group) => total + group.caddie_count,
+          0
+        )}
       />
 
       {/* 메인 콘텐츠 */}

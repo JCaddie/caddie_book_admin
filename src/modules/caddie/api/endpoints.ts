@@ -33,9 +33,9 @@ export const CADDIE_ENDPOINTS = {
 
   // 신규 캐디 관련
   NEW_CADDIES: {
-    LIST: `${BASE_API_PATH}/new-caddies`,
-    BULK_APPROVE: `${BASE_API_PATH}/new-caddies/bulk-approve`,
-    BULK_REJECT: `${BASE_API_PATH}/new-caddies/bulk-reject`,
+    LIST: `${BASE_API_PATH}/caddies/pending-registrations`,
+    BULK_APPROVE: `${BASE_API_PATH}/caddies/pending-registrations/bulk-approve/`,
+    BULK_REJECT: `${BASE_API_PATH}/caddies/pending-registrations/bulk-reject/`,
   },
 } as const;
 

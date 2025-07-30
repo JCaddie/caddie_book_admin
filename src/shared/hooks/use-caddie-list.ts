@@ -1,18 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type {
   Caddie,
   CaddieFilters,
   CaddieListParams,
   CaddieSelection,
 } from "@/modules/caddie/types";
-import { deleteCaddies, getCaddieList } from "@/modules/caddie/api";
+import { bulkDeleteCaddies, getCaddieList } from "@/modules/caddie/api";
 import { DEFAULT_FILTERS, ITEMS_PER_PAGE } from "@/shared/constants/caddie";
 
 export const useCaddieList = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // 상태 관리
@@ -21,7 +20,7 @@ export const useCaddieList = () => {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
+  // currentPage 상태 제거 - URL에서 직접 읽어옴
 
   // 필터 상태
   const [filters, setFilters] = useState<CaddieFilters>(DEFAULT_FILTERS);
@@ -32,13 +31,12 @@ export const useCaddieList = () => {
     selectedRows: [],
   });
 
-  // URL 검색 파라미터로부터 필터 상태 및 페이지 설정
+  // URL 검색 파라미터로부터 필터 상태 설정 (페이지는 제외)
   useEffect(() => {
     const searchParam = searchParams.get("search");
     const golfCourseParam = searchParams.get("golf_course");
     const groupParam = searchParams.get("group");
     const specialTeamParam = searchParams.get("special_team");
-    const pageParam = searchParams.get("page");
 
     setFilters((prev) => ({
       ...prev,
@@ -47,9 +45,10 @@ export const useCaddieList = () => {
       selectedGroup: groupParam || "그룹",
       selectedSpecialTeam: specialTeamParam || "특수반",
     }));
-
-    setCurrentPage(pageParam ? parseInt(pageParam, 10) : 1);
   }, [searchParams]);
+
+  // URL에서 현재 페이지 읽어오기
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   // API 데이터 로드
   const loadCaddies = useCallback(async () => {
@@ -76,7 +75,7 @@ export const useCaddieList = () => {
       }
 
       if (filters.selectedGolfCourseId) {
-        params.golf_course_id = filters.selectedGolfCourseId;
+        params.golf_course = filters.selectedGolfCourseId;
       }
 
       const response = await getCaddieList(params);
@@ -110,55 +109,6 @@ export const useCaddieList = () => {
     loadCaddies();
   }, [loadCaddies]);
 
-  // 페이지 변경 시 첫 페이지로 리셋
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
-
-  // 필터 업데이트 함수들
-  const updateSelectedGroup = (selectedGroup: string) => {
-    // URL 파라미터 업데이트
-    const params = new URLSearchParams(searchParams.toString());
-    if (selectedGroup && selectedGroup !== "그룹") {
-      params.set("group", selectedGroup);
-    } else {
-      params.delete("group");
-    }
-    params.delete("page");
-
-    router.push(`?${params.toString()}`);
-    setFilters((prev) => ({ ...prev, selectedGroup }));
-  };
-
-  const updateSelectedSpecialTeam = (selectedSpecialTeam: string) => {
-    // URL 파라미터 업데이트
-    const params = new URLSearchParams(searchParams.toString());
-    if (selectedSpecialTeam && selectedSpecialTeam !== "특수반") {
-      params.set("special_team", selectedSpecialTeam);
-    } else {
-      params.delete("special_team");
-    }
-    params.delete("page");
-
-    router.push(`?${params.toString()}`);
-    setFilters((prev) => ({ ...prev, selectedSpecialTeam }));
-  };
-
-  const updateSelectedGolfCourse = (selectedGolfCourseId: string) => {
-    // URL 파라미터 업데이트
-    const params = new URLSearchParams(searchParams.toString());
-    if (selectedGolfCourseId) {
-      params.set("golf_course", selectedGolfCourseId);
-    } else {
-      params.delete("golf_course");
-    }
-    // 페이지를 1로 리셋
-    params.delete("page");
-
-    router.push(`?${params.toString()}`);
-    setFilters((prev) => ({ ...prev, selectedGolfCourseId }));
-  };
-
   // 선택 상태 업데이트
   const updateSelection = (
     selectedRowKeys: string[],
@@ -174,7 +124,7 @@ export const useCaddieList = () => {
     }
 
     try {
-      await deleteCaddies(selection.selectedRowKeys);
+      await bulkDeleteCaddies({ ids: selection.selectedRowKeys });
 
       // 삭제 후 데이터 새로고침
       await loadCaddies();
@@ -200,19 +150,6 @@ export const useCaddieList = () => {
 
   // 페이지네이션 계산 (API에서 제공하는 total_pages 사용)
 
-  const handlePageChange = (page: number) => {
-    // URL 파라미터 업데이트
-    const params = new URLSearchParams(searchParams.toString());
-    if (page > 1) {
-      params.set("page", page.toString());
-    } else {
-      params.delete("page");
-    }
-
-    router.push(`?${params.toString()}`);
-    setCurrentPage(page);
-  };
-
   return {
     // 데이터
     filteredCaddies: caddies, // API에서 이미 필터링된 데이터
@@ -224,11 +161,8 @@ export const useCaddieList = () => {
     isLoading,
     error,
 
-    // 필터 상태
+    // 필터 상태 (읽기 전용)
     filters,
-    updateSelectedGroup,
-    updateSelectedSpecialTeam,
-    updateSelectedGolfCourse,
 
     // 선택 상태
     selection,
@@ -238,9 +172,7 @@ export const useCaddieList = () => {
     selectedCount,
 
     // 페이지네이션
-    currentPage,
     totalPages,
-    handlePageChange,
 
     // 데이터 새로고침
     refreshData: loadCaddies,

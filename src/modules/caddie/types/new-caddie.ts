@@ -11,23 +11,23 @@ export type RegistrationStatus =
 // 신규 캐디 신청 상태 (기존 호환성)
 export type NewCaddieStatus = "pending" | "approved" | "rejected";
 
-// 골프장 정보 타입 (caddie.ts에서 import)
-import type { GolfCourse } from "./caddie";
-
 // 신규 캐디 신청 데이터 타입 (API 응답 기준)
 export interface NewCaddieApplication extends Record<string, unknown> {
   id: string;
   name: string;
   phone: string;
   email: string;
-  created_at: string;
+  golf_course: {
+    id: string;
+    name: string;
+    region: string;
+  };
   registration_status: RegistrationStatus;
-  registration_status_display: string;
-  golf_course: GolfCourse;
-  isEmpty?: boolean;
-  // 기존 호환성을 위해 유지
-  requestDate?: string;
+  created_at: string;
+  // UI에서 변환되는 필드들 (API 응답에는 없음)
+  registration_status_display?: string;
   status?: NewCaddieStatus;
+  requestDate?: string;
 }
 
 // ================================
@@ -38,21 +38,13 @@ export interface NewCaddieApplication extends Record<string, unknown> {
 export interface NewCaddieListResponse {
   success: boolean;
   message?: string;
-  count: number;
-  page: number;
-  total_pages: number;
-  results: NewCaddieApplication[];
-}
-
-// 일괄 승인 요청
-export interface BulkApproveRequest {
-  user_ids: string[];
-}
-
-// 일괄 거절 요청
-export interface BulkRejectRequest {
-  user_ids: string[];
-  rejection_reason: string;
+  data: {
+    count: number;
+    page: number;
+    page_size: number;
+    total_pages: number;
+    results: NewCaddieApplication[];
+  };
 }
 
 // API 응답 기본 형태
@@ -102,9 +94,9 @@ export interface NewCaddieActions {
   openIndividualApprovalModal: (id: string, name: string) => void;
   openIndividualRejectModal: (id: string, name: string) => void;
   handleBulkApprove: () => void;
-  handleBulkReject: () => void;
+  handleBulkReject: (rejectionReason: string) => void;
   handleIndividualApprove: () => void;
-  handleIndividualReject: () => void;
+  handleIndividualReject: (rejectionReason: string) => void;
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSearchClear: () => void;
   handleSelectChange: (keys: string[]) => void;

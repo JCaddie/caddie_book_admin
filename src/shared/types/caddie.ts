@@ -1,25 +1,36 @@
-// 골프장 정보 타입
+// ================================
+// Legacy 캐디 타입 (호환성 유지용)
+// ================================
+
+// 새로운 타입들은 modules에서 사용
+export type {
+  Caddie as ModernCaddie,
+  CaddieDetail as ModernCaddieDetail,
+  CaddieFilters as ModernCaddieFilters,
+  CaddieSelection as ModernCaddieSelection,
+  Gender,
+  EmploymentType,
+} from "@/modules/caddie/types";
+
+// Legacy 타입들 (기존 코드 호환성 유지)
 export interface GolfCourse {
   id: string;
   name: string;
   region: string;
 }
 
-// 그룹 정보 타입 (목록용)
 export interface Group {
   id: number;
   name: string;
   group_type: string;
 }
 
-// 특수그룹 타입 (배열로 관리)
 export interface SpecialGroup {
   id: number;
   name: string;
   group_type: string;
 }
 
-// 그룹 정보 타입 (상세용)
 export interface GroupDetail {
   id: string;
   name: string;
@@ -27,7 +38,6 @@ export interface GroupDetail {
   description: string;
 }
 
-// 그룹 멤버십 타입
 export interface GroupMembership {
   group: GroupDetail;
   is_primary: boolean;
@@ -35,20 +45,17 @@ export interface GroupMembership {
   is_active: boolean;
 }
 
-// 역할 표시 타입
 export interface RoleDisplay {
   role: string;
   is_team_leader: boolean;
 }
 
-// 근무 배정 타입
 export interface AssignedWork {
   message: string;
   upcoming_schedules: unknown[];
   current_assignment: unknown | null;
 }
 
-// 경력 타입
 export interface Career {
   id?: string;
   company?: string;
@@ -57,17 +64,7 @@ export interface Career {
   description?: string;
 }
 
-// 고용 타입
-export type EmploymentType =
-  | "FULL_TIME"
-  | "PART_TIME"
-  | "CONTRACT"
-  | "TEMPORARY";
-
-// 성별 타입
-export type Gender = "M" | "F";
-
-// 캐디 기본 정보 인터페이스
+// Legacy 캐디 인터페이스 (기존 호환성 유지)
 export interface Caddie extends Record<string, unknown> {
   id: string;
   name: string;
@@ -81,13 +78,12 @@ export interface Caddie extends Record<string, unknown> {
   isEmpty?: boolean;
 }
 
-// 필터 옵션 타입
+// Legacy 필터 타입들
 export interface FilterOption {
   value: string;
   label: string;
 }
 
-// 캐디 필터 상태 타입
 export interface CaddieFilters {
   searchTerm: string;
   selectedGroup: string;
@@ -95,13 +91,12 @@ export interface CaddieFilters {
   selectedGolfCourseId: string;
 }
 
-// 캐디 선택 상태 타입
 export interface CaddieSelection {
   selectedRowKeys: string[];
   selectedRows: Caddie[];
 }
 
-// 캐디 상세 정보 인터페이스
+// Legacy 상세 타입
 export interface CaddieDetail extends Record<string, unknown> {
   id: string;
   name: string;
