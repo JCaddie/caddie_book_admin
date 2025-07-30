@@ -33,15 +33,12 @@ export {
 
 // API 요청 함수들
 export {
-  bulkApproveNewCaddies,
   bulkDeleteCaddies,
-  bulkRejectNewCaddies,
   createCaddie,
   deleteCaddie,
   fetchCaddieDetail,
   fetchCaddieGroups,
   fetchCaddieList,
-  fetchNewCaddieList,
   updateCaddie,
   updateCaddieAddress,
   updateCaddieContact,
@@ -51,6 +48,17 @@ export {
   updateCaddieTeamLeader,
   updateCaddieWorkScore,
 } from "./requests";
+
+// 신규 캐디 관련 API (별도 파일에서 관리)
+export {
+  getNewCaddieList,
+  bulkApproveNewCaddies,
+  bulkRejectNewCaddies,
+  type NewCaddieListParams,
+  type BulkApproveRequest,
+  type BulkRejectRequest,
+  type ApiResponse,
+} from "./new-caddie-api";
 
 // 하위 호환성을 위한 re-export (기존 import를 깨뜨리지 않기 위해)
 export {

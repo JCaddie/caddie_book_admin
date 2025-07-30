@@ -4,6 +4,7 @@ import { AdminPageHeader } from "@/shared/components/layout";
 import {
   ConfirmationModal,
   Pagination,
+  RejectionReasonModal,
   SelectableDataTable,
 } from "@/shared/components/ui";
 import { useNewCaddieManagement } from "@/modules/caddie/hooks";
@@ -66,8 +67,12 @@ export default function NewCaddiePage() {
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
-      <AdminPageHeader title="신규 캐디" />
+      {/* 제목 */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">신규 캐디</h2>
+      </div>
 
+      {/* 액션바 */}
       <NewCaddieActionBar
         pendingCount={pendingCount}
         selectedCount={selectedRowKeys.length}
@@ -113,7 +118,7 @@ export default function NewCaddiePage() {
         cancelText={NEW_CADDIE_CONSTANTS.CANCEL_BUTTON_TEXT}
       />
 
-      <ConfirmationModal
+      <RejectionReasonModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         onConfirm={handleBulkReject}
@@ -135,7 +140,7 @@ export default function NewCaddiePage() {
       />
 
       {/* 개별 거절 모달 */}
-      <ConfirmationModal
+      <RejectionReasonModal
         isOpen={isIndividualRejectModalOpen}
         onClose={() => setIsIndividualRejectModalOpen(false)}
         onConfirm={handleIndividualReject}

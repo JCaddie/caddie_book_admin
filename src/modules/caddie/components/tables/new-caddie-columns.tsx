@@ -67,31 +67,30 @@ export const useNewCaddieColumns = (): Column<NewCaddieApplication>[] => {
         },
       },
       {
-        key: "registration_status_display",
+        key: "registration_status",
         title: "승인상태",
         width: 100,
         render: (value: unknown, record: NewCaddieApplication) => {
-          // API에서 제공하는 display 값 사용
-          const displayValue = String(value || record.status || "대기");
+          // registration_status 값을 기반으로 표시값 결정
+          let displayValue = "대기";
+
+          if (record.registration_status === "PENDING") {
+            displayValue = "승인 대기";
+          } else if (record.registration_status === "APPROVED") {
+            displayValue = "승인";
+          } else if (record.registration_status === "REJECTED") {
+            displayValue = "거절";
+          }
 
           // 상태에 따른 배지 스타일링 (고정 크기)
           let badgeClass =
             "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium min-w-[60px] ";
 
-          if (
-            record.registration_status === "PENDING" ||
-            record.status === "pending"
-          ) {
+          if (record.registration_status === "PENDING") {
             badgeClass += "bg-yellow-100 text-yellow-800";
-          } else if (
-            record.registration_status === "APPROVED" ||
-            record.status === "approved"
-          ) {
+          } else if (record.registration_status === "APPROVED") {
             badgeClass += "bg-green-100 text-green-800";
-          } else if (
-            record.registration_status === "REJECTED" ||
-            record.status === "rejected"
-          ) {
+          } else if (record.registration_status === "REJECTED") {
             badgeClass += "bg-red-100 text-red-800";
           } else {
             badgeClass += "bg-gray-100 text-gray-800";

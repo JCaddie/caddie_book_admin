@@ -183,58 +183,16 @@ export const updateCaddieContact = async (
 };
 
 /**
- * 캐디 주소 업데이트
+ * 캐디 주소 정보 수정
+ * PATCH /api/v1/caddies/{id}/address/
  */
 export const updateCaddieAddress = async (
   id: string,
-  address: string
-): Promise<CaddieDetailResponse> => {
-  return updateCaddie(id, { address });
-};
-
-// ================================
-// 신규 캐디 관련 API (기존 호환성)
-// ================================
-
-/**
- * 신규 캐디 목록 조회
- * GET /api/v1/new-caddies/
- */
-export const fetchNewCaddieList = async (params: {
-  page?: number;
-  page_size?: number;
-  search?: string;
-}) => {
-  const searchParams = new URLSearchParams();
-
-  if (params.page) searchParams.append("page", params.page.toString());
-  if (params.page_size)
-    searchParams.append("page_size", params.page_size.toString());
-  if (params.search) searchParams.append("search", params.search);
-
-  const queryString = searchParams.toString();
-  const url = `${CADDIE_ENDPOINTS.NEW_CADDIES.LIST}${
-    queryString ? `?${queryString}` : ""
-  }`;
-
-  return apiClient.get(url);
-};
-
-/**
- * 신규 캐디 일괄 승인
- * POST /api/v1/new-caddies/bulk-approve/
- */
-export const bulkApproveNewCaddies = async (data: { user_ids: string[] }) => {
-  return apiClient.post(CADDIE_ENDPOINTS.NEW_CADDIES.BULK_APPROVE, data);
-};
-
-/**
- * 신규 캐디 일괄 거부
- * POST /api/v1/new-caddies/bulk-reject/
- */
-export const bulkRejectNewCaddies = async (data: {
-  user_ids: string[];
-  rejection_reason: string;
-}) => {
-  return apiClient.post(CADDIE_ENDPOINTS.NEW_CADDIES.BULK_REJECT, data);
+  data: {
+    address?: string;
+    detailed_address?: string;
+  }
+): Promise<void> => {
+  const url = `${CADDIE_ENDPOINTS.UPDATE(id)}/address/`;
+  return apiClient.patch(url, data);
 };
