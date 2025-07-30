@@ -9,7 +9,6 @@ export {
   deleteGolfCourse,
   fetchGolfCourseDetail,
   fetchGolfCourseGroupDetail,
-  fetchGolfCourseGroups,
   fetchGolfCourses,
   fetchGolfCoursesSimple,
   updateGolfCourse,

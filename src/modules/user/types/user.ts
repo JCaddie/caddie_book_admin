@@ -103,7 +103,7 @@ export interface GroupMember {
   is_team_leader: boolean;
 }
 
-export interface Group {
+export interface Group extends Record<string, unknown> {
   id: number;
   name: string;
   order: number;

@@ -149,6 +149,20 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         // golfCourseId가 없으면 에러 처리
         if (!golfCourseId) {
           setCaddieError("현재 사용자에게 할당된 골프장이 없습니다.");
+          // 임시 빈 데이터로 설정
+          setAssignmentData({
+            summary: {
+              total_assigned_caddies: 0,
+              total_unassigned_caddies: 0,
+              total_groups: 0,
+            },
+            golf_course: {
+              id: user?.golfCourseId || "unknown",
+              name: "데이터 로딩 중...",
+            },
+            groups: [],
+            unassigned_caddies: [],
+          });
           return;
         }
       } else {
@@ -161,6 +175,20 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     } catch (err) {
       console.error("캐디 배정 정보 조회 실패:", err);
       setCaddieError("캐디 정보를 불러오는 중 오류가 발생했습니다.");
+      // 오류 발생 시 임시 빈 데이터로 설정하여 화면이 깨지지 않도록 함
+      setAssignmentData({
+        summary: {
+          total_assigned_caddies: 0,
+          total_unassigned_caddies: 0,
+          total_groups: 0,
+        },
+        golf_course: {
+          id: id || "unknown",
+          name: "오류 발생으로 인한 임시 데이터",
+        },
+        groups: [],
+        unassigned_caddies: [],
+      });
     } finally {
       setCaddieLoading(false);
     }
@@ -340,8 +368,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     );
   }
 
-  // 에러 상태
-  if (error) {
+  // 에러 상태 - 캐디 정보만 오류가 있어도 전체 화면을 보여주도록 수정
+  if (error && !data) {
     return (
       <div className="bg-white rounded-xl p-8 space-y-6">
         <AdminPageHeader title={pageTitle} />
@@ -381,24 +409,33 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
       {/* 골프장 정보 */}
       <GolfCourseInfo
-        name={data.data.name}
-        address={data.data.region}
+        name={data?.data?.name || "골프장 정보 로딩 중..."}
+        address={data?.data?.region || "주소 정보 없음"}
         contractStatus="ACTIVE"
       />
 
       {/* 그룹 요약 정보 */}
       <GroupSummary
-        primaryGroupCount={data.data.groups.length}
-        totalCaddies={data.data.groups.reduce(
-          (total, group) => total + group.caddie_count,
-          0
-        )}
+        primaryGroupCount={data?.data?.groups?.length || 0}
+        totalCaddies={
+          data?.data?.groups?.reduce(
+            (total, group) => total + (group?.caddie_count || 0),
+            0
+          ) || 0
+        }
       />
 
       {/* 메인 콘텐츠 */}
       <div className="flex gap-8">
         {/* 왼쪽: 그룹 관리 */}
         <div className="w-[calc(3*320px+2*16px)]">
+          {error && (
+            <div className="p-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">
+                ⚠️ 골프장 데이터 로딩 중 오류: {error}
+              </p>
+            </div>
+          )}
           <GroupManagementArea
             groups={assignmentData?.groups || []}
             onDragStart={handleDragStart}
@@ -426,10 +463,19 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           {/* 캐디 목록 */}
           <div className="space-y-3">
             <h4 className="text-md font-medium text-gray-900">캐디 목록</h4>
+            {caddieError && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-sm text-yellow-800">⚠️ {caddieError}</p>
+                <p className="text-xs text-yellow-600 mt-1">
+                  임시 데이터로 화면을 표시합니다. API 업데이트 후 다시
+                  시도해주세요.
+                </p>
+              </div>
+            )}
             <UnassignedCaddieList
               unassignedCaddies={assignmentData?.unassigned_caddies || []}
               isLoading={caddieLoading}
-              error={caddieError}
+              error={null} // 에러는 위에서 별도로 표시하므로 null로 설정
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               onDrop={handleDrop}

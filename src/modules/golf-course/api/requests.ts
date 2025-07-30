@@ -14,7 +14,6 @@ import type {
   GolfCourseDetailResponse,
   GolfCourseFilters,
   GolfCourseGroupDetailResponse,
-  GolfCourseGroupsListResponse,
   GolfCourseListResponse,
   GolfCourseSimpleResponse,
 } from "../types";
@@ -106,33 +105,6 @@ export const fetchGolfCourseGroupDetail = async (
 ): Promise<GolfCourseGroupDetailResponse> => {
   const url = GOLF_COURSE_ENDPOINTS.GROUP_DETAIL(id);
   return await apiClient.get<GolfCourseGroupDetailResponse>(url);
-};
-
-/**
- * 골프장 그룹 목록 조회
- */
-export const fetchGolfCourseGroups = async ({
-  groupType,
-  searchTerm,
-}: {
-  groupType?: "PRIMARY" | "SPECIAL";
-  searchTerm?: string;
-} = {}): Promise<GolfCourseGroupsListResponse> => {
-  const url = GOLF_COURSE_ENDPOINTS.GROUPS_LIST;
-  const params = new URLSearchParams();
-
-  if (groupType) {
-    params.append("group_type", groupType);
-  }
-
-  if (searchTerm) {
-    params.append("search", searchTerm);
-  }
-
-  const queryString = params.toString();
-  const finalUrl = queryString ? `${url}?${queryString}` : url;
-
-  return await apiClient.get<GolfCourseGroupsListResponse>(finalUrl);
 };
 
 /**

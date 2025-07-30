@@ -10,7 +10,7 @@ import {
   ReorderRequest,
   ReorderResponse,
 } from "../types/group-status";
-import { CaddieAssignmentOverviewResponse } from "@/modules/user/types/user";
+import { GolfCourseGroupStatusListResponse } from "@/modules/golf-course/types/api";
 
 /**
  * 그룹 목록 조회
@@ -109,21 +109,27 @@ export const removePrimaryGroup = async (
 };
 
 /**
- * 그룹 배정 현황 조회 API
+ * 골프장별 그룹 현황 조회 API (Overview)
  */
-export const getGroupAssignmentOverview = async (
-  golfCourseId?: string
-): Promise<CaddieAssignmentOverviewResponse> => {
-  const searchParams = new URLSearchParams();
+export const getGroupAssignmentOverview = async ({
+  page = 1,
+  searchTerm,
+}: {
+  page?: number;
+  searchTerm?: string;
+} = {}): Promise<GolfCourseGroupStatusListResponse> => {
+  const params = new URLSearchParams();
 
-  if (golfCourseId) {
-    searchParams.append("golf_course_id", golfCourseId);
+  params.append("page", page.toString());
+
+  if (searchTerm) {
+    params.append("search", searchTerm);
   }
 
-  const queryString = searchParams.toString();
-  const endpoint = `/api/v1/caddie-groups/assignment-overview/overview/${
+  const queryString = params.toString();
+  const endpoint = `/api/v1/golf-courses/group-overview/${
     queryString ? `?${queryString}` : ""
   }`;
 
-  return apiClient.get<CaddieAssignmentOverviewResponse>(endpoint);
+  return apiClient.get<GolfCourseGroupStatusListResponse>(endpoint);
 };

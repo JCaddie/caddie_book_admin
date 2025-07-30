@@ -10,8 +10,8 @@ export type {
   GolfCourseSimple,
   GolfCourseSimpleResponse,
   GolfCourseGroupDetailResponse,
-  GolfCourseGroup,
-  GolfCourseGroupsListResponse,
+  GolfCourseGroupStatus,
+  GolfCourseGroupStatusListResponse,
   GolfCourseFilters,
   BulkDeleteRequest,
 } from "./api";

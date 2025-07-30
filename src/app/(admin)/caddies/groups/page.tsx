@@ -11,85 +11,82 @@ import {
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
-import { fetchGolfCourseGroups } from "@/modules/golf-course/api/golf-course-api";
-import { GolfCourseGroup } from "@/modules/golf-course/types/api";
+import { getGroupAssignmentOverview } from "@/modules/group/api/group-api";
+import { GolfCourseGroupStatus } from "@/modules/golf-course/types/api";
 
-// 골프장 그룹 현황 테이블 컬럼
+// 골프장별 그룹 현황 테이블 컬럼
 const columns = [
   {
     key: "id",
     title: "No.",
     width: 80,
-    render: (_: unknown, record: GolfCourseGroup, index: number) => (
+    render: (_: unknown, record: GolfCourseGroupStatus, index: number) => (
       <span className="text-gray-600">{index + 1}</span>
     ),
   },
   {
-    key: "name",
-    title: "그룹명",
-    width: 150,
-    render: (value: unknown) => (
-      <span className="font-medium">{String(value)}</span>
-    ),
-  },
-  {
-    key: "golf_course_name",
+    key: "name", // API 필드: name
     title: "골프장명",
     width: 200,
-    render: (value: unknown) => (
-      <span className="text-gray-800">{String(value)}</span>
+    render: (value: unknown, record: GolfCourseGroupStatus) => (
+      <span className="font-medium">{record.name}</span>
     ),
   },
   {
-    key: "group_type",
-    title: "그룹유형",
+    key: "location", // API 필드: location
+    title: "위치",
     width: 120,
-    render: (value: unknown) => {
-      const type = String(value);
-      return (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            type === "PRIMARY"
-              ? "bg-blue-100 text-blue-800"
-              : "bg-purple-100 text-purple-800"
-          }`}
-        >
-          {type === "PRIMARY" ? "일반그룹" : "특별그룹"}
-        </span>
-      );
-    },
+    render: (value: unknown, record: GolfCourseGroupStatus) => (
+      <span className="text-gray-600">{record.location}</span>
+    ),
   },
   {
-    key: "member_count",
-    title: "캐디수",
+    key: "primary_group_count", // API 필드: primary_group_count
+    title: "일반그룹",
     width: 100,
-    render: (value: unknown) => (
-      <span className="text-gray-800 font-medium">{String(value)}명</span>
+    render: (value: unknown, record: GolfCourseGroupStatus) => (
+      <span className="text-blue-600 font-medium">
+        {record.primary_group_count}조
+      </span>
     ),
   },
   {
-    key: "order",
-    title: "순서",
-    width: 80,
-    render: (value: unknown) => (
-      <span className="text-gray-600">{String(value)}</span>
+    key: "special_group_count", // API 필드: special_group_count
+    title: "특별그룹",
+    width: 100,
+    render: (value: unknown, record: GolfCourseGroupStatus) => (
+      <span className="text-purple-600 font-medium">
+        {record.special_group_count}조
+      </span>
     ),
   },
   {
-    key: "is_active",
+    key: "total_caddies", // API 필드: total_caddies
+    title: "총 캐디수",
+    width: 100,
+    render: (value: unknown, record: GolfCourseGroupStatus) => (
+      <span className="text-gray-800 font-medium">
+        {record.total_caddies}명
+      </span>
+    ),
+  },
+  {
+    key: "status", // API 필드: status
     title: "상태",
     width: 100,
-    render: (value: unknown) => {
-      const isActive = Boolean(value);
+    render: (value: unknown, record: GolfCourseGroupStatus) => {
+      const status = record.status;
       return (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
-            isActive
+            status === "활성"
               ? "bg-green-100 text-green-800"
+              : status === "기타"
+              ? "bg-yellow-100 text-yellow-800"
               : "bg-gray-100 text-gray-800"
           }`}
         >
-          {isActive ? "활성" : "비활성"}
+          {status}
         </span>
       );
     },
@@ -101,10 +98,10 @@ const GolfCourseStatsPage: React.FC = () => {
   const searchParams = useSearchParams();
 
   // 페이지 타이틀 설정
-  useDocumentTitle({ title: "일반그룹 현황" });
+  useDocumentTitle({ title: "골프장별 그룹현황" });
 
   // 상태 관리
-  const [data, setData] = useState<GolfCourseGroup[]>([]);
+  const [data, setData] = useState<GolfCourseGroupStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -125,8 +122,8 @@ const GolfCourseStatsPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetchGolfCourseGroups({
-        groupType: "PRIMARY",
+      const response = await getGroupAssignmentOverview({
+        page: currentPage,
         searchTerm: currentSearch,
       });
 
@@ -134,19 +131,23 @@ const GolfCourseStatsPage: React.FC = () => {
       setTotalPages(response.data?.total_pages || 1);
       setTotalCount(response.data?.count || 0);
     } catch (err) {
-      console.error("일반그룹 현황 조회 실패:", err);
+      console.error("골프장별 그룹현황 조회 실패:", err);
+      // 오류 시 빈 데이터로 설정
+      setData([]);
+      setTotalPages(1);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  }, [currentSearch]);
+  }, [currentPage, currentSearch]);
 
   // URL 파라미터 변경 시 데이터 로드
   useEffect(() => {
     loadData();
   }, [currentPage, currentSearch, loadData]);
 
-  // 행 클릭 핸들러 (해당 그룹의 상세 페이지로 이동)
-  const handleRowClick = (record: GolfCourseGroup) => {
+  // 행 클릭 핸들러 (해당 골프장의 그룹 상세 페이지로 이동)
+  const handleRowClick = (record: GolfCourseGroupStatus) => {
     router.push(`/caddies/groups/${record.id}`);
   };
 
@@ -167,7 +168,7 @@ const GolfCourseStatsPage: React.FC = () => {
     setIsDeleting(true);
     try {
       // 실제 구현에서는 API 호출
-      console.log("선택된 그룹 삭제:", selectedRowKeys);
+      console.log("선택된 골프장 삭제:", selectedRowKeys);
 
       // 선택 상태 초기화
       setSelectedRowKeys([]);
@@ -186,7 +187,7 @@ const GolfCourseStatsPage: React.FC = () => {
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
-      <AdminPageHeader title="일반그룹 현황" />
+      <AdminPageHeader title="골프장별 그룹현황" />
 
       {/* 액션바 */}
       <div className="flex items-center justify-between">
@@ -205,7 +206,7 @@ const GolfCourseStatsPage: React.FC = () => {
         {/* 오른쪽: 검색 + 버튼들 */}
         <div className="flex items-center gap-8">
           {/* 검색 */}
-          <SearchWithButton placeholder="그룹명 또는 골프장명 검색..." />
+          <SearchWithButton placeholder="골프장명 또는 위치 검색..." />
 
           {/* 버튼 그룹 */}
           {selectedRowKeys.length > 0 && (
@@ -224,7 +225,7 @@ const GolfCourseStatsPage: React.FC = () => {
 
       {/* 테이블 */}
       <div className="space-y-6">
-        <SelectableDataTable<GolfCourseGroup>
+        <SelectableDataTable<GolfCourseGroupStatus>
           columns={columns}
           data={data}
           realDataCount={data.length}
@@ -247,7 +248,7 @@ const GolfCourseStatsPage: React.FC = () => {
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         title="삭제할까요?"
-        message={`선택한 ${selectedRowKeys.length}개의 그룹을 삭제합니다. 삭제 시 복원이 불가합니다.`}
+        message={`선택한 ${selectedRowKeys.length}개의 골프장을 삭제합니다. 삭제 시 복원이 불가합니다.`}
         isLoading={isDeleting}
       />
     </div>

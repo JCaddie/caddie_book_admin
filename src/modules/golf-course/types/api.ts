@@ -106,23 +106,19 @@ export interface GolfCourseGroupDetailResponse {
 }
 
 /**
- * 골프장 그룹 목록 API 응답
+ * 골프장별 그룹 현황 API 응답
  */
-export interface GolfCourseGroup extends Record<string, unknown> {
-  id: number;
+export interface GolfCourseGroupStatus extends Record<string, unknown> {
+  id: string;
   name: string;
-  group_type: "PRIMARY" | "SPECIAL";
-  golf_course: string;
-  golf_course_name: string;
-  order: number;
-  is_active: boolean;
-  description: string;
-  member_count: number;
-  created_at: string;
-  updated_at: string;
+  location: string;
+  primary_group_count: number;
+  special_group_count: number;
+  total_caddies: number;
+  status: string;
 }
 
-export interface GolfCourseGroupsListResponse {
+export interface GolfCourseGroupStatusListResponse {
   success: boolean;
   message: string;
   data: {
@@ -130,7 +126,7 @@ export interface GolfCourseGroupsListResponse {
     page: number;
     page_size: number;
     total_pages: number;
-    results: GolfCourseGroup[];
+    results: GolfCourseGroupStatus[];
   };
 }
 
