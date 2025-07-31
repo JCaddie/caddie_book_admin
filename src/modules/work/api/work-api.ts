@@ -662,3 +662,107 @@ export const fetchSpecialGroupsStatus = async (): Promise<
     throw error;
   }
 };
+
+/**
+ * 특수반 생성 API
+ */
+export const createSpecialGroup = async (
+  golfCourseId: string,
+  data: {
+    name: string;
+    group_type: string;
+  }
+): Promise<{ success: boolean; message: string; data?: unknown }> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data?: unknown;
+    }>(`/api/v1/golf-courses/${golfCourseId}/groups/`, data);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 생성 실패");
+    }
+  } catch (error) {
+    console.error("특수반 생성 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수반 삭제 API
+ */
+export const deleteSpecialGroup = async (
+  golfCourseId: string,
+  groupId: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.delete<{
+      success: boolean;
+      message: string;
+    }>(`/api/v1/golf-courses/groups/${groupId}/`);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 삭제 실패");
+    }
+  } catch (error) {
+    console.error("특수반 삭제 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수반 배치 API
+ */
+export const assignSpecialGroupToSlot = async (
+  scheduleId: string,
+  data: {
+    part_id: string;
+    time: string;
+    field_number: number;
+    special_group_id: string;
+  }
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>(`/api/v1/work/schedules/${scheduleId}/assign-special-group/`, data);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 배치 실패");
+    }
+  } catch (error) {
+    console.error("특수반 배치 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수반 배치 제거 API
+ */
+export const removeSpecialGroupFromSlot = async (
+  slotId: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.delete<{
+      success: boolean;
+      message: string;
+    }>(`/api/v1/work/slots/${slotId}/`);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 배치 제거 실패");
+    }
+  } catch (error) {
+    console.error("특수반 배치 제거 실패:", error);
+    throw error;
+  }
+};

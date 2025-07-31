@@ -8,6 +8,7 @@ interface SpecialGroupStatusProps {
   onDragStart?: (group: SpecialGroup) => void;
   onDragEnd?: () => void;
   draggedGroup?: SpecialGroup | null;
+  onDelete?: (group: SpecialGroup) => void;
 }
 
 export default function SpecialGroupStatus({
@@ -15,6 +16,7 @@ export default function SpecialGroupStatus({
   onDragStart,
   onDragEnd,
   draggedGroup,
+  onDelete,
 }: SpecialGroupStatusProps) {
   return (
     <div className="w-[474px] bg-white rounded-lg p-4 h-fit">
@@ -37,6 +39,8 @@ export default function SpecialGroupStatus({
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             isDragging={draggedGroup?.id === group.id}
+            showDeleteButton={true}
+            onDelete={onDelete}
           />
         ))}
       </div>

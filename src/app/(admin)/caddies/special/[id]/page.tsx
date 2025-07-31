@@ -7,13 +7,13 @@ import { useDocumentTitle } from "@/shared/hooks";
 import { Clock, Settings } from "lucide-react";
 import {
   DEFAULT_SPECIAL_GROUPS,
-  SPECIAL_GROUP_UI_TEXT,
   SpecialGroup,
   SpecialGroupSchedule,
-  SpecialGroupSettingModal,
   SpecialGroupStatus,
   useSpecialGroupDrag,
 } from "@/modules/special";
+import SpecialGroupCreateModal from "@/modules/special/components/special-group-create-modal";
+import SpecialGroupDeleteModal from "@/modules/special/components/special-group-delete-modal";
 import {
   FIELDS,
   generateTimeSlots,
@@ -22,6 +22,7 @@ import {
 import RoundingSettingsModal from "@/modules/work/components/rounding-settings-modal";
 import type { RoundingSettings } from "@/modules/work/types";
 import { useSpecialSchedule } from "@/modules/work/hooks";
+import { deleteSpecialGroup } from "@/modules/work/api/work-api";
 
 interface SpecialGroupsDetailPageProps {
   params: Promise<{
@@ -57,10 +58,13 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
   } = useSpecialSchedule(id);
 
   // 모달 상태 관리
-  const [isSpecialGroupSettingModalOpen, setIsSpecialGroupSettingModalOpen] =
+  const [isSpecialGroupCreateModalOpen, setIsSpecialGroupCreateModalOpen] =
     useState(false);
   const [isRoundingSettingsModalOpen, setIsRoundingSettingsModalOpen] =
     useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<SpecialGroup | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   // API에서 가져온 특수반 그룹을 기존 타입으로 변환하거나 기본값 사용
   const specialGroups =
     specialSchedule?.available_special_groups?.map((group, index) => ({
@@ -90,21 +94,59 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
         }
       : generateTimeSlots();
 
-  // 특수반 설정 모달 핸들러
-  const handleOpenSpecialGroupSetting = () => {
-    setIsSpecialGroupSettingModalOpen(true);
+  // 특수반 생성 모달 핸들러
+  const handleOpenSpecialGroupCreate = () => {
+    setIsSpecialGroupCreateModalOpen(true);
   };
 
-  const handleCloseSpecialGroupSetting = () => {
-    setIsSpecialGroupSettingModalOpen(false);
+  const handleCloseSpecialGroupCreate = () => {
+    setIsSpecialGroupCreateModalOpen(false);
   };
 
-  const handleSaveSpecialGroups = (newSpecialGroups: SpecialGroup[]) => {
-    // TODO: API로 특수반 설정 저장 후 데이터 갱신
-    setIsSpecialGroupSettingModalOpen(false);
-    console.log("특수반 설정 저장:", newSpecialGroups);
-    // 데이터 다시 가져오기
+  const handleSpecialGroupCreateSuccess = () => {
+    console.log("특수반 생성 성공");
+    // 스케줄 데이터 다시 불러오기
     refetchSchedule();
+  };
+
+  // 특수반 삭제 핸들러
+  const handleDeleteSpecialGroup = (group: SpecialGroup) => {
+    setGroupToDelete(group);
+    setIsDeleteModalOpen(true);
+  };
+
+  // 삭제 확인 핸들러
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete || !specialSchedule?.golf_course?.id) {
+      console.error("삭제할 그룹 또는 골프장 ID를 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteSpecialGroup(
+        specialSchedule.golf_course.id,
+        groupToDelete.id
+      );
+      console.log("특수반 삭제 성공:", groupToDelete.name);
+      // 스케줄 데이터 다시 불러오기
+      refetchSchedule();
+      // 모달 닫기
+      setIsDeleteModalOpen(false);
+      setGroupToDelete(null);
+    } catch (error) {
+      console.error("특수반 삭제 실패:", error);
+      alert("특수반 삭제에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 삭제 모달 닫기 핸들러
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setGroupToDelete(null);
+    setIsDeleting(false);
   };
 
   // 라운딩 세팅 모달 핸들러
@@ -123,6 +165,8 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
   ) => {
     console.log("라운딩 세팅 저장:", settings, date, golfCourseName);
     setIsRoundingSettingsModalOpen(false);
+    // 라운딩 설정 저장 후 특수 근무 스케줄 상세 정보 다시 호출
+    refetchSchedule();
   };
 
   return (
@@ -141,10 +185,10 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
           <Button
             variant="outline"
             className="border-yellow-400 text-yellow-600 hover:bg-yellow-50 flex items-center gap-2"
-            onClick={handleOpenSpecialGroupSetting}
+            onClick={handleOpenSpecialGroupCreate}
           >
             <Settings className="w-4 h-4" />
-            {SPECIAL_GROUP_UI_TEXT.buttons.setting}
+            특수반 생성
           </Button>
         </div>
       </div>
@@ -241,6 +285,9 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
                 onDragEnd={handleDragEnd}
                 hideHeader={true}
                 isFullWidth={true}
+                scheduleParts={specialSchedule?.parts || []}
+                scheduleId={id}
+                onScheduleUpdate={refetchSchedule}
               />
             </div>
 
@@ -250,16 +297,27 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               draggedGroup={draggedItem}
+              onDelete={handleDeleteSpecialGroup}
             />
           </div>
         )}
 
-      {/* 특수반 설정 모달 */}
-      <SpecialGroupSettingModal
-        isOpen={isSpecialGroupSettingModalOpen}
-        onClose={handleCloseSpecialGroupSetting}
-        onSave={handleSaveSpecialGroups}
-        initialGroups={specialGroups}
+      {/* 특수반 생성 모달 */}
+      <SpecialGroupCreateModal
+        isOpen={isSpecialGroupCreateModalOpen}
+        onClose={handleCloseSpecialGroupCreate}
+        onSuccess={handleSpecialGroupCreateSuccess}
+        golfCourseId={specialSchedule?.golf_course?.id || ""}
+        golfCourseName={specialSchedule?.golf_course?.name}
+      />
+
+      {/* 특수반 삭제 모달 */}
+      <SpecialGroupDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        groupName={groupToDelete?.name || ""}
+        isLoading={isDeleting}
       />
 
       {/* 라운딩 세팅 모달 */}

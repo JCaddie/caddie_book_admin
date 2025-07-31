@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react";
 import { SpecialGroup } from "../types";
 
 interface SpecialGroupCardProps {
@@ -10,6 +10,8 @@ interface SpecialGroupCardProps {
   onDragStart?: (group: SpecialGroup) => void;
   onDragEnd?: () => void;
   isDragging?: boolean;
+  showDeleteButton?: boolean;
+  onDelete?: (group: SpecialGroup) => void;
 }
 
 export default function SpecialGroupCard({
@@ -19,6 +21,8 @@ export default function SpecialGroupCard({
   onDragStart,
   onDragEnd,
   isDragging,
+  showDeleteButton = false,
+  onDelete,
 }: SpecialGroupCardProps) {
   // 빈 슬롯 표시
   if (isEmpty) {
@@ -82,9 +86,22 @@ export default function SpecialGroupCard({
         </div>
       </div>
 
-      {/* 메뉴 아이콘 (hover 시에만 표시) */}
+      {/* 삭제 버튼 또는 메뉴 아이콘 */}
       <div className="opacity-0 hover:opacity-100 transition-opacity flex-shrink-0">
-        <MoreVertical className="w-5 h-5 text-black/80" />
+        {showDeleteButton && onDelete ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(group);
+            }}
+            className="p-1 hover:bg-red-50 rounded transition-colors"
+            title="특수반 삭제"
+          >
+            <Trash2 className="w-4 h-4 text-red-500 hover:text-red-600" />
+          </button>
+        ) : (
+          <MoreVertical className="w-5 h-5 text-black/80" />
+        )}
       </div>
     </div>
   );
