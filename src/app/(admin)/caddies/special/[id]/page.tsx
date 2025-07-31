@@ -7,10 +7,9 @@ import { useDocumentTitle } from "@/shared/hooks";
 import { Clock, Settings } from "lucide-react";
 import {
   DEFAULT_SPECIAL_GROUPS,
-  SpecialGroup,
   SpecialGroupSchedule,
   SpecialGroupStatus,
-  useSpecialGroupDrag,
+  SpecialGroupUI,
 } from "@/modules/special";
 import SpecialGroupCreateModal from "@/modules/special/components/special-group-create-modal";
 import SpecialGroupDeleteModal from "@/modules/special/components/special-group-delete-modal";
@@ -42,9 +41,9 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
   const pageTitle = isOwnGolfCourse ? "내 골프장 특수반 관리" : `특수반 관리`;
   useDocumentTitle({ title: pageTitle });
 
-  // 특수반 드래그 상태 관리
-  const { draggedItem, handleDragStart, handleDragEnd } =
-    useSpecialGroupDrag<SpecialGroup>();
+  // 특수반 드래그 상태 관리 (임시로 비활성화)
+  // const { draggedItem, handleDragStart, handleDragEnd } =
+  //   useSpecialGroupDrag<SpecialGroupUI>();
 
   // 특수 스케줄 데이터 조회 - 스케줄 ID 사용
   const {
@@ -63,16 +62,21 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
   const [isRoundingSettingsModalOpen, setIsRoundingSettingsModalOpen] =
     useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [groupToDelete, setGroupToDelete] = useState<SpecialGroup | null>(null);
+  const [groupToDelete, setGroupToDelete] = useState<SpecialGroupUI | null>(
+    null
+  );
   const [isDeleting, setIsDeleting] = useState(false);
-  // API에서 가져온 특수반 그룹을 기존 타입으로 변환하거나 기본값 사용
-  const specialGroups =
+  // API에서 가져온 특수반 그룹을 UI 타입으로 변환하거나 기본값 사용
+  const specialGroups: SpecialGroupUI[] =
     specialSchedule?.available_special_groups?.map((group, index) => ({
       id: group.id,
       name: group.name,
+      group_type: "SPECIAL",
+      golf_course_id: specialSchedule?.golf_course?.id || "",
+      is_active: true,
       color: `bg-yellow-${400 + index * 100}`, // 임시 색상 할당
-      description: `${group.member_count}명`,
-      isActive: true,
+      member_count: group.member_count,
+      isActive: true, // UI 호환성을 위한 별칭
     })) || DEFAULT_SPECIAL_GROUPS;
 
   // 시간 슬롯 생성 - API 데이터가 있으면 변환, 없으면 기본값
@@ -110,7 +114,7 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
   };
 
   // 특수반 삭제 핸들러
-  const handleDeleteSpecialGroup = (group: SpecialGroup) => {
+  const handleDeleteSpecialGroup = (group: SpecialGroupUI) => {
     setGroupToDelete(group);
     setIsDeleteModalOpen(true);
   };
@@ -280,9 +284,9 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
                 onResetClick={() => {
                   console.log("Reset clicked");
                 }}
-                draggedGroup={draggedItem}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
+                draggedGroup={null}
+                onDragStart={() => {}}
+                onDragEnd={() => {}}
                 hideHeader={true}
                 isFullWidth={true}
                 scheduleParts={specialSchedule?.parts || []}
@@ -294,9 +298,6 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
             {/* 오른쪽: 특수반 현황 */}
             <SpecialGroupStatus
               groups={specialGroups}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              draggedGroup={draggedItem}
               onDelete={handleDeleteSpecialGroup}
             />
           </div>

@@ -3,15 +3,8 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { Button, Input } from "@/shared/components/ui";
-import { createSpecialGroup } from "@/modules/work/api/work-api";
-
-interface SpecialGroupCreateModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  golfCourseId: string;
-  golfCourseName?: string;
-}
+import { useSpecialGroupAPI } from "../hooks";
+import type { SpecialGroupCreateModalProps } from "../types";
 
 const SpecialGroupCreateModal: React.FC<SpecialGroupCreateModalProps> = ({
   isOpen,
@@ -21,33 +14,34 @@ const SpecialGroupCreateModal: React.FC<SpecialGroupCreateModalProps> = ({
   golfCourseName,
 }) => {
   const [groupName, setGroupName] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState("");
+  const {
+    createGroup,
+    loading: isCreating,
+    error,
+    clearError,
+  } = useSpecialGroupAPI();
 
   // 모달이 열릴 때마다 초기화
   React.useEffect(() => {
     if (isOpen) {
       setGroupName("");
-      setError("");
-      setIsCreating(false);
+      clearError();
     }
-  }, [isOpen]);
+  }, [isOpen, clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!groupName.trim()) {
-      setError("특수반 이름을 입력해주세요.");
       return;
     }
 
     try {
-      setIsCreating(true);
-      setError("");
-
-      await createSpecialGroup(golfCourseId, {
+      await createGroup({
         name: groupName.trim(),
         group_type: "SPECIAL",
+        golf_course_id: golfCourseId,
+        is_active: true,
       });
 
       // 성공 시 콜백 호출
@@ -55,9 +49,7 @@ const SpecialGroupCreateModal: React.FC<SpecialGroupCreateModalProps> = ({
       onClose();
     } catch (error) {
       console.error("특수반 생성 실패:", error);
-      setError("특수반 생성에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsCreating(false);
+      // 에러는 hook에서 관리되므로 별도 처리 불필요
     }
   };
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { BaseSettingModal } from "@/shared/components/ui";
-import { SpecialGroup, SpecialGroupSettingModalProps } from "../types";
+import { SpecialGroupSettingModalProps, SpecialGroupUI } from "../types";
 import {
   createSpecialGroupSettingModalConfig,
   settingItemToSpecialGroup,
@@ -25,9 +25,9 @@ const SpecialGroupSettingModal: React.FC<SpecialGroupSettingModalProps> = ({
   // 특수반용 설정 생성
   const config = createSpecialGroupSettingModalConfig(initialGroups);
 
-  // 저장 핸들러 (SpecialGroupSettingItem을 SpecialGroup으로 변환)
+  // 저장 핸들러 (SpecialGroupSettingItem을 SpecialGroupUI으로 변환)
   const handleSave = (items: SpecialGroupSettingItem[]) => {
-    const groups: SpecialGroup[] = items.map(settingItemToSpecialGroup);
+    const groups: SpecialGroupUI[] = items.map(settingItemToSpecialGroup);
     onSave(groups);
   };
 

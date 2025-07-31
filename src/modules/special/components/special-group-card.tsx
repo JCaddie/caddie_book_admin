@@ -1,17 +1,17 @@
 "use client";
 
 import { MoreVertical, Trash2 } from "lucide-react";
-import { SpecialGroup } from "../types";
+import { SpecialGroupUI } from "../types";
 
 interface SpecialGroupCardProps {
-  group?: SpecialGroup;
+  group?: SpecialGroupUI;
   isEmpty?: boolean;
   emptyText?: string;
-  onDragStart?: (group: SpecialGroup) => void;
+  onDragStart?: (group: SpecialGroupUI) => void;
   onDragEnd?: () => void;
   isDragging?: boolean;
   showDeleteButton?: boolean;
-  onDelete?: (group: SpecialGroup) => void;
+  onDelete?: (group: SpecialGroupUI) => void;
 }
 
 export default function SpecialGroupCard({

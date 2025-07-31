@@ -4,7 +4,7 @@ import React from "react";
 import { Trash2 } from "lucide-react";
 import { Button, Input } from "@/shared/components/ui";
 import { BaseSettingItem, SettingModalConfig } from "@/shared/types";
-import { SPECIAL_GROUP_COLORS, SpecialGroup } from "../index";
+import { SPECIAL_GROUP_COLORS, SpecialGroupUI } from "../index";
 
 // 특수반 설정 아이템 타입 (BaseSettingItem 확장)
 export interface SpecialGroupSettingItem extends BaseSettingItem {
@@ -14,25 +14,28 @@ export interface SpecialGroupSettingItem extends BaseSettingItem {
   isActive: boolean;
 }
 
-// SpecialGroup 타입을 SpecialGroupSettingItem으로 변환
+// SpecialGroupUI 타입을 SpecialGroupSettingItem으로 변환
 export const specialGroupToSettingItem = (
-  group: SpecialGroup,
+  group: SpecialGroupUI,
   order: number
 ): SpecialGroupSettingItem => ({
   id: group.id,
   name: group.name,
   order: order,
-  color: group.color,
+  color: group.color || "bg-gray-400", // 기본값 제공
   description: group.description,
   isActive: group.isActive,
 });
 
-// SpecialGroupSettingItem을 SpecialGroup 타입으로 변환
+// SpecialGroupSettingItem을 SpecialGroupUI 타입으로 변환
 export const settingItemToSpecialGroup = (
   item: SpecialGroupSettingItem
-): SpecialGroup => ({
+): SpecialGroupUI => ({
   id: item.id,
   name: item.name,
+  group_type: "SPECIAL",
+  golf_course_id: "",
+  is_active: item.isActive,
   color: item.color,
   description: item.description,
   isActive: item.isActive,
@@ -123,7 +126,7 @@ export const specialGroupSettingModalConfig: SettingModalConfig<SpecialGroupSett
 
 // 향상된 생성 함수 (기존 특수반들을 고려)
 export const createSpecialGroupSettingModalConfig = (
-  existingGroups: SpecialGroup[] = []
+  existingGroups: SpecialGroupUI[] = []
 ): SettingModalConfig<SpecialGroupSettingItem> => {
   return {
     ...specialGroupSettingModalConfig,

@@ -1,16 +1,38 @@
 // ================================
-// 특수반 관리 타입
+// 특수반 관리 타입 (통합 설계 기반)
 // ================================
 
-// 특수반 데이터 타입
-export interface SpecialGroup {
+// 공통 타입 import
+export type {
+  BaseGroup,
+  CreateGroupRequest,
+  GroupListParams,
+  SpecialGroup,
+} from "@/shared/types";
+
+import type { GroupType } from "@/shared/types";
+
+// Special 모듈 전용 확장 타입
+export interface SpecialGroupUI {
+  // BaseGroup으로부터 상속
   id: string;
   name: string;
-  color: string;
+  group_type: GroupType;
+  golf_course_id: string;
+  golf_course_name?: string;
+  is_active: boolean;
+  order?: number;
   description?: string;
-  isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  created_at?: string;
+  updated_at?: string;
+  isEmpty?: boolean;
+
+  // SpecialGroup으로부터 상속
+  color?: string;
+  member_count?: number;
+
+  // UI 전용 속성들
+  isActive: boolean; // 기존 is_active와 호환성을 위한 별칭
 }
 
 // 특수반 멤버 타입
@@ -66,8 +88,8 @@ export interface SpecialGroupDetailPageProps {
 
 // 특수반 테이블 Props
 export interface SpecialGroupTableProps {
-  groups: SpecialGroup[];
-  onEdit: (group: SpecialGroup) => void;
+  groups: SpecialGroupUI[];
+  onEdit: (group: SpecialGroupUI) => void;
   onDelete: (groupId: string) => void;
   onStatusChange: (groupId: string, isActive: boolean) => void;
 }
@@ -76,14 +98,32 @@ export interface SpecialGroupTableProps {
 export interface SpecialGroupSettingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (groups: SpecialGroup[]) => void;
-  initialGroups?: SpecialGroup[];
+  onSave: (groups: SpecialGroupUI[]) => void;
+  initialGroups?: SpecialGroupUI[];
+  isLoading?: boolean;
+}
+
+// 특수반 생성 모달 Props
+export interface SpecialGroupCreateModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  golfCourseId: string;
+  golfCourseName?: string;
+}
+
+// 특수반 삭제 모달 Props
+export interface SpecialGroupDeleteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  groupName: string;
   isLoading?: boolean;
 }
 
 // 특수반 스케줄 테이블 Props
 export interface SpecialGroupScheduleTableProps {
-  groups: SpecialGroup[];
+  groups: SpecialGroupUI[];
   timeSlots: string[];
   schedules: SpecialGroupScheduleData[];
   onScheduleChange: (

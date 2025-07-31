@@ -3,3 +3,4 @@
 // ================================
 
 export * from "./use-special-group-drag";
+export * from "./use-special-group-api";

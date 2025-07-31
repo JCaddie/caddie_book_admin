@@ -1,21 +1,15 @@
 "use client";
 
-import { SpecialGroup } from "../types";
+import { SpecialGroupUI } from "../types";
 import SpecialGroupCard from "./special-group-card";
 
 interface SpecialGroupStatusProps {
-  groups: SpecialGroup[];
-  onDragStart?: (group: SpecialGroup) => void;
-  onDragEnd?: () => void;
-  draggedGroup?: SpecialGroup | null;
-  onDelete?: (group: SpecialGroup) => void;
+  groups: SpecialGroupUI[];
+  onDelete?: (group: SpecialGroupUI) => void;
 }
 
 export default function SpecialGroupStatus({
   groups,
-  onDragStart,
-  onDragEnd,
-  draggedGroup,
   onDelete,
 }: SpecialGroupStatusProps) {
   return (
@@ -36,9 +30,6 @@ export default function SpecialGroupStatus({
           <SpecialGroupCard
             key={group.id}
             group={group}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-            isDragging={draggedGroup?.id === group.id}
             showDeleteButton={true}
             onDelete={onDelete}
           />

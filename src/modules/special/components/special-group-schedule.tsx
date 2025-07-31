@@ -3,12 +3,9 @@
 import React, { useState } from "react";
 import BaseSchedule from "@/shared/components/schedule/base-schedule";
 import { Field, PersonnelStats, TimeSlots } from "@/modules/work/types";
-import { SpecialGroup } from "../types";
+import { SpecialGroupUI } from "../types";
 import SpecialGroupCard from "./special-group-card";
-import {
-  assignSpecialGroupToSlot,
-  removeSpecialGroupFromSlot,
-} from "@/modules/work/api/work-api";
+import { assignSpecialGroupToSlot, removeSpecialGroupFromSlot } from "../api";
 
 interface SpecialGroupPosition {
   fieldIndex: number;
@@ -46,8 +43,8 @@ interface SpecialGroupScheduleProps {
   timeSlots: TimeSlots;
   personnelStats: PersonnelStats;
   onResetClick: () => void;
-  draggedGroup?: SpecialGroup | null;
-  onDragStart?: (group: SpecialGroup) => void;
+  draggedGroup?: SpecialGroupUI | null;
+  onDragStart?: (group: SpecialGroupUI) => void;
   onDragEnd?: () => void;
   hideHeader?: boolean;
   isFullWidth?: boolean;
@@ -77,7 +74,7 @@ export default function SpecialGroupSchedule({
 
   // 외부에서 드래그된 특수반들을 저장
   const [externalGroups, setExternalGroups] = useState<
-    Map<string, SpecialGroup>
+    Map<string, SpecialGroupUI>
   >(new Map());
 
   // slot ID 매핑을 위한 state
@@ -90,7 +87,7 @@ export default function SpecialGroupSchedule({
     if (!scheduleParts || scheduleParts.length === 0) return;
 
     const newGroupPositions = new Map<string, SpecialGroupPosition>();
-    const newExternalGroups = new Map<string, SpecialGroup>();
+    const newExternalGroups = new Map<string, SpecialGroupUI>();
     const newSlotIdMap = new Map<string, string>();
 
     // 현재 timeSlots에서 각 부별 시간 배열 가져오기
@@ -121,12 +118,15 @@ export default function SpecialGroupSchedule({
               newSlotIdMap.set(slotKey, slot.work_slot_id);
 
               if (slot.special_group) {
-                const specialGroup: SpecialGroup = {
+                const specialGroup: SpecialGroupUI = {
                   id: slot.special_group.id,
                   name: slot.special_group.name,
+                  group_type: "SPECIAL",
+                  golf_course_id: "", // API에서 제공되지 않으므로 빈 값
+                  is_active: true,
                   color: "bg-yellow-400", // 기본 색상
-                  description: `${slot.special_group.member_count}명`,
-                  isActive: true,
+                  member_count: slot.special_group.member_count,
+                  isActive: true, // UI 호환성을 위한 별칭
                 };
 
                 // 외부 그룹에 추가
@@ -156,7 +156,7 @@ export default function SpecialGroupSchedule({
     fieldIndex: number,
     timeIndex: number,
     part: number
-  ): SpecialGroup | null => {
+  ): SpecialGroupUI | null => {
     for (const [positionKey, position] of groupPositions) {
       if (
         position.fieldIndex === fieldIndex &&
@@ -198,7 +198,7 @@ export default function SpecialGroupSchedule({
         return;
       }
 
-      const group: SpecialGroup = dragData.data;
+      const group: SpecialGroupUI = dragData.data;
 
       // API 호출을 위한 데이터 준비
       if (!scheduleId) {
@@ -322,7 +322,7 @@ export default function SpecialGroupSchedule({
   };
 
   return (
-    <BaseSchedule<SpecialGroup>
+    <BaseSchedule<SpecialGroupUI>
       fields={fields}
       timeSlots={timeSlots}
       personnelStats={personnelStats}

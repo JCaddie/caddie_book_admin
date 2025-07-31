@@ -67,6 +67,9 @@ export const DEFAULT_SPECIAL_GROUPS = [
   {
     id: "1",
     name: "특수반 A",
+    group_type: "SPECIAL" as const,
+    golf_course_id: "",
+    is_active: true,
     color: "bg-yellow-500",
     description: "기본 특수반",
     isActive: true,
@@ -74,6 +77,9 @@ export const DEFAULT_SPECIAL_GROUPS = [
   {
     id: "2",
     name: "특수반 B",
+    group_type: "SPECIAL" as const,
+    golf_course_id: "",
+    is_active: true,
     color: "bg-orange-500",
     description: "기본 특수반",
     isActive: true,
@@ -81,6 +87,9 @@ export const DEFAULT_SPECIAL_GROUPS = [
   {
     id: "3",
     name: "특수반 C",
+    group_type: "SPECIAL" as const,
+    golf_course_id: "",
+    is_active: true,
     color: "bg-red-500",
     description: "기본 특수반",
     isActive: true,

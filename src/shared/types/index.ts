@@ -10,10 +10,15 @@ export type { Field } from "./domain";
 
 // 그룹 관련 타입
 export type {
+  GroupType,
+  BaseGroup,
   Group,
   GroupDetail,
   SpecialGroup,
   GroupMembership,
+  GroupManagementAPI,
+  CreateGroupRequest,
+  GroupListParams,
 } from "./domain";
 
 // 캐디 관련 타입
