@@ -11,8 +11,18 @@ import {
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useDocumentTitle } from "@/shared/hooks";
-import { getGroupAssignmentOverview } from "@/modules/group/api/group-api";
-import { GolfCourseGroupStatus } from "@/modules/golf-course/types/api";
+import { fetchSpecialGroupsStatus } from "@/modules/work/api/work-api";
+
+// 새로운 API 응답 타입
+interface SpecialGroupsStatusData extends Record<string, unknown> {
+  golf_course_id: string;
+  golf_course_name: string;
+  location: string;
+  status: string;
+  special_group_count: number;
+  total_caddie_count: number;
+  special_schedule_id: string;
+}
 
 // 골프장별 특수반 현황 테이블 컬럼
 const columns = [
@@ -20,63 +30,67 @@ const columns = [
     key: "id",
     title: "No.",
     width: 80,
-    render: (_: unknown, record: GolfCourseGroupStatus, index: number) => (
+    render: (_: unknown, record: SpecialGroupsStatusData, index: number) => (
       <span className="text-gray-600">{index + 1}</span>
     ),
   },
   {
-    key: "name", // API 필드: name
+    key: "golf_course_name",
     title: "골프장명",
     width: 200,
-    render: (value: unknown, record: GolfCourseGroupStatus) => (
-      <span className="font-medium">{record.name}</span>
+    render: (value: unknown, record: SpecialGroupsStatusData) => (
+      <span className="font-medium">{record.golf_course_name}</span>
     ),
   },
   {
-    key: "location", // API 필드: location
+    key: "location",
     title: "위치",
     width: 120,
-    render: (value: unknown, record: GolfCourseGroupStatus) => (
+    render: (value: unknown, record: SpecialGroupsStatusData) => (
       <span className="text-gray-600">{record.location}</span>
     ),
   },
   {
-    key: "special_group_count", // API 필드: special_group_count
+    key: "special_group_count",
     title: "특수반 수",
     width: 100,
-    render: (value: unknown, record: GolfCourseGroupStatus) => (
+    render: (value: unknown, record: SpecialGroupsStatusData) => (
       <span className="text-yellow-600 font-medium">
         {record.special_group_count}반
       </span>
     ),
   },
   {
-    key: "total_caddies", // API 필드: total_caddies
+    key: "total_caddie_count",
     title: "총 캐디수",
     width: 100,
-    render: (value: unknown, record: GolfCourseGroupStatus) => (
+    render: (value: unknown, record: SpecialGroupsStatusData) => (
       <span className="text-gray-800 font-medium">
-        {record.total_caddies}명
+        {record.total_caddie_count}명
       </span>
     ),
   },
   {
-    key: "status", // API 필드: status
+    key: "status",
     title: "상태",
     width: 100,
-    render: (value: unknown, record: GolfCourseGroupStatus) => {
+    render: (value: unknown, record: SpecialGroupsStatusData) => {
       const status = record.status;
       return (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
-            status === "활성"
+            status === "active"
               ? "bg-green-100 text-green-800"
-              : status === "기타"
+              : status === "inactive"
               ? "bg-yellow-100 text-yellow-800"
               : "bg-gray-100 text-gray-800"
           }`}
         >
-          {status}
+          {status === "active"
+            ? "활성"
+            : status === "inactive"
+            ? "비활성"
+            : status}
         </span>
       );
     },
@@ -91,7 +105,7 @@ const SpecialGroupsPage: React.FC = () => {
   useDocumentTitle({ title: "골프장별 특수반 현황" });
 
   // 상태 관리
-  const [data, setData] = useState<GolfCourseGroupStatus[]>([]);
+  const [data, setData] = useState<SpecialGroupsStatusData[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -112,14 +126,11 @@ const SpecialGroupsPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await getGroupAssignmentOverview({
-        page: currentPage,
-        searchTerm: currentSearch,
-      });
+      const response = await fetchSpecialGroupsStatus();
 
-      setData(response.data?.results || []);
-      setTotalPages(response.data?.total_pages || 1);
-      setTotalCount(response.data?.count || 0);
+      setData(response || []);
+      setTotalPages(1); // 새로운 API는 페이지네이션을 지원하지 않으므로 1로 설정
+      setTotalCount(response?.length || 0);
     } catch (err) {
       console.error("골프장별 특수반 현황 조회 실패:", err);
       // 오류 시 빈 데이터로 설정
@@ -129,16 +140,21 @@ const SpecialGroupsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, currentSearch]);
+  }, []);
 
   // URL 파라미터 변경 시 데이터 로드
   useEffect(() => {
     loadData();
   }, [currentPage, currentSearch, loadData]);
 
-  // 행 클릭 핸들러 (해당 골프장의 특수반 상세 페이지로 이동)
-  const handleRowClick = (record: GolfCourseGroupStatus) => {
-    router.push(`/caddies/special/${record.id}`);
+  // 행 클릭 핸들러 (특수 스케줄 상세 페이지로 이동)
+  const handleRowClick = (record: SpecialGroupsStatusData) => {
+    if (record.special_schedule_id) {
+      router.push(`/caddies/special/${record.special_schedule_id}`);
+    } else {
+      // 스케줄 ID가 없는 경우 알림
+      console.warn("특수 스케줄 ID가 없습니다:", record.golf_course_name);
+    }
   };
 
   // 선택 업데이트
@@ -215,7 +231,7 @@ const SpecialGroupsPage: React.FC = () => {
 
       {/* 테이블 */}
       <div className="space-y-6">
-        <SelectableDataTable<GolfCourseGroupStatus>
+        <SelectableDataTable<SpecialGroupsStatusData>
           columns={columns}
           data={data}
           realDataCount={data.length}
@@ -223,7 +239,7 @@ const SpecialGroupsPage: React.FC = () => {
           selectedRowKeys={selectedRowKeys}
           onSelectChange={handleSelectionChange}
           onRowClick={handleRowClick}
-          rowKey="id"
+          rowKey="golf_course_id"
           layout="flexible"
           loading={loading}
         />
