@@ -213,7 +213,7 @@ export default function SpecialGroupSchedule({
         return;
       }
 
-      // 시간 정보 가져오기
+      // 시간 정보 가져오기 - timeSlots에서 가져오되 안전하게 처리
       const allPartTimes = [
         timeSlots.part1 || [],
         timeSlots.part2 || [],
@@ -221,18 +221,46 @@ export default function SpecialGroupSchedule({
       ];
       const currentPartTimes = allPartTimes[part - 1] || [];
       const time = currentPartTimes[timeIndex];
+
       if (!time) {
-        console.error("시간 정보를 찾을 수 없습니다.");
+        console.error("시간 정보를 찾을 수 없습니다.", {
+          part,
+          timeIndex,
+          currentPartTimes,
+          allPartTimes,
+        });
         return;
       }
 
-      // API 호출
-      await assignSpecialGroupToSlot(scheduleId, {
+      // API 호출 데이터 로깅
+      const requestData = {
         part_id: targetPart.id,
         time: time + ":00", // HH:MM:SS 형식으로 변환
         field_number: fieldIndex + 1, // 1부터 시작하는 필드 번호
         special_group_id: group.id,
+      };
+
+      console.log("특수반 배치 요청 데이터:", {
+        scheduleId,
+        requestData,
+        targetPart: {
+          id: targetPart.id,
+          part_number: targetPart.part_number,
+          matrix_length: targetPart.schedule_matrix.length,
+        },
+        timeSlot: {
+          time,
+          timeIndex,
+          fieldIndex,
+        },
+        debug: {
+          currentPartTimes,
+          allPartTimes,
+          part,
+        },
       });
+
+      await assignSpecialGroupToSlot(scheduleId, requestData);
 
       // 성공 시 스케줄 업데이트
       if (onScheduleUpdate) {
