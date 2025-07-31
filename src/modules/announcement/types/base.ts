@@ -1,4 +1,15 @@
-import { WithAuthor, WithId, WithTimestamps } from "@/shared/types";
+import { WithId } from "@/shared/types";
+
+// 공통 타입 정의
+export interface WithTimestamps {
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WithAuthor {
+  authorId: string;
+  authorName: string;
+}
 
 /**
  * 공지사항 기본 타입 (비즈니스 로직용)

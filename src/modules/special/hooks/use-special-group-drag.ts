@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-// 팀 드래그 관련 타입
-export interface TeamDragState<T> {
+// 특수반 드래그 관련 타입
+export interface SpecialGroupDragState<T> {
   draggedItem: T | null;
   handleDragStart: (item: T) => void;
   handleDragEnd: () => void;
@@ -9,11 +9,13 @@ export interface TeamDragState<T> {
 }
 
 /**
- * 팀 드래그 로직을 관리하는 커스텀 훅
+ * 특수반 드래그 로직을 관리하는 커스텀 훅
  * @template T - 드래그할 아이템의 타입
- * @returns TeamDragState 객체
+ * @returns SpecialGroupDragState 객체
  */
-export function useTeamDrag<T extends { id: string }>(): TeamDragState<T> {
+export function useSpecialGroupDrag<
+  T extends { id: string }
+>(): SpecialGroupDragState<T> {
   const [draggedItem, setDraggedItem] = useState<T | null>(null);
 
   const handleDragStart = (item: T) => {

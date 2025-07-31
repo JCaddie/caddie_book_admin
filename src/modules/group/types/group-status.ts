@@ -48,14 +48,6 @@ export interface CaddieGroupManagement {
   }>;
 }
 
-// 그룹 관리 필터 상태 타입
-export interface GroupManagementFilters {
-  selectedGroup: string;
-  selectedSpecialTeam: string;
-  selectedStatus: string;
-  searchTerm: string;
-}
-
 // 그룹 생성 API 요청 타입
 export interface CreateGroupRequest {
   name: string;
@@ -144,5 +136,53 @@ export interface RemovePrimaryResponse {
       caddie_id: string;
       name: string;
     }[];
+  };
+}
+
+// 새로운 그룹 멤버 관리 API 타입들
+export interface AddGroupMemberRequest {
+  user_id: string;
+  order?: number; // 선택적: 지정하지 않으면 맨 뒤에 추가
+  membership_type: "PRIMARY" | "SPECIAL";
+}
+
+export interface AddGroupMemberResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: string;
+    user_id: string;
+    order: number;
+    membership_type: string;
+  };
+}
+
+export interface RemoveGroupMemberRequest {
+  user_id: string;
+}
+
+export interface RemoveGroupMemberResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: string;
+    user_id: string;
+    removed: boolean;
+  };
+}
+
+export interface ReorderGroupMemberRequest {
+  user_id: string;
+  order: number; // 새로운 순서
+}
+
+export interface ReorderGroupMemberResponse {
+  success: boolean;
+  message: string;
+  data: {
+    group_id: string;
+    user_id: string;
+    old_order: number;
+    new_order: number;
   };
 }

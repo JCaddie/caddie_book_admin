@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/shared/components/ui";
 import { RoundingSettings } from "@/modules/work/types";
+import { bulkUpdateRoundingSettings } from "@/modules/work/api/work-api";
 
 // 골프장 간소 타입 정의
 interface GolfCourseSimple {
@@ -22,11 +23,11 @@ interface RoundingSettingsModalProps {
   initialSettings?: RoundingSettings;
   isLoading?: boolean;
   golfCourseName?: string;
+  scheduleId?: string;
   showGolfCourseSelect?: boolean;
   onGolfCourseSelect?: (golfCourseId: string) => void;
   golfCourses?: GolfCourseSimple[];
   isGolfCoursesLoading?: boolean;
-  initialDate?: string;
 }
 
 const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
@@ -36,21 +37,18 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
   initialSettings,
   isLoading = false,
   golfCourseName,
+  scheduleId,
   showGolfCourseSelect = false,
   onGolfCourseSelect,
   golfCourses = [],
   isGolfCoursesLoading = false,
-  initialDate,
 }) => {
   const [settings, setSettings] = useState<RoundingSettings>({
     numberOfRounds: 1,
     timeUnit: 10,
     roundTimes: [{ round: 1, startTime: "06:00", endTime: "08:00" }],
   });
-
-  const [selectedDate, setSelectedDate] = useState<string>(
-    initialDate || new Date().toISOString().split("T")[0]
-  );
+  const [isSaving, setIsSaving] = useState(false);
 
   // 모달이 열릴 때마다 초기 설정으로 리셋
   useEffect(() => {
@@ -127,13 +125,7 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
     }));
   };
 
-  const handleSave = () => {
-    // 날짜 검증
-    if (!selectedDate) {
-      alert("날짜를 선택해주세요.");
-      return;
-    }
-
+  const handleSave = async () => {
     // 골프장 선택 검증
     if (showGolfCourseSelect && !golfCourseName) {
       alert("골프장을 선택해주세요.");
@@ -158,7 +150,37 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
       }
     }
 
-    onSave(settings, selectedDate, golfCourseName);
+    try {
+      setIsSaving(true);
+
+      // 스케줄 ID 검증
+      if (!scheduleId) {
+        alert("스케줄 정보를 찾을 수 없습니다.");
+        return;
+      }
+
+      // API 호출
+      const partsConfig = settings.roundTimes.map((roundTime) => ({
+        partNumber: roundTime.round,
+        name: `${roundTime.round}부`,
+        startTime: roundTime.startTime + ":00",
+        endTime: roundTime.endTime + ":00",
+      }));
+
+      await bulkUpdateRoundingSettings(
+        scheduleId,
+        settings.timeUnit,
+        partsConfig
+      );
+
+      // 성공 시 콜백 호출
+      onSave(settings, new Date().toISOString().split("T")[0], golfCourseName);
+    } catch (error) {
+      console.error("라운딩 설정 저장 실패:", error);
+      alert("라운딩 설정 저장에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -185,19 +207,6 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
 
         {/* 컨텐츠 */}
         <div className="p-6 space-y-6">
-          {/* 날짜 선택 */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-700">
-              날짜 선택
-            </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-            />
-          </div>
-
           {/* 골프장 선택 */}
           {showGolfCourseSelect && (
             <div className="space-y-3">
@@ -319,10 +328,10 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isLoading}
+            disabled={isSaving}
             className="bg-yellow-400 hover:bg-yellow-500 text-white px-6"
           >
-            {isLoading ? "저장 중..." : "저장"}
+            {isSaving ? "저장 중..." : "저장"}
           </Button>
         </div>
       </div>

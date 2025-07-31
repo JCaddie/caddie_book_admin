@@ -10,10 +10,15 @@ export type { Field } from "./domain";
 
 // 그룹 관련 타입
 export type {
+  GroupType,
+  BaseGroup,
   Group,
   GroupDetail,
   SpecialGroup,
   GroupMembership,
+  GroupManagementAPI,
+  CreateGroupRequest,
+  GroupListParams,
 } from "./domain";
 
 // 캐디 관련 타입
@@ -136,4 +141,16 @@ export interface BaseSettingModalProps<T extends BaseSettingItem> {
     createNewItem: () => T;
     validateItem: (item: T) => string | null;
   };
+}
+
+export interface SettingModalConfig<T extends BaseSettingItem> {
+  title: string;
+  createNewItem: () => T;
+  validateItem: (item: T) => string | null;
+  renderItem: (
+    item: T,
+    index: number,
+    onUpdate: (item: T) => void,
+    onDelete: (index: number) => void
+  ) => React.ReactNode;
 }

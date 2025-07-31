@@ -13,6 +13,10 @@ export interface GroupCreateModalProps {
   onClose: () => void;
   onSuccess: () => void;
   golfCourseId?: string; // UUID 문자열로 변경
+  golfCourseInfo?: {
+    name: string;
+    contractStatus?: string;
+  };
 }
 
 const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
@@ -20,6 +24,7 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
   onClose,
   onSuccess,
   golfCourseId,
+  golfCourseInfo,
 }) => {
   const [groupName, setGroupName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +32,7 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
   const [golfCourseName, setGolfCourseName] = useState<string>("");
 
   const { user } = useAuth();
-  const isMaster = user?.role === "MASTER" || user?.role === "DEV";
+  const isMaster = user?.role === "MASTER";
 
   // 모달이 열릴 때 초기화
   useEffect(() => {
@@ -38,14 +43,20 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
       // 골프장 이름 가져오기
       const fetchGolfCourseName = async () => {
         try {
+          // 이미 골프장 정보가 제공된 경우 바로 사용
+          if (golfCourseInfo) {
+            setGolfCourseName(golfCourseInfo.name);
+            return;
+          }
+
           if (isMaster && golfCourseId) {
             const response = await fetchGolfCourseGroupDetail(golfCourseId);
-            setGolfCourseName(response.golf_course.name);
+            setGolfCourseName(response.data.name);
           } else if (user?.golfCourseId) {
             const response = await fetchGolfCourseGroupDetail(
               user.golfCourseId
             );
-            setGolfCourseName(response.golf_course.name);
+            setGolfCourseName(response.data.name);
           }
         } catch (error) {
           console.error("골프장 정보 가져오기 실패:", error);
@@ -55,7 +66,7 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
 
       fetchGolfCourseName();
     }
-  }, [isOpen, isMaster, golfCourseId, user?.golfCourseId]);
+  }, [isOpen, isMaster, golfCourseId, user?.golfCourseId, golfCourseInfo]);
 
   if (!isOpen) return null;
 
@@ -170,10 +181,20 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
           {/* 골프장 정보 표시 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              골프장
+              골프장 정보
             </label>
-            <div className="p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-              {golfCourseName || "골프장 정보를 불러오는 중..."}
+            <div className="p-3 bg-gray-50 rounded-lg space-y-1">
+              <div className="text-sm font-medium text-gray-900">
+                {golfCourseName || "골프장 정보를 불러오는 중..."}
+              </div>
+              {golfCourseInfo?.contractStatus && (
+                <div className="text-xs text-gray-500">
+                  계약 상태:{" "}
+                  <span className="font-medium">
+                    {golfCourseInfo.contractStatus}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

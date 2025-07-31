@@ -40,38 +40,72 @@ export interface Field {
 }
 
 // ================================
-// 그룹 관련 타입
+// 그룹 관련 타입 (통합 설계)
 // ================================
 
-export interface Group {
+// 그룹 타입 정의
+export type GroupType = "PRIMARY" | "SPECIAL";
+
+// 기본 그룹 인터페이스
+export interface BaseGroup {
   id: string;
   name: string;
-  group_type: string;
+  group_type: GroupType;
+  golf_course_id: string;
   golf_course_name?: string;
+  is_active: boolean;
   order?: number;
+  description?: string;
+  created_at?: string;
+  updated_at?: string;
   isEmpty?: boolean;
 }
 
-export interface GroupDetail {
-  id: string;
-  name: string;
-  group_type: string;
+// 확장된 그룹 인터페이스들
+export interface Group extends BaseGroup {
+  member_count?: number;
+}
+
+export interface GroupDetail extends BaseGroup {
   golf_course: GolfCourse;
   members: string[];
-  isEmpty?: boolean;
 }
 
-export interface SpecialGroup {
-  id: string;
-  name: string;
-  group_type: string;
-  isEmpty?: boolean;
+export interface SpecialGroup extends BaseGroup {
+  color?: string;
+  member_count?: number;
 }
 
 export interface GroupMembership {
   group: Group;
   role: string;
   role_display: string;
+}
+
+// 그룹 관리 API 인터페이스
+export interface GroupManagementAPI<T extends BaseGroup> {
+  create: (data: CreateGroupRequest) => Promise<T>;
+  update: (id: string, data: Partial<CreateGroupRequest>) => Promise<T>;
+  delete: (id: string) => Promise<void>;
+  list: (params?: GroupListParams) => Promise<T[]>;
+  getDetail?: (id: string) => Promise<T>;
+}
+
+// 그룹 생성 요청 타입
+export interface CreateGroupRequest {
+  name: string;
+  group_type: GroupType;
+  golf_course_id: string;
+  is_active?: boolean;
+  description?: string;
+}
+
+// 그룹 리스트 파라미터
+export interface GroupListParams {
+  golf_course_id?: string;
+  group_type?: GroupType;
+  is_active?: boolean;
+  search?: string;
 }
 
 // ================================

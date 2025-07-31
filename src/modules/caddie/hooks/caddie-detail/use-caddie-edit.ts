@@ -43,12 +43,12 @@ export const useCaddieEdit = ({
   const [error, setError] = useState<string | null>(null);
 
   // 정적 옵션들 (상수 사용) - string 타입으로 변환
-  const employmentTypeChoices = EMPLOYMENT_TYPE_CHOICES.map(choice => ({
+  const employmentTypeChoices = EMPLOYMENT_TYPE_CHOICES.map((choice) => ({
     value: String(choice.value),
     label: choice.label,
   }));
-  
-  const teamLeaderChoices = TEAM_LEADER_CHOICES.map(choice => ({
+
+  const teamLeaderChoices = TEAM_LEADER_CHOICES.map((choice) => ({
     value: String(choice.value),
     label: choice.label,
   }));
@@ -69,9 +69,10 @@ export const useCaddieEdit = ({
     const loadGroups = async () => {
       try {
         // 주 그룹 목록 로드
-        const primaryResponse = await fetchCaddieGroups(golfCourseId, {
-          group_type: "PRIMARY",
-        });
+        const primaryResponse = await fetchCaddieGroups(
+          golfCourseId,
+          "PRIMARY"
+        );
         const primaryOptions = [
           { value: "", label: "그룹 선택" },
           ...primaryResponse.data.map((group) => ({
@@ -82,9 +83,10 @@ export const useCaddieEdit = ({
         setPrimaryGroupChoices(primaryOptions);
 
         // 특수 그룹 목록 로드
-        const specialResponse = await fetchCaddieGroups(golfCourseId, {
-          group_type: "SPECIAL",
-        });
+        const specialResponse = await fetchCaddieGroups(
+          golfCourseId,
+          "SPECIAL"
+        );
         const specialOptions = [
           { value: "", label: "특수반 선택" },
           ...specialResponse.data.map((group) => ({

@@ -14,7 +14,6 @@ import type {
   GolfCourseDetailResponse,
   GolfCourseFilters,
   GolfCourseGroupDetailResponse,
-  GolfCourseGroupStatusResponse,
   GolfCourseListResponse,
   GolfCourseSimpleResponse,
 } from "../types";
@@ -106,16 +105,6 @@ export const fetchGolfCourseGroupDetail = async (
 ): Promise<GolfCourseGroupDetailResponse> => {
   const url = GOLF_COURSE_ENDPOINTS.GROUP_DETAIL(id);
   return await apiClient.get<GolfCourseGroupDetailResponse>(url);
-};
-
-/**
- * 골프장 그룹 상태 조회
- */
-export const fetchGolfCourseGroupStatus = async (
-  id: string
-): Promise<GolfCourseGroupStatusResponse> => {
-  const url = GOLF_COURSE_ENDPOINTS.GROUP_STATUS(id);
-  return await apiClient.get<GolfCourseGroupStatusResponse>(url);
 };
 
 /**

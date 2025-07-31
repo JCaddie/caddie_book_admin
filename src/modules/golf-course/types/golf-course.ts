@@ -11,7 +11,6 @@ export type {
   GolfCourseDetailResponse,
   GolfCourseFilters,
   GolfCourseGroupDetailResponse,
-  GolfCourseGroupStatusResponse,
   GolfCourseListData,
   GolfCourseListResponse,
   GolfCourseSimple,

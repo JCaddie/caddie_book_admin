@@ -63,9 +63,7 @@ export const useCaddieOptions = ({
 
     try {
       // 주 그룹 목록 로드
-      const primaryResponse = await fetchCaddieGroups(golfCourseId, {
-        group_type: "PRIMARY",
-      });
+      const primaryResponse = await fetchCaddieGroups(golfCourseId, "PRIMARY");
 
       const primaryOptions = [
         { value: "", label: "전체 그룹" },
@@ -77,9 +75,7 @@ export const useCaddieOptions = ({
       setGroupOptions(primaryOptions);
 
       // 특수 그룹 목록 로드
-      const specialResponse = await fetchCaddieGroups(golfCourseId, {
-        group_type: "SPECIAL",
-      });
+      const specialResponse = await fetchCaddieGroups(golfCourseId, "SPECIAL");
 
       const specialOptions = [
         { value: "", label: "전체 특수반" },

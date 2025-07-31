@@ -89,16 +89,18 @@ export const GroupMenu: React.FC<GroupMenuProps> = ({
         </button>
 
         {/* 편집 모드 오버레이 */}
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 bg-opacity-25 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-4 shadow-lg">
-            <h3 className="text-lg font-semibold mb-3">그룹명 수정</h3>
+            <h3 className="text-lg font-semibold mb-3 text-black">
+              그룹명 수정
+            </h3>
             <input
               ref={inputRef}
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-yellow-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-yellow-500 text-black placeholder-gray-500"
               maxLength={20}
               placeholder="그룹명을 입력하세요"
             />
@@ -135,9 +137,9 @@ export const GroupMenu: React.FC<GroupMenuProps> = ({
         <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 rounded-md shadow-lg z-50">
           <button
             onClick={handleEditClick}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-black hover:bg-gray-100 transition-colors"
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="w-4 h-4 text-black" />
             그룹명 수정
           </button>
           <div className="border-t border-gray-200" />
@@ -145,7 +147,7 @@ export const GroupMenu: React.FC<GroupMenuProps> = ({
             onClick={handleDeleteClick}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4 text-red-600" />
             그룹 삭제
           </button>
         </div>

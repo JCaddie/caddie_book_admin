@@ -21,11 +21,11 @@ import {
 
 import { CaddieData } from "@/modules/work/types";
 import {
-  assignPrimaryGroup,
+  addGroupMember,
   deleteGroup,
-  getGroupAssignmentOverview,
-  removePrimaryGroup,
-  reorderPrimaryGroup,
+  getGolfCourseGroupStatus,
+  removeGroupMember,
+  reorderGroupMember,
   updateGroup,
 } from "@/modules/group/api/group-api";
 
@@ -44,7 +44,7 @@ const transformGroupToGroupSection = (group: Group) => ({
     id: parseInt(member.id),
     originalId: member.id, // 원본 UUID string 보존
     name: member.name,
-    group: group.id,
+    group: parseInt(group.id),
     badge: member.is_team_leader ? "팀장" : "캐디",
     status: "active",
     specialBadge: member.is_team_leader ? "팀장" : undefined,
@@ -86,9 +86,23 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 캐디 배정 데이터 상태
+  // 캐디 배정 데이터 상태 (안전한 초기값 제공)
   const [assignmentData, setAssignmentData] =
-    useState<CaddieAssignmentOverviewResponse | null>(null);
+    useState<CaddieAssignmentOverviewResponse | null>({
+      success: true,
+      message: "",
+      data: {
+        id: "",
+        name: "로딩 중...",
+        contract_status: "",
+        primary_group_count: 0,
+        total_caddies: 0,
+        grouped_caddies_count: 0,
+        ungrouped_caddies_count: 0,
+        primary_groups: [],
+        ungrouped_caddies: [],
+      },
+    });
   const [caddieLoading, setCaddieLoading] = useState(true);
   const [caddieError, setCaddieError] = useState<string | null>(null);
 
@@ -149,6 +163,22 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         // golfCourseId가 없으면 에러 처리
         if (!golfCourseId) {
           setCaddieError("현재 사용자에게 할당된 골프장이 없습니다.");
+          // 임시 빈 데이터로 설정
+          setAssignmentData({
+            success: false,
+            message: "골프장 정보 없음",
+            data: {
+              id: user?.golfCourseId || "unknown",
+              name: "데이터 로딩 중...",
+              contract_status: "",
+              primary_group_count: 0,
+              total_caddies: 0,
+              grouped_caddies_count: 0,
+              ungrouped_caddies_count: 0,
+              primary_groups: [],
+              ungrouped_caddies: [],
+            },
+          });
           return;
         }
       } else {
@@ -156,11 +186,27 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         golfCourseId = id;
       }
 
-      const response = await getGroupAssignmentOverview(golfCourseId);
+      const response = await getGolfCourseGroupStatus(golfCourseId);
       setAssignmentData(response);
     } catch (err) {
       console.error("캐디 배정 정보 조회 실패:", err);
       setCaddieError("캐디 정보를 불러오는 중 오류가 발생했습니다.");
+      // 오류 발생 시 임시 빈 데이터로 설정하여 화면이 깨지지 않도록 함
+      setAssignmentData({
+        success: false,
+        message: "오류 발생",
+        data: {
+          id: id || "unknown",
+          name: "오류 발생으로 인한 임시 데이터",
+          contract_status: "UNKNOWN",
+          primary_group_count: 0,
+          total_caddies: 0,
+          grouped_caddies_count: 0,
+          ungrouped_caddies_count: 0,
+          primary_groups: [],
+          ungrouped_caddies: [],
+        },
+      });
     } finally {
       setCaddieLoading(false);
     }
@@ -225,22 +271,24 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         if (currentGroupId > 0) {
           console.log("배정 해제 요청:", {
             groupId: currentGroupId,
-            caddie_ids: [draggedCaddie.originalId],
+            user_id: draggedCaddie.originalId,
           });
-          await removePrimaryGroup(currentGroupId, {
-            caddie_ids: [draggedCaddie.originalId],
+          await removeGroupMember(currentGroupId.toString(), {
+            user_id: draggedCaddie.originalId,
           });
         }
       } else {
-        const targetGroupIdNum = parseInt(targetGroupId);
+        const targetGroupIdStr = targetGroupId;
+        const targetGroupIdNum = parseInt(targetGroupIdStr);
         const currentGroupId = draggedCaddie.group;
 
         // 드롭 인덱스 결정 (기본값: 마지막 위치)
         const dropIndex =
           insertIndex !== undefined
             ? insertIndex
-            : assignmentData?.groups.find((g) => g.id === targetGroupIdNum)
-                ?.member_count || 0;
+            : assignmentData?.data?.primary_groups.find(
+                (g) => g.id === targetGroupIdStr
+              )?.member_count || 0;
 
         // order는 1부터 시작
         const newOrder = dropIndex + 1;
@@ -252,34 +300,32 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           // 현재 위치와 목표 위치가 다를 때만 순서 변경
           if (currentIndex !== dropIndex) {
             console.log("순서 변경 요청:", {
-              groupId: targetGroupIdNum,
-              caddie_id: draggedCaddie.originalId,
+              groupId: targetGroupIdStr,
+              user_id: draggedCaddie.originalId,
               currentIndex,
               newIndex: dropIndex,
-              new_order: newOrder,
+              order: newOrder,
             });
 
-            await reorderPrimaryGroup(targetGroupIdNum, {
-              reorders: [
-                {
-                  caddie_id: draggedCaddie.originalId,
-                  new_order: newOrder,
-                },
-              ],
+            await reorderGroupMember(targetGroupIdStr, {
+              user_id: draggedCaddie.originalId,
+              order: newOrder,
             });
           }
         } else {
           // 다른 그룹으로 이동 또는 미배정 캐디를 그룹에 배정
           console.log("배정 요청:", {
-            groupId: targetGroupIdNum,
-            caddie_ids: [draggedCaddie.originalId],
-            orders: [newOrder],
+            groupId: targetGroupIdStr,
+            user_id: draggedCaddie.originalId,
+            order: newOrder,
+            membership_type: "PRIMARY",
             isFromUnassigned: currentGroupId === 0,
           });
 
-          await assignPrimaryGroup(targetGroupIdNum, {
-            caddie_ids: [draggedCaddie.originalId],
-            orders: [newOrder],
+          await addGroupMember(targetGroupIdStr, {
+            user_id: draggedCaddie.originalId,
+            order: newOrder,
+            membership_type: "PRIMARY",
           });
         }
       }
@@ -340,8 +386,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     );
   }
 
-  // 에러 상태
-  if (error) {
+  // 에러 상태 - 캐디 정보만 오류가 있어도 전체 화면을 보여주도록 수정
+  if (error && !data) {
     return (
       <div className="bg-white rounded-xl p-8 space-y-6">
         <AdminPageHeader title={pageTitle} />
@@ -381,26 +427,30 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
       {/* 골프장 정보 */}
       <GolfCourseInfo
-        name={data.data.name}
-        address={data.data.region}
-        contractStatus="ACTIVE"
+        name={assignmentData?.data?.name || "골프장 정보 로딩 중..."}
+        address={assignmentData?.data?.contract_status || "상태 정보 없음"}
+        contractStatus={assignmentData?.data?.contract_status || "UNKNOWN"}
       />
 
       {/* 그룹 요약 정보 */}
       <GroupSummary
-        primaryGroupCount={data.data.groups.length}
-        totalCaddies={data.data.groups.reduce(
-          (total, group) => total + group.caddie_count,
-          0
-        )}
+        primaryGroupCount={assignmentData?.data?.primary_group_count ?? 0}
+        totalCaddies={assignmentData?.data?.total_caddies ?? 0}
       />
 
       {/* 메인 콘텐츠 */}
       <div className="flex gap-8">
         {/* 왼쪽: 그룹 관리 */}
         <div className="w-[calc(3*320px+2*16px)]">
+          {error && (
+            <div className="p-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">
+                ⚠️ 골프장 데이터 로딩 중 오류: {error}
+              </p>
+            </div>
+          )}
           <GroupManagementArea
-            groups={assignmentData?.groups || []}
+            groups={assignmentData?.data?.primary_groups || []}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
@@ -416,20 +466,29 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         <div className="w-96">
           <CaddieStatusPanel
             totalAssignedCaddies={
-              assignmentData?.summary.total_assigned_caddies || 0
+              assignmentData?.data?.grouped_caddies_count ?? 0
             }
             totalUnassignedCaddies={
-              assignmentData?.summary.total_unassigned_caddies || 0
+              assignmentData?.data?.ungrouped_caddies_count ?? 0
             }
           />
 
           {/* 캐디 목록 */}
           <div className="space-y-3">
             <h4 className="text-md font-medium text-gray-900">캐디 목록</h4>
+            {caddieError && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-sm text-yellow-800">⚠️ {caddieError}</p>
+                <p className="text-xs text-yellow-600 mt-1">
+                  임시 데이터로 화면을 표시합니다. API 업데이트 후 다시
+                  시도해주세요.
+                </p>
+              </div>
+            )}
             <UnassignedCaddieList
-              unassignedCaddies={assignmentData?.unassigned_caddies || []}
+              unassignedCaddies={assignmentData?.data?.ungrouped_caddies || []}
               isLoading={caddieLoading}
-              error={caddieError}
+              error={null} // 에러는 위에서 별도로 표시하므로 null로 설정
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               onDrop={handleDrop}
@@ -448,6 +507,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         onClose={closeGroupCreateModal}
         onSuccess={handleGroupCreateSuccess}
         golfCourseId={isOwnGolfCourse ? undefined : id} // MASTER일 때는 URL의 ID, ADMIN일 때는 undefined (자신의 골프장 ID 사용)
+        golfCourseInfo={{
+          name: assignmentData?.data?.name || "골프장 정보 없음",
+          contractStatus: assignmentData?.data?.contract_status,
+        }}
       />
     </div>
   );

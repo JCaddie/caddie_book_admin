@@ -40,7 +40,7 @@ interface RoundingSettingsResponse {
   updated_at: string;
 }
 
-interface WorkScheduleResponse {
+export interface WorkScheduleResponse {
   id: string;
   golf_course: string;
   golf_course_name: string;
@@ -83,7 +83,7 @@ interface WorkTimeSlotResponse {
   updated_at: string;
 }
 
-interface WorkSlotResponse {
+export interface WorkSlotResponse {
   id: string;
   time_slot: string;
   time_slot_start_time: string;
@@ -98,9 +98,81 @@ interface WorkSlotResponse {
   assigned_by: string | null;
   assigned_by_name: string | null;
   assigned_at: string | null;
-  notes: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
+}
+
+// 라운딩 설정 일괄 업데이트 API 타입
+
+interface BulkUpdateRoundingSettingsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    golf_course_id: string;
+    updated_parts_count: number;
+  };
+}
+
+// 골프장별 특수반 현황 API 타입
+interface SpecialGroupsStatusResponse {
+  success: boolean;
+  message: string;
+  data: Array<{
+    golf_course_id: string;
+    golf_course_name: string;
+    location: string;
+    status: string;
+    special_group_count: number;
+    total_caddie_count: number;
+    special_schedule_id: string;
+  }>;
+}
+
+// 특수 스케줄 상세 조회 API 타입
+interface SpecialScheduleDetailResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    golf_course: {
+      id: string;
+      name: string;
+    };
+    schedule_type: string;
+    status: string;
+    time_interval: number;
+    fields: Array<{
+      id: string;
+      name: string;
+      number: number;
+    }>;
+    parts: Array<{
+      id: string;
+      part_number: number;
+      name: string;
+      start_time: string | null;
+      end_time: string | null;
+      schedule_matrix: Array<{
+        time: string;
+        slots: Array<{
+          field_number: number;
+          work_slot_id: string;
+          special_group: {
+            id: string;
+            name: string;
+            member_count: number;
+          } | null;
+        }>;
+      }>;
+    }>;
+    available_special_groups: Array<{
+      id: string;
+      name: string;
+      group_type: string;
+      member_count: number;
+    }>;
+  };
 }
 
 // API 엔드포인트 상수
@@ -500,4 +572,197 @@ export const fetchWorkSchedules = async (): Promise<Work[]> => {
     createdAt: new Date().toISOString(), // API에서 제공되지 않으므로 현재 시간 사용
     updatedAt: new Date().toISOString(),
   }));
+};
+
+/**
+ * 라운딩 설정 일괄 업데이트 API
+ */
+export const bulkUpdateRoundingSettings = async (
+  scheduleId: string,
+  timeInterval: number,
+  partsConfig: Array<{
+    partNumber: number;
+    name: string;
+    startTime: string;
+    endTime: string;
+  }>
+): Promise<{ scheduleId: string; updatedPartsCount: number }> => {
+  try {
+    const requestData = {
+      schedule_type: "special",
+      time_interval: timeInterval,
+      parts_config: partsConfig.map((part) => ({
+        part_number: part.partNumber,
+        name: part.name,
+        start_time: part.startTime,
+        end_time: part.endTime,
+        is_active: true,
+      })),
+    };
+
+    const response = await apiClient.put<BulkUpdateRoundingSettingsResponse>(
+      `/api/v1/work/schedules/${scheduleId}/bulk-update/`,
+      requestData
+    );
+
+    if (response.success) {
+      return {
+        scheduleId: scheduleId,
+        updatedPartsCount: response.data?.updated_parts_count || 0,
+      };
+    } else {
+      throw new Error(response.message || "라운딩 설정 업데이트 실패");
+    }
+  } catch (error) {
+    console.error("라운딩 설정 일괄 업데이트 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수 스케줄 상세 조회 API
+ */
+export const fetchSpecialScheduleDetail = async (
+  scheduleId: string
+): Promise<SpecialScheduleDetailResponse["data"]> => {
+  try {
+    const response = await apiClient.get<SpecialScheduleDetailResponse>(
+      `/api/v1/work/schedules/${scheduleId}/special-groups-status/`
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || "특수 스케줄 조회 실패");
+    }
+  } catch (error) {
+    console.error("특수 스케줄 상세 조회 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 골프장별 특수반 현황 조회 API
+ */
+export const fetchSpecialGroupsStatus = async (): Promise<
+  SpecialGroupsStatusResponse["data"]
+> => {
+  try {
+    const response = await apiClient.get<SpecialGroupsStatusResponse>(
+      "/api/v1/golf-courses/special-groups-status/"
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || "특수반 현황 조회 실패");
+    }
+  } catch (error) {
+    console.error("골프장별 특수반 현황 조회 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수반 생성 API
+ */
+export const createSpecialGroup = async (
+  golfCourseId: string,
+  data: {
+    name: string;
+    group_type: string;
+  }
+): Promise<{ success: boolean; message: string; data?: unknown }> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data?: unknown;
+    }>(`/api/v1/golf-courses/${golfCourseId}/groups/`, data);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 생성 실패");
+    }
+  } catch (error) {
+    console.error("특수반 생성 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수반 삭제 API
+ */
+export const deleteSpecialGroup = async (
+  golfCourseId: string,
+  groupId: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.delete<{
+      success: boolean;
+      message: string;
+    }>(`/api/v1/golf-courses/groups/${groupId}/`);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 삭제 실패");
+    }
+  } catch (error) {
+    console.error("특수반 삭제 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수반 배치 API
+ */
+export const assignSpecialGroupToSlot = async (
+  scheduleId: string,
+  data: {
+    part_id: string;
+    time: string;
+    field_number: number;
+    special_group_id: string;
+  }
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>(`/api/v1/work/schedules/${scheduleId}/assign-special-group/`, data);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 배치 실패");
+    }
+  } catch (error) {
+    console.error("특수반 배치 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 특수반 배치 제거 API
+ */
+export const removeSpecialGroupFromSlot = async (
+  slotId: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.delete<{
+      success: boolean;
+      message: string;
+    }>(`/api/v1/work/slots/${slotId}/`);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "특수반 배치 제거 실패");
+    }
+  } catch (error) {
+    console.error("특수반 배치 제거 실패:", error);
+    throw error;
+  }
 };

@@ -1,16 +1,18 @@
 // ================================
-// 캐디 UI 전용 타입 (중복 제거됨)
+// 캐디 UI 전용 타입
 // ================================
 
-// 기본 타입들은 caddie.ts에서 import
-export type {
+// 모든 타입들을 caddie.ts에서 import
+import type {
   Caddie,
   CaddieFilters,
   CaddieSelection,
-  SelectOption,
-  Gender,
   EmploymentType,
+  Gender,
+  SelectOption,
 } from "./caddie";
+
+export type { Caddie, CaddieFilters, CaddieSelection, SelectOption };
 
 // UI 전용 타입들만 여기에 정의
 export interface EditableCaddie {
