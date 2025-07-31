@@ -48,7 +48,7 @@ export interface NewCaddieListResponse {
 }
 
 // API 응답 기본 형태
-export interface ApiResponse {
+export interface NewCaddieApiResponse {
   success: boolean;
   message?: string;
 }

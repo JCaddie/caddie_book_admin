@@ -40,7 +40,7 @@ interface RoundingSettingsResponse {
   updated_at: string;
 }
 
-interface WorkScheduleResponse {
+export interface WorkScheduleResponse {
   id: string;
   golf_course: string;
   golf_course_name: string;
@@ -83,7 +83,7 @@ interface WorkTimeSlotResponse {
   updated_at: string;
 }
 
-interface WorkSlotResponse {
+export interface WorkSlotResponse {
   id: string;
   time_slot: string;
   time_slot_start_time: string;

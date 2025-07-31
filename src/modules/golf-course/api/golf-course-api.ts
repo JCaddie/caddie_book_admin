@@ -22,7 +22,6 @@ export type {
   GolfCourseDetailResponse,
   GolfCourseFilters,
   GolfCourseGroupDetailResponse,
-  GolfCourseGroupStatusResponse,
   GolfCourseListResponse,
   GolfCourseSimple,
   GolfCourseSimpleResponse,

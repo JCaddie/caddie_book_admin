@@ -10,7 +10,6 @@ export type {
   GolfCourseSimple,
   GolfCourseSimpleResponse,
   GolfCourseGroupDetailResponse,
-  GolfCourseGroupStatus,
   GolfCourseGroupStatusListResponse,
   GolfCourseFilters,
   BulkDeleteRequest,

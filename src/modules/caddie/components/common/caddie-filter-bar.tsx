@@ -71,14 +71,16 @@ const CaddieFilterBar: React.FC<CaddieFilterBarProps> = ({
             {isAdmin && (
               <>
                 <Dropdown
-                  options={groupOptions}
+                  options={groupOptions as { value: string; label: string }[]}
                   value={filters.selectedGroup}
                   onChange={onGroupChange}
                   placeholder="그룹"
                 />
 
                 <Dropdown
-                  options={specialTeamOptions}
+                  options={
+                    specialTeamOptions as { value: string; label: string }[]
+                  }
                   value={filters.selectedSpecialTeam}
                   onChange={onSpecialTeamChange}
                   placeholder="특수반"

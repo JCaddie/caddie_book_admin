@@ -100,9 +100,9 @@ export const bulkDeleteCaddies = async (
  */
 export const fetchCaddieGroups = async (
   golfCourseId: string,
-  params: { group_type?: string } = {}
+  groupType: "PRIMARY" | "SPECIAL" = "PRIMARY"
 ): Promise<CaddieGroupListResponse> => {
-  const url = buildCaddieGroupsUrl(golfCourseId, params);
+  const url = buildCaddieGroupsUrl(golfCourseId, groupType);
   return apiClient.get<CaddieGroupListResponse>(url);
 };
 

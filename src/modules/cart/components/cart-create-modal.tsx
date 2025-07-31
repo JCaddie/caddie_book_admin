@@ -25,7 +25,7 @@ const CartCreateModal: React.FC<CartCreateModalProps> = ({
 
   const { user } = useAuth();
 
-  const isMaster = user?.role === "MASTER" || user?.role === "DEV";
+  const isMaster = user?.role === "MASTER";
 
   // 모달이 열릴 때 초기화
   useEffect(() => {

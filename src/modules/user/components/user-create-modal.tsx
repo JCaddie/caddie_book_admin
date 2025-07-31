@@ -54,8 +54,8 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
 
   // 골프장 드롭다운 옵션 생성
   const golfCourseOptions = React.useMemo(() => {
-    if (!golfCoursesData?.results) return [];
-    return golfCoursesData.results.map((course) => ({
+    if (!golfCoursesData?.data) return [];
+    return golfCoursesData.data.map((course) => ({
       label: course.name,
       value: course.id,
     }));

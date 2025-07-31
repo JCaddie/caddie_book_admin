@@ -137,3 +137,15 @@ export interface BaseSettingModalProps<T extends BaseSettingItem> {
     validateItem: (item: T) => string | null;
   };
 }
+
+export interface SettingModalConfig<T extends BaseSettingItem> {
+  title: string;
+  createNewItem: () => T;
+  validateItem: (item: T) => string | null;
+  renderItem: (
+    item: T,
+    index: number,
+    onUpdate: (item: T) => void,
+    onDelete: (index: number) => void
+  ) => React.ReactNode;
+}

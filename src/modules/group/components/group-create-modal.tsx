@@ -32,7 +32,7 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
   const [golfCourseName, setGolfCourseName] = useState<string>("");
 
   const { user } = useAuth();
-  const isMaster = user?.role === "MASTER" || user?.role === "DEV";
+  const isMaster = user?.role === "MASTER";
 
   // 모달이 열릴 때 초기화
   useEffect(() => {

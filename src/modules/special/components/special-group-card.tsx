@@ -1,25 +1,25 @@
 "use client";
 
 import { MoreVertical } from "lucide-react";
-import { Team } from "../types";
+import { SpecialGroup } from "../types";
 
-interface TeamCardProps {
-  team?: Team;
+interface SpecialGroupCardProps {
+  group?: SpecialGroup;
   isEmpty?: boolean;
   emptyText?: string;
-  onDragStart?: (team: Team) => void;
+  onDragStart?: (group: SpecialGroup) => void;
   onDragEnd?: () => void;
   isDragging?: boolean;
 }
 
-export default function TeamCard({
-  team,
+export default function SpecialGroupCard({
+  group,
   isEmpty = false,
   emptyText = "미배정",
   onDragStart,
   onDragEnd,
   isDragging,
-}: TeamCardProps) {
+}: SpecialGroupCardProps) {
   // 빈 슬롯 표시
   if (isEmpty) {
     return (
@@ -29,19 +29,19 @@ export default function TeamCard({
     );
   }
 
-  // 팀이 없는 경우
-  if (!team) return null;
+  // 특수반이 없는 경우
+  if (!group) return null;
 
   const handleDragStart = (e: React.DragEvent) => {
     // 타입 식별자와 함께 데이터 설정
     const dragData = {
-      type: "team",
-      data: team,
+      type: "special-group",
+      data: group,
     };
     e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
     e.dataTransfer.effectAllowed = "move";
     if (onDragStart) {
-      onDragStart(team);
+      onDragStart(group);
     }
   };
 
@@ -61,24 +61,24 @@ export default function TeamCard({
       onDragEnd={handleDragEnd}
     >
       <div className="flex items-center gap-1.5">
-        {/* 팀 색상 배지 */}
-        <div className={`w-3 h-3 rounded-full ${team.color} flex-shrink-0`} />
+        {/* 특수반 색상 배지 */}
+        <div className={`w-3 h-3 rounded-full ${group.color} flex-shrink-0`} />
 
-        {/* 팀 이름 */}
+        {/* 특수반 이름 */}
         <span className="text-sm font-medium text-black flex-shrink-0">
-          {team.name}
+          {group.name}
         </span>
 
         {/* 상태 배지 */}
         <div className="w-0.5 h-4 bg-[#E3E3E3] flex-shrink-0"></div>
         <div
           className={`w-10 h-5 text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
-            team.isActive
+            group.isActive
               ? "bg-[#E8F5E8] text-[#4CAF50]"
               : "bg-[#F5F5F5] text-[#9E9E9E]"
           }`}
         >
-          {team.isActive ? "활성" : "비활성"}
+          {group.isActive ? "활성" : "비활성"}
         </div>
       </div>
 

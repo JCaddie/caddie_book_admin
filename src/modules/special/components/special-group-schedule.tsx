@@ -3,67 +3,67 @@
 import React, { useState } from "react";
 import BaseSchedule from "@/shared/components/schedule/base-schedule";
 import { Field, PersonnelStats, TimeSlots } from "@/modules/work/types";
-import { Team } from "../types";
-import TeamCard from "./team-card";
+import { SpecialGroup } from "../types";
+import SpecialGroupCard from "./special-group-card";
 
-interface TeamPosition {
+interface SpecialGroupPosition {
   fieldIndex: number;
   timeIndex: number;
   part: number;
 }
 
-interface TeamScheduleProps {
+interface SpecialGroupScheduleProps {
   fields: Field[];
   timeSlots: TimeSlots;
   personnelStats: PersonnelStats;
   onResetClick: () => void;
-  draggedTeam?: Team | null;
-  onDragStart?: (team: Team) => void;
+  draggedGroup?: SpecialGroup | null;
+  onDragStart?: (group: SpecialGroup) => void;
   onDragEnd?: () => void;
   hideHeader?: boolean;
   isFullWidth?: boolean;
 }
 
-export default function TeamSchedule({
+export default function SpecialGroupSchedule({
   fields,
   timeSlots,
   personnelStats,
   onResetClick,
-  draggedTeam,
+  draggedGroup,
   onDragStart,
   onDragEnd,
   hideHeader = false,
   isFullWidth = false,
-}: TeamScheduleProps) {
-  // 팀 위치 상태 관리
-  const [teamPositions, setTeamPositions] = useState<Map<string, TeamPosition>>(
-    new Map()
-  );
+}: SpecialGroupScheduleProps) {
+  // 특수반 위치 상태 관리
+  const [groupPositions, setGroupPositions] = useState<
+    Map<string, SpecialGroupPosition>
+  >(new Map());
 
-  // 외부에서 드래그된 팀들을 저장
-  const [externalTeams, setExternalTeams] = useState<Map<string, Team>>(
-    new Map()
-  );
+  // 외부에서 드래그된 특수반들을 저장
+  const [externalGroups, setExternalGroups] = useState<
+    Map<string, SpecialGroup>
+  >(new Map());
 
-  // 특정 위치에 배정된 팀 찾기
-  const getTeamAtPosition = (
+  // 특정 위치에 배정된 특수반 찾기
+  const getGroupAtPosition = (
     fieldIndex: number,
     timeIndex: number,
     part: number
-  ): Team | null => {
-    for (const [positionKey, position] of teamPositions) {
+  ): SpecialGroup | null => {
+    for (const [positionKey, position] of groupPositions) {
       if (
         position.fieldIndex === fieldIndex &&
         position.timeIndex === timeIndex &&
         position.part === part
       ) {
-        // 위치 키에서 팀 ID 추출
-        const teamId = positionKey.split("_")[0];
+        // 위치 키에서 특수반 ID 추출
+        const groupId = positionKey.split("_")[0];
 
-        // 외부에서 드래그된 팀들에서 찾기
-        const externalTeam = externalTeams.get(teamId);
-        if (externalTeam) {
-          return externalTeam;
+        // 외부에서 드래그된 특수반들에서 찾기
+        const externalGroup = externalGroups.get(groupId);
+        if (externalGroup) {
+          return externalGroup;
         }
       }
     }
@@ -83,8 +83,8 @@ export default function TeamSchedule({
     try {
       const dragData = JSON.parse(rawData);
 
-      // 타입 검증: 팀 데이터만 허용
-      if (!dragData || dragData.type !== "team") {
+      // 타입 검증: 특수반 데이터만 허용
+      if (!dragData || dragData.type !== "special-group") {
         console.warn("잘못된 드래그 데이터 타입:", dragData?.type);
         if (onDragEnd) {
           onDragEnd();
@@ -92,16 +92,16 @@ export default function TeamSchedule({
         return;
       }
 
-      const team: Team = dragData.data;
+      const group: SpecialGroup = dragData.data;
 
-      // 팀을 외부 팀 맵에 저장
-      setExternalTeams((prev) => new Map(prev).set(team.id, team));
+      // 특수반을 외부 특수반 맵에 저장
+      setExternalGroups((prev) => new Map(prev).set(group.id, group));
 
       // 위치 업데이트 (교체 로직 추가)
-      setTeamPositions((prev) => {
+      setGroupPositions((prev) => {
         const newPositions = new Map(prev);
 
-        // 해당 위치에 이미 있는 팀들을 모두 제거 (교체를 위해)
+        // 해당 위치에 이미 있는 특수반들을 모두 제거 (교체를 위해)
         const keysToDelete: string[] = [];
         for (const [positionKey, position] of newPositions) {
           if (
@@ -114,8 +114,8 @@ export default function TeamSchedule({
         }
         keysToDelete.forEach((key) => newPositions.delete(key));
 
-        // 새로운 위치에 팀 배치
-        const newPositionKey = `${team.id}_${Date.now()}`;
+        // 새로운 위치에 특수반 배치
+        const newPositionKey = `${group.id}_${Date.now()}`;
         newPositions.set(newPositionKey, {
           fieldIndex,
           timeIndex,
@@ -129,20 +129,20 @@ export default function TeamSchedule({
         onDragEnd();
       }
     } catch (error) {
-      console.error("Failed to parse team data:", error);
+      console.error("Failed to parse special group data:", error);
     }
   };
 
-  // 팀 제거 핸들러
+  // 특수반 제거 핸들러
   const handleRemove = (
     fieldIndex: number,
     timeIndex: number,
     part: number
   ) => {
-    setTeamPositions((prev) => {
+    setGroupPositions((prev) => {
       const newPositions = new Map(prev);
 
-      // 해당 위치의 팀 찾아서 제거
+      // 해당 위치의 특수반 찾아서 제거
       for (const [positionKey, position] of newPositions) {
         if (
           position.fieldIndex === fieldIndex &&
@@ -160,23 +160,23 @@ export default function TeamSchedule({
 
   // 셀 렌더러
   const renderCell = (fieldIndex: number, timeIndex: number, part: number) => {
-    const team = getTeamAtPosition(fieldIndex, timeIndex, part);
+    const group = getGroupAtPosition(fieldIndex, timeIndex, part);
 
-    if (team) {
+    if (group) {
       return (
-        <TeamCard
-          key={`${team.id}-${fieldIndex}-${timeIndex}-${part}`}
-          team={team}
+        <SpecialGroupCard
+          key={`${group.id}-${fieldIndex}-${timeIndex}-${part}`}
+          group={group}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
-          isDragging={draggedTeam?.id === team.id}
+          isDragging={draggedGroup?.id === group.id}
         />
       );
     }
 
     // 빈 슬롯일 때 미배정 카드 표시
     return (
-      <TeamCard
+      <SpecialGroupCard
         key={`empty-${fieldIndex}-${timeIndex}-${part}`}
         isEmpty={true}
         emptyText="배치 가능"
@@ -192,14 +192,14 @@ export default function TeamSchedule({
     part: number
   ) => {
     e.preventDefault();
-    // 팀 드래그 시각적 피드백을 위한 로직 추가 가능
+    // 특수반 드래그 시각적 피드백을 위한 로직 추가 가능
     void fieldIndex;
     void timeIndex;
     void part;
   };
 
   return (
-    <BaseSchedule<Team>
+    <BaseSchedule<SpecialGroup>
       fields={fields}
       timeSlots={timeSlots}
       personnelStats={personnelStats}
@@ -210,8 +210,8 @@ export default function TeamSchedule({
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onRemove={handleRemove}
-      getItemAtPosition={getTeamAtPosition}
-      draggedItem={draggedTeam}
+      getItemAtPosition={getGroupAtPosition}
+      draggedItem={draggedGroup}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     />

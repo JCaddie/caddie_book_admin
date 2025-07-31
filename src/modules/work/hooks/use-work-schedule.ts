@@ -30,37 +30,8 @@ export const useWorkSchedule = ({
       setIsLoading(true);
       setError(null);
 
-      const data: import("../api/work-api").WorkScheduleResponse =
-        await fetchWorkSchedule(golfCourseId, date);
-      setSchedule({
-        id: data.id,
-        golfCourse: data.golf_course_name,
-        golfCourseId: data.golf_course,
-        scheduleType: data.schedule_type,
-        date: data.date,
-        name: data.name,
-        totalStaff: data.total_staff,
-        availableStaff: data.available_staff,
-        status: data.status,
-        notes: data.notes,
-        createdBy: data.created_by,
-        createdByName: data.created_by_name,
-        partsCount: data.parts_count,
-        parts: data.parts.map((part) => ({
-          id: part.id,
-          scheduleId: data.id,
-          partNumber: part.part_number,
-          startTime: part.start_time,
-          endTime: part.end_time,
-          timeInterval: part.time_interval,
-          isActive: part.is_active,
-          timeSlotsCount: part.time_slots_count,
-          createdAt: part.created_at ?? "",
-          updatedAt: part.updated_at ?? "",
-        })),
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-      });
+      const data = await fetchWorkSchedule(golfCourseId, date);
+      setSchedule(data);
 
       // 시간 슬롯과 근무 슬롯도 함께 조회
       const timeSlotsData = await fetchWorkTimeSlots(data.id);
@@ -151,7 +122,32 @@ export const useWorkSchedule = ({
 
         // 로컬 상태 업데이트
         setWorkSlots((prev) =>
-          prev.map((slot) => (slot.id === slotId ? updatedSlot : slot))
+          prev.map((slot) => {
+            if (slot.id === slotId) {
+              const slotData =
+                updatedSlot as import("../api/work-api").WorkSlotResponse;
+              return {
+                id: slotData.id,
+                timeSlotId: slotData.time_slot,
+                timeSlotStartTime: slotData.time_slot_start_time,
+                timeSlotEndTime: slotData.time_slot_end_time,
+                partNumber: slotData.part_number,
+                fieldId: slotData.field,
+                fieldName: slotData.field_name,
+                caddieId: slotData.caddie,
+                caddieName: slotData.caddie_name,
+                specialGroupId: slotData.special_group,
+                specialGroupName: slotData.special_group_name,
+                assignedById: slotData.assigned_by,
+                assignedByName: slotData.assigned_by_name,
+                assignedAt: slotData.assigned_at,
+                notes: slotData.notes ?? "",
+                createdAt: slotData.created_at,
+                updatedAt: slotData.updated_at,
+              };
+            }
+            return slot;
+          })
         );
 
         return updatedSlot;
