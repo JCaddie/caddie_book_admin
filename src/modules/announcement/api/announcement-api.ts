@@ -58,6 +58,7 @@ export const createAnnouncement = async (
   const requestData = {
     title: data.title,
     content: data.content,
+    announcement_type: data.announcementType,
     is_published: data.isPublished,
     ...(data.category && { category: data.category }),
     ...(data.priority && { priority: data.priority }),

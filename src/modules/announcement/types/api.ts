@@ -76,6 +76,7 @@ export interface AnnouncementListApiResponse {
 export interface CreateAnnouncementRequest {
   title: string;
   content: string;
+  announcement_type: string;
   is_published: boolean;
   category?: AnnouncementCategory;
   priority?: AnnouncementPriority;

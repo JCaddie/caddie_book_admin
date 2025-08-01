@@ -108,7 +108,8 @@ const AnnouncementDetailPage: React.FC = () => {
 
   const announcementTypeOptions = [
     { value: "GOLF_COURSE", label: "골프장 공지" },
-    { value: "JCADDIE", label: "JCADDIE 공지" },
+    { value: "GROUP", label: "그룹 공지" },
+    { value: "GLOBAL", label: "전체 공지" },
   ];
 
   // 로딩 상태

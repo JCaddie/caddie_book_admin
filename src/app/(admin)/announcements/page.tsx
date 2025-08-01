@@ -12,6 +12,7 @@ import {
 } from "@/modules/announcement/components";
 import { Announcement, AnnouncementWithNo } from "@/modules/announcement/types";
 import { isValidAnnouncement } from "@/modules/announcement/utils";
+import { createAnnouncement } from "@/modules/announcement/api/announcement-api";
 
 const AnnouncementsPage: React.FC = () => {
   const router = useRouter();
@@ -32,6 +33,7 @@ const AnnouncementsPage: React.FC = () => {
     isDeleting,
     error,
     clearError,
+    refetch,
   } = useAnnouncementList();
 
   // 새 공지사항 생성 모달 열기
@@ -47,10 +49,14 @@ const AnnouncementsPage: React.FC = () => {
     >
   ) => {
     try {
-      // TODO: 실제 API 호출
-      console.log("공지사항 생성:", data);
+      await createAnnouncement({
+        title: data.title,
+        content: data.content,
+        announcementType: data.announcementType,
+        isPublished: data.isPublished,
+      });
       // 생성 후 목록 새로고침
-      // await loadAnnouncements();
+      await refetch();
     } catch (error) {
       console.error("공지사항 생성 실패:", error);
       throw error;

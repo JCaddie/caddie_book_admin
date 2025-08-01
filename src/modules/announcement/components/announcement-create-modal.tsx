@@ -8,7 +8,12 @@ import { Announcement } from "../types";
 interface AnnouncementCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Omit<Announcement, "id" | "createdAt" | "updatedAt" | "views" | "files">) => Promise<void>;
+  onSubmit: (
+    data: Omit<
+      Announcement,
+      "id" | "createdAt" | "updatedAt" | "views" | "files"
+    >
+  ) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -70,13 +75,20 @@ const AnnouncementCreateModal: React.FC<AnnouncementCreateModalProps> = ({
         content: formData.content.trim(),
         isPublished: formData.isPublished,
         announcementType: formData.announcementType,
-        announcementTypeDisplay: formData.announcementType === "GOLF_COURSE" ? "골프장 공지" : "JCADDIE 공지",
+        announcementTypeDisplay:
+          formData.announcementType === "GOLF_COURSE"
+            ? "골프장 공지"
+            : formData.announcementType === "GROUP"
+            ? "그룹 공지"
+            : "전체 공지",
         golfCourseId: "", // TODO: 실제 골프장 ID 설정
         golfCourseName: "", // TODO: 실제 골프장명 설정
         targetGroup: null,
         authorId: "", // TODO: 실제 작성자 ID 설정
         authorName: "", // TODO: 실제 작성자명 설정
-        publishedAt: formData.isPublished ? new Date().toISOString() : undefined,
+        publishedAt: formData.isPublished
+          ? new Date().toISOString()
+          : undefined,
       });
       onClose();
     } catch (error) {
@@ -88,7 +100,8 @@ const AnnouncementCreateModal: React.FC<AnnouncementCreateModalProps> = ({
 
   const announcementTypeOptions = [
     { value: "GOLF_COURSE", label: "골프장 공지" },
-    { value: "JCADDIE", label: "JCADDIE 공지" },
+    { value: "GROUP", label: "그룹 공지" },
+    { value: "GLOBAL", label: "전체 공지" },
   ];
 
   return (
@@ -119,7 +132,9 @@ const AnnouncementCreateModal: React.FC<AnnouncementCreateModalProps> = ({
             </label>
             <Input
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title: e.target.value }))
+              }
               placeholder="공지사항 제목을 입력하세요"
               error={errors.title}
               disabled={isLoading}
@@ -134,7 +149,9 @@ const AnnouncementCreateModal: React.FC<AnnouncementCreateModalProps> = ({
             <Dropdown
               options={announcementTypeOptions}
               value={formData.announcementType}
-              onChange={(value) => setFormData(prev => ({ ...prev, announcementType: value }))}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, announcementType: value }))
+              }
               placeholder="공지 유형을 선택하세요"
               disabled={isLoading}
             />
@@ -147,10 +164,12 @@ const AnnouncementCreateModal: React.FC<AnnouncementCreateModalProps> = ({
             </label>
             <textarea
               value={formData.content}
-              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, content: e.target.value }))
+              }
               placeholder="공지사항 내용을 입력하세요"
               className={`w-full h-32 px-3 py-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
-                errors.content ? 'border-red-300' : 'border-gray-300'
+                errors.content ? "border-red-300" : "border-gray-300"
               }`}
               disabled={isLoading}
             />
@@ -165,11 +184,18 @@ const AnnouncementCreateModal: React.FC<AnnouncementCreateModalProps> = ({
               <input
                 type="checkbox"
                 checked={formData.isPublished}
-                onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isPublished: e.target.checked,
+                  }))
+                }
                 className="mr-2 h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
                 disabled={isLoading}
               />
-              <span className="text-sm font-medium text-gray-700">즉시 공개</span>
+              <span className="text-sm font-medium text-gray-700">
+                즉시 공개
+              </span>
             </label>
           </div>
         </div>
@@ -192,4 +218,4 @@ const AnnouncementCreateModal: React.FC<AnnouncementCreateModalProps> = ({
   );
 };
 
-export default AnnouncementCreateModal; 
+export default AnnouncementCreateModal;
