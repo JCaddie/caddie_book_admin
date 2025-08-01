@@ -14,6 +14,7 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
     selectedCount,
     roleFilter,
     onRoleFilterChange,
+    onSearch,
     onDeleteSelected,
     onCreateClick,
     isDeleting = false,
@@ -61,7 +62,10 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
             </select>
 
             {/* 검색창 */}
-            <SearchWithButton placeholder="검색어 입력" />
+            <SearchWithButton 
+              placeholder="검색어 입력" 
+              onSearch={onSearch}
+            />
 
             {/* 버튼 그룹 */}
             <div className="flex items-center gap-4">
@@ -98,9 +102,6 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
           onConfirm={handleDeleteConfirm}
           title="사용자 삭제"
           message={`선택한 ${selectedCount}개 사용자를 삭제하시겠습니까?`}
-          confirmText="삭제"
-          cancelText="취소"
-          isLoading={isDeleting}
         />
       </>
     );

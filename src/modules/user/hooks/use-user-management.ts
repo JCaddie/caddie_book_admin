@@ -1,23 +1,31 @@
 import React from "react";
 import { User, UseUserManagementReturn } from "../types";
 import { ITEMS_PER_PAGE } from "../constants";
-import { usePagination } from "@/shared/hooks";
 import { useAdminList } from "./use-admin-list";
 import { useCreateUser, useDeleteUsers } from "./use-user-mutations";
-import { addNumberToUsers, filterUsersByRole, searchUsers } from "../utils";
+import { addNumberToUsers } from "../utils";
+import { useUserUrlParams } from "./use-user-url-params";
 
 // 사용자 관리 훅
 export const useUserManagement = (): UseUserManagementReturn => {
-  // API 훅 사용
-  const { data: adminData, isLoading, error, refetch } = useAdminList();
+  // URL 파라미터 관리
+  const { params, setSearch, setRole, setPage } = useUserUrlParams();
+  const { search: searchTerm, role: roleFilter, page: urlPage } = params;
+
+  // API 훅 사용 (URL 파라미터 기반)
+  const { data: adminData, isLoading, error, refetch } = useAdminList({
+    search: searchTerm || undefined,
+    role: roleFilter || undefined,
+    page: urlPage,
+    page_size: ITEMS_PER_PAGE,
+  });
+
   const createUserMutation = useCreateUser();
   const deleteUsersMutation = useDeleteUsers();
 
   // 상태 관리
   const [selectedRowKeys, setSelectedRowKeys] = React.useState<string[]>([]);
   const [selectedRows, setSelectedRows] = React.useState<User[]>([]);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [roleFilter, setRoleFilter] = React.useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   // API 응답에서 사용자 데이터 추출
@@ -32,38 +40,23 @@ export const useUserManagement = (): UseUserManagementReturn => {
     return [];
   }, [adminData]);
 
-  // 검색 및 필터링된 데이터
-  const filteredData = React.useMemo(() => {
-    let filtered = allUsers;
+  // 서버에서 이미 필터링된 데이터이므로 추가 필터링 불필요
+  const filteredData = allUsers;
 
-    // 검색 필터링
-    if (searchTerm) {
-      filtered = searchUsers(filtered, searchTerm);
-    }
-
-    // 역할 필터링
-    if (roleFilter) {
-      filtered = filterUsersByRole(filtered, roleFilter);
-    }
-
-    return filtered;
-  }, [allUsers, searchTerm, roleFilter]);
-
-  // 페이지네이션
-  const {
-    currentPage: paginationPage,
-    totalPages,
-    currentData,
-    handlePageChange,
-  } = usePagination({
-    data: filteredData,
-    itemsPerPage: ITEMS_PER_PAGE,
-  });
+  // 페이지네이션 정보 (서버에서 제공)
+  const totalPages = adminData?.data?.total_pages || 1;
+  const currentPage = adminData?.data?.page || 1;
+  const totalCount = adminData?.data?.count || 0;
 
   // 페이지네이션된 데이터에 번호 추가
   const paginatedData = React.useMemo(() => {
-    return addNumberToUsers(currentData, paginationPage, ITEMS_PER_PAGE);
-  }, [currentData, paginationPage]);
+    return addNumberToUsers(filteredData, currentPage, ITEMS_PER_PAGE);
+  }, [filteredData, currentPage]);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = React.useCallback((page: number) => {
+    setPage(page);
+  }, [setPage]);
 
   // 액션 핸들러들
   const handleUpdateSelection = React.useCallback(
@@ -88,11 +81,14 @@ export const useUserManagement = (): UseUserManagementReturn => {
       // 선택 상태 초기화
       setSelectedRowKeys([]);
       setSelectedRows([]);
+      
+      // 데이터 새로고침
+      refetch();
     } catch (error) {
       console.error("사용자 삭제 중 오류:", error);
       // 에러 처리 (토스트 메시지 등)
     }
-  }, [selectedRowKeys, deleteUsersMutation]);
+  }, [selectedRowKeys, deleteUsersMutation, refetch]);
 
   const handleCreateUser = React.useCallback(() => {
     setIsCreateModalOpen(true);
@@ -108,11 +104,14 @@ export const useUserManagement = (): UseUserManagementReturn => {
 
       // 모달 닫기
       setIsCreateModalOpen(false);
+      
+      // 데이터 새로고침
+      refetch();
     } catch (error) {
       console.error("사용자 생성 중 오류:", error);
       // 에러 처리 (토스트 메시지 등)
     }
-  }, [createUserMutation]);
+  }, [createUserMutation, refetch]);
 
   const handleRowClick = React.useCallback((user: User) => {
     if (user.isEmpty) return;
@@ -139,7 +138,8 @@ export const useUserManagement = (): UseUserManagementReturn => {
     isDeleting: deleteUsersMutation.isPending,
     searchTerm,
     roleFilter,
-    currentPage: paginationPage,
+    currentPage,
+    totalCount,
 
     // 모달 상태
     isCreateModalOpen,
@@ -156,8 +156,8 @@ export const useUserManagement = (): UseUserManagementReturn => {
     handleCloseModal,
     handleSubmitUser,
     handleRowClick,
-    setSearchTerm,
-    setRoleFilter,
+    setSearchTerm: setSearch,
+    setRoleFilter: setRole,
 
     // 추가 상태들 (디버깅용)
     isLoading,

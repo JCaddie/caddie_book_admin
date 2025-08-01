@@ -1,16 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { AdminsApiResponse, getAdmins } from "../api/user-api";
+import { getAdmins } from "../api/user-api";
+import { AdminsApiResponse } from "../types";
 
-/**
- * 관리자 사용자 목록을 가져오는 React Query 훅
- */
-export const useAdminList = () => {
-  return useQuery<AdminsApiResponse, Error>({
-    queryKey: ["admin-list"],
-    queryFn: () => getAdmins(),
+interface UseAdminListParams {
+  search?: string;
+  role?: string;
+  page?: number;
+  page_size?: number;
+}
+
+export const useAdminList = (params?: UseAdminListParams) => {
+  return useQuery<AdminsApiResponse>({
+    queryKey: ["admins", params],
+    queryFn: () => getAdmins(params),
     staleTime: 5 * 60 * 1000, // 5분
-    retry: 3,
-    retryDelay: 1000,
+    gcTime: 10 * 60 * 1000, // 10분
   });
 };
 

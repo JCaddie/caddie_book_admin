@@ -1,7 +1,7 @@
 import { UserRole } from "@/shared/types/user";
 
 // User 타입 정의 (API 응답에 맞게 개선)
-export interface User {
+export interface User extends Record<string, unknown> {
   id: string;
   username: string;
   name: string;
@@ -57,6 +57,7 @@ export interface UserActionBarProps {
   selectedCount: number;
   roleFilter: string;
   onRoleFilterChange: (role: string) => void;
+  onSearch: (searchTerm: string) => void;
   onDeleteSelected: () => void;
   onCreateClick: () => void;
   isDeleting?: boolean;
@@ -75,6 +76,7 @@ export interface UseUserManagementReturn {
   searchTerm: string;
   roleFilter: string;
   currentPage: number;
+  totalCount: number;
 
   // 모달 상태
   isCreateModalOpen: boolean;
@@ -89,23 +91,15 @@ export interface UseUserManagementReturn {
   handleDeleteUsers: () => void;
   handleCreateUser: () => void;
   handleCloseModal: () => void;
-  handleSubmitUser: (userData: {
-    username: string;
-    password: string;
-    password_confirm: string;
-    name: string;
-    phone: string;
-    email: string;
-    golf_course_id: string;
-  }) => void;
+  handleSubmitUser: () => void;
   handleRowClick: (user: User) => void;
-  setSearchTerm: (term: string) => void;
+  setSearchTerm: (search: string) => void;
   setRoleFilter: (role: string) => void;
 
-  // API 상태 (선택적)
-  isLoading?: boolean;
-  error?: Error | null;
-  refetch?: () => void;
+  // 추가 상태들 (디버깅용)
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => void;
 }
 
 // 새로운 캐디 그룹 배정 개요 API 응답 타입

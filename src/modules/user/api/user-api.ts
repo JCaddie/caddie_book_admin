@@ -43,33 +43,36 @@ export const getUsers = async (params?: {
 };
 
 /**
- * 관리자 목록 조회 (기존 API - 하위 호환성)
+ * 관리자 목록 조회 (검색 및 필터링 지원)
  */
 export const getAdmins = async (params?: {
+  search?: string;
+  role?: string;
   page?: number;
   page_size?: number;
-  search?: string;
 }): Promise<AdminsApiResponse> => {
   const searchParams = new URLSearchParams();
-
+  
+  if (params?.search) {
+    searchParams.append("search", params.search);
+  }
+  
+  if (params?.role) {
+    searchParams.append("role", params.role);
+  }
+  
   if (params?.page) {
     searchParams.append("page", params.page.toString());
   }
-
+  
   if (params?.page_size) {
     searchParams.append("page_size", params.page_size.toString());
   }
 
-  if (params?.search) {
-    searchParams.append("search", params.search);
-  }
-
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/users/admins/${
-    queryString ? `?${queryString}` : ""
-  }`;
-
-  return apiClient.get<AdminsApiResponse>(endpoint);
+  const url = `/api/v1/users/admins/${queryString ? `?${queryString}` : ""}`;
+  
+  return apiClient.get(url);
 };
 
 /**
