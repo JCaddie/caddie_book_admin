@@ -8,9 +8,9 @@ import { useDocumentTitle } from "@/shared/hooks";
 import { useUpdateUser, useUserDetail } from "@/modules/user/hooks";
 import {
   EditableDropdownField,
-  EditableField,
   PasswordChangeField,
 } from "@/modules/user/components";
+import { EditableField } from "@/shared/components/forms";
 import { useGolfCoursesSimple } from "@/modules/golf-course/hooks/use-golf-courses-simple";
 
 export default function UserDetailPage() {

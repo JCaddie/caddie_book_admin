@@ -17,21 +17,6 @@ export interface User extends Record<string, unknown> {
   isEmpty?: boolean; // 빈 행 여부
 }
 
-// 새로운 API 응답 타입들
-export interface UserListApiData {
-  count: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-  results: User[];
-}
-
-export interface UserListApiResponse {
-  success: boolean;
-  message: string;
-  data: UserListApiData;
-}
-
 // 기존 API 응답 타입들 (하위 호환성)
 export interface AdminsApiResponse {
   success: boolean;

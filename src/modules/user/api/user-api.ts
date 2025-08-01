@@ -9,44 +9,10 @@ import {
   UpdateAdminRequest,
   UpdateAdminResponse,
   UserDetailApiResponse,
-  UserListApiResponse,
 } from "../types/user";
 
 // 타입들을 다시 export
-export type { AdminsApiResponse, UserDetailApiResponse, UserListApiResponse };
-
-/**
- * 사용자 목록 조회 (새로운 API 형식)
- */
-export const getUsers = async (params?: {
-  page?: number;
-  page_size?: number;
-  search?: string;
-  role?: string;
-}): Promise<UserListApiResponse> => {
-  const searchParams = new URLSearchParams();
-
-  if (params?.page) {
-    searchParams.append("page", params.page.toString());
-  }
-
-  if (params?.page_size) {
-    searchParams.append("page_size", params.page_size.toString());
-  }
-
-  if (params?.search) {
-    searchParams.append("search", params.search);
-  }
-
-  if (params?.role) {
-    searchParams.append("role", params.role);
-  }
-
-  const queryString = searchParams.toString();
-  const endpoint = `/api/v1/users/${queryString ? `?${queryString}` : ""}`;
-
-  return apiClient.get<UserListApiResponse>(endpoint);
-};
+export type { AdminsApiResponse, UserDetailApiResponse };
 
 /**
  * 관리자 목록 조회 (검색 및 필터링 지원)
