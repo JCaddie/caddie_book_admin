@@ -112,9 +112,9 @@ export const useUpdateUserPassword = () => {
       throw new Error("사용자 비밀번호 수정 기능이 아직 구현되지 않았습니다.");
     },
     onSuccess: () => {
-      // 개별 사용자 상세 쿼리 무효화
+      // 개별 어드민 상세 쿼리 무효화
       queryClient.invalidateQueries({
-        queryKey: ["admin-detail"],
+        queryKey: ["admins", "detail"],
       });
     },
     onError: (error) => {

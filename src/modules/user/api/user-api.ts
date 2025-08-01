@@ -80,12 +80,12 @@ export const getAdmins = async (params?: {
 };
 
 /**
- * 사용자 상세 조회
+ * 어드민 상세 조회
  */
 export const getUserDetail = async (
   userId: string
 ): Promise<UserDetailApiResponse> => {
-  return apiClient.get<UserDetailApiResponse>(`/api/v1/users/${userId}/`);
+  return apiClient.get<UserDetailApiResponse>(`/api/v1/users/admins/${userId}/`);
 };
 
 /**

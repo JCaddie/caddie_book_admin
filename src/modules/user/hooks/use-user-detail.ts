@@ -3,11 +3,11 @@ import { getUserDetail } from "../api/user-api";
 import { User } from "../types";
 
 /**
- * 사용자 상세 정보를 가져오는 React Query 훅
+ * 어드민 상세 정보를 가져오는 React Query 훅
  */
 export const useUserDetail = (userId: string) => {
   return useQuery<User, Error>({
-    queryKey: ["admin-detail", userId],
+    queryKey: ["admins", "detail", userId],
     queryFn: async () => {
       const response = await getUserDetail(userId);
       return response.data;
@@ -20,7 +20,7 @@ export const useUserDetail = (userId: string) => {
 };
 
 /**
- * 사용자 상세 쿼리 키 생성 함수
+ * 어드민 상세 쿼리 키 생성 함수
  */
 export const getUserDetailQueryKey = (userId: string) =>
-  ["admin-detail", userId] as const;
+  ["admins", "detail", userId] as const;
