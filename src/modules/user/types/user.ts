@@ -1,30 +1,48 @@
 import { UserRole } from "@/shared/types/user";
 
-// User 타입 정의 (Record<string, unknown>을 확장)
-export interface User extends Record<string, unknown> {
+// User 타입 정의 (API 응답에 맞게 개선)
+export interface User {
   id: string;
-  username?: string; // API 응답에는 없지만 기존 코드 호환성을 위해 선택적으로 유지
+  username: string;
   name: string;
-  phone: string;
   email: string;
+  phone: string;
   role: UserRole;
   role_display: string;
   golf_course_id: string | null;
   golf_course_name: string | null;
+  is_active: boolean;
   created_at: string;
   no?: number; // 페이지네이션을 위한 번호 필드
   isEmpty?: boolean; // 빈 행 여부
 }
 
-// API 응답 타입들
-export interface AdminsApiResponse {
-  success: boolean;
-  message: string;
+// 새로운 API 응답 타입들
+export interface UserListApiData {
   count: number;
   page: number;
   page_size: number;
   total_pages: number;
   results: User[];
+}
+
+export interface UserListApiResponse {
+  success: boolean;
+  message: string;
+  data: UserListApiData;
+}
+
+// 기존 API 응답 타입들 (하위 호환성)
+export interface AdminsApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    count: number;
+    page: number;
+    page_size: number;
+    total_pages: number;
+    results: User[];
+  };
 }
 
 export interface UserDetailApiResponse {

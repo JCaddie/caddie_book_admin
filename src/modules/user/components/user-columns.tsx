@@ -18,6 +18,21 @@ const renderRole = (value: unknown, record: User): React.ReactNode => {
   return roleRenderer(label, record);
 };
 
+// 활성 상태 렌더러
+const renderActiveStatus = (value: unknown, record: User): React.ReactNode => {
+  if (record.isEmpty) return null;
+  const isActive = value as boolean;
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+        isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+      }`}
+    >
+      {isActive ? "활성" : "비활성"}
+    </span>
+  );
+};
+
 // 테이블 컬럼 정의
 export const userColumns: Column<User>[] = [
   {
@@ -25,33 +40,40 @@ export const userColumns: Column<User>[] = [
     title: "No.",
     width: 80,
     align: "center",
-    render: basicRenderers.index, // 🎉 중복 제거!
+    render: basicRenderers.index,
+  },
+  {
+    key: "username",
+    title: "아이디",
+    width: 140,
+    align: "center",
+    render: basicRenderers.text,
   },
   {
     key: "name",
     title: "이름",
-    width: 160,
+    width: 120,
     align: "center",
-    render: basicRenderers.text, // 🎉 중복 제거!
+    render: basicRenderers.text,
   },
   {
     key: "phone",
     title: "연락처",
-    width: 160,
+    width: 140,
     align: "center",
-    render: basicRenderers.phone, // 🎉 전화번호 포맷팅까지!
+    render: basicRenderers.phone,
   },
   {
     key: "email",
     title: "이메일",
-    width: 280,
+    width: 220,
     align: "center",
-    render: basicRenderers.email, // 🎉 이메일 스타일링까지!
+    render: basicRenderers.email,
   },
   {
     key: "golf_course_name",
     title: "골프장",
-    width: 200,
+    width: 160,
     align: "center",
     render: (value: unknown, record: User): React.ReactNode => {
       if (record.isEmpty) return null;
@@ -66,14 +88,21 @@ export const userColumns: Column<User>[] = [
   {
     key: "role",
     title: "권한",
-    width: 120,
+    width: 100,
     align: "center",
-    render: renderRole, // 커스텀 라벨 매핑
+    render: renderRole,
+  },
+  {
+    key: "is_active",
+    title: "상태",
+    width: 100,
+    align: "center",
+    render: renderActiveStatus,
   },
   {
     key: "created_at",
     title: "생성일",
-    width: 160,
+    width: 140,
     align: "center",
     render: (value: unknown, record: User): React.ReactNode => {
       if (record.isEmpty) return null;

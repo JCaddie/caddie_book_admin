@@ -4,6 +4,7 @@ import { ITEMS_PER_PAGE } from "../constants";
 import { usePagination } from "@/shared/hooks";
 import { useAdminList } from "./use-admin-list";
 import { useCreateUser, useDeleteUsers } from "./use-user-mutations";
+import { addNumberToUsers, filterUsersByRole, searchUsers } from "../utils";
 
 // 사용자 관리 훅
 export const useUserManagement = (): UseUserManagementReturn => {
@@ -19,34 +20,33 @@ export const useUserManagement = (): UseUserManagementReturn => {
   const [roleFilter, setRoleFilter] = React.useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
-  // API 응답에서 사용자 데이터 추출 (fallback으로 빈 배열 사용)
+  // API 응답에서 사용자 데이터 추출
   const allUsers = React.useMemo(() => {
     if (!adminData) return [];
 
-    // API 응답 형태: { success, message, count, page, page_size, total_pages, results }
-    if (adminData.results && Array.isArray(adminData.results)) {
-      return adminData.results;
+    // 새로운 API 응답 형태: { success, message, data: { count, page, page_size, total_pages, results } }
+    if (adminData.data && adminData.data.results && Array.isArray(adminData.data.results)) {
+      return adminData.data.results as User[];
     }
 
     return [];
   }, [adminData]);
 
-  // 필터링된 데이터
+  // 검색 및 필터링된 데이터
   const filteredData = React.useMemo(() => {
-    return allUsers.filter((user) => {
-      const matchesSearch =
-        !searchTerm ||
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.golf_course_name &&
-          user.golf_course_name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()));
+    let filtered = allUsers;
 
-      const matchesRole = !roleFilter || user.role === roleFilter;
+    // 검색 필터링
+    if (searchTerm) {
+      filtered = searchUsers(filtered, searchTerm);
+    }
 
-      return matchesSearch && matchesRole;
-    });
+    // 역할 필터링
+    if (roleFilter) {
+      filtered = filterUsersByRole(filtered, roleFilter);
+    }
+
+    return filtered;
   }, [allUsers, searchTerm, roleFilter]);
 
   // 페이지네이션
@@ -62,11 +62,7 @@ export const useUserManagement = (): UseUserManagementReturn => {
 
   // 페이지네이션된 데이터에 번호 추가
   const paginatedData = React.useMemo(() => {
-    const startIndex = (paginationPage - 1) * ITEMS_PER_PAGE;
-    return currentData.map((user, index) => ({
-      ...user,
-      no: startIndex + index + 1, // 페이지네이션을 고려한 번호 계산
-    }));
+    return addNumberToUsers(currentData, paginationPage, ITEMS_PER_PAGE);
   }, [currentData, paginationPage]);
 
   // 액션 핸들러들
