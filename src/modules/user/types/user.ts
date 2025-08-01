@@ -1,30 +1,33 @@
 import { UserRole } from "@/shared/types/user";
 
-// User 타입 정의 (Record<string, unknown>을 확장)
+// User 타입 정의 (API 응답에 맞게 개선)
 export interface User extends Record<string, unknown> {
   id: string;
-  username?: string; // API 응답에는 없지만 기존 코드 호환성을 위해 선택적으로 유지
+  username: string;
   name: string;
-  phone: string;
   email: string;
+  phone: string;
   role: UserRole;
   role_display: string;
   golf_course_id: string | null;
   golf_course_name: string | null;
+  is_active: boolean;
   created_at: string;
   no?: number; // 페이지네이션을 위한 번호 필드
   isEmpty?: boolean; // 빈 행 여부
 }
 
-// API 응답 타입들
+// 기존 API 응답 타입들 (하위 호환성)
 export interface AdminsApiResponse {
   success: boolean;
   message: string;
-  count: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-  results: User[];
+  data: {
+    count: number;
+    page: number;
+    page_size: number;
+    total_pages: number;
+    results: User[];
+  };
 }
 
 export interface UserDetailApiResponse {
@@ -33,12 +36,100 @@ export interface UserDetailApiResponse {
   data: User;
 }
 
+// 어드민 생성 요청 타입
+export interface CreateAdminRequest {
+  username: string;
+  name: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+  role: UserRole;
+  golf_course_id: string;
+}
+
+// 어드민 생성 성공 응답 타입
+export interface CreateAdminSuccessResponse {
+  success: true;
+  message: string;
+  data: User;
+}
+
+// 어드민 생성 실패 응답 타입
+export interface CreateAdminErrorResponse {
+  success: false;
+  message: string;
+  error_code?: string;
+  non_field_errors?: string[];
+}
+
+// 어드민 생성 응답 타입 (성공/실패 모두 포함)
+export type CreateAdminResponse =
+  | CreateAdminSuccessResponse
+  | CreateAdminErrorResponse;
+
+// 어드민 벌크 삭제 요청 타입
+export interface BulkDeleteAdminsRequest {
+  ids: string[];
+}
+
+// 어드민 벌크 삭제 성공 응답 타입
+export interface BulkDeleteAdminsSuccessResponse {
+  success: true;
+  message: string;
+  data: {
+    deleted_count: number;
+  };
+}
+
+// 어드민 벌크 삭제 실패 응답 타입
+export interface BulkDeleteAdminsErrorResponse {
+  success: false;
+  message: string;
+  error_code: string;
+}
+
+// 어드민 벌크 삭제 응답 타입 (성공/실패 모두 포함)
+export type BulkDeleteAdminsResponse =
+  | BulkDeleteAdminsSuccessResponse
+  | BulkDeleteAdminsErrorResponse;
+
+// 어드민 수정 요청 타입
+export interface UpdateAdminRequest {
+  name?: string;
+  email?: string;
+  is_active?: boolean;
+  golf_course_id?: string;
+  password?: string;
+  password_confirm?: string;
+}
+
+// 어드민 수정 성공 응답 타입
+export interface UpdateAdminSuccessResponse {
+  success: true;
+  message: string;
+  data: User;
+}
+
+// 어드민 수정 실패 응답 타입
+export interface UpdateAdminErrorResponse {
+  success: false;
+  message: string;
+  error_code?: string;
+  non_field_errors?: string[];
+}
+
+// 어드민 수정 응답 타입 (성공/실패 모두 포함)
+export type UpdateAdminResponse =
+  | UpdateAdminSuccessResponse
+  | UpdateAdminErrorResponse;
+
 // 액션바 Props 타입
 export interface UserActionBarProps {
   totalCount: number;
   selectedCount: number;
   roleFilter: string;
   onRoleFilterChange: (role: string) => void;
+  onSearch: (searchTerm: string) => void;
   onDeleteSelected: () => void;
   onCreateClick: () => void;
   isDeleting?: boolean;
@@ -57,6 +148,7 @@ export interface UseUserManagementReturn {
   searchTerm: string;
   roleFilter: string;
   currentPage: number;
+  totalCount: number;
 
   // 모달 상태
   isCreateModalOpen: boolean;
@@ -71,23 +163,15 @@ export interface UseUserManagementReturn {
   handleDeleteUsers: () => void;
   handleCreateUser: () => void;
   handleCloseModal: () => void;
-  handleSubmitUser: (userData: {
-    username: string;
-    password: string;
-    password_confirm: string;
-    name: string;
-    phone: string;
-    email: string;
-    golf_course_id: string;
-  }) => void;
+  handleSubmitUser: (userData: CreateAdminRequest) => Promise<void>;
   handleRowClick: (user: User) => void;
-  setSearchTerm: (term: string) => void;
+  setSearchTerm: (search: string) => void;
   setRoleFilter: (role: string) => void;
 
-  // API 상태 (선택적)
-  isLoading?: boolean;
-  error?: Error | null;
-  refetch?: () => void;
+  // 추가 상태들 (디버깅용)
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => void;
 }
 
 // 새로운 캐디 그룹 배정 개요 API 응답 타입

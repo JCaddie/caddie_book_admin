@@ -8,6 +8,26 @@ interface BaseApiResponse {
   message: string;
 }
 
+// 캐디 간소 정보 (드롭다운용)
+export interface CaddieSimple {
+  id: string;
+  name: string;
+  golf_course_name: string;
+}
+
+// 캐디 간소 목록 API 응답
+export interface CaddieSimpleResponse {
+  success: boolean;
+  message: string;
+  data: {
+    count: number;
+    page: number;
+    page_size: number;
+    total_pages: number;
+    results: CaddieSimple[];
+  };
+}
+
 // 캐디 목록 API 응답 데이터
 export interface CaddieListData {
   count: number;

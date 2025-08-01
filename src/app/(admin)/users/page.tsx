@@ -11,6 +11,7 @@ import {
   UserCreateModal,
 } from "@/modules/user/components";
 import { USER_TABLE_CONFIG } from "@/modules/user/constants";
+import { User } from "@/modules/user/types";
 
 export default function UsersPage() {
   useDocumentTitle({ title: "사용자 관리" });
@@ -26,6 +27,7 @@ export default function UsersPage() {
     isDeleting,
     roleFilter,
     totalPages,
+    totalCount,
 
     // 모달 상태
     isCreateModalOpen,
@@ -39,6 +41,7 @@ export default function UsersPage() {
     handleSubmitUser,
     handleRowClick,
     setRoleFilter,
+    setSearchTerm,
   } = useUserManagement();
 
   return (
@@ -46,17 +49,18 @@ export default function UsersPage() {
       <AdminPageHeader title="사용자 관리" />
 
       <UserActionBar
-        totalCount={filteredData.length}
+        totalCount={totalCount}
         selectedCount={selectedRowKeys.length}
         roleFilter={roleFilter}
         onRoleFilterChange={setRoleFilter}
+        onSearch={setSearchTerm}
         onDeleteSelected={handleDeleteUsers}
         onCreateClick={handleCreateUser}
         isDeleting={isDeleting}
       />
 
       <div className="space-y-6">
-        <SelectableDataTable
+        <SelectableDataTable<User>
           columns={userColumns}
           data={currentData}
           selectable

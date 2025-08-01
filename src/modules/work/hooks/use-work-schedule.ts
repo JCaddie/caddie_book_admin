@@ -1,5 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CaddieData, WorkSchedule, WorkSlot, WorkTimeSlot } from "../types";
+import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
+import { useQueryError } from "@/shared/hooks/use-query-error";
 import {
   assignCaddieToSlot,
   createWorkSchedule,
@@ -18,27 +21,28 @@ export const useWorkSchedule = ({
   golfCourseId,
   date,
 }: UseWorkScheduleProps) => {
-  const [schedule, setSchedule] = useState<WorkSchedule | null>(null);
-  const [timeSlots, setTimeSlots] = useState<WorkTimeSlot[]>([]);
-  const [workSlots, setWorkSlots] = useState<WorkSlot[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // 근무표 조회
-  const fetchSchedule = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
+  // React Query를 사용한 스케줄 데이터 페칭
+  const {
+    data: scheduleData,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: [CACHE_KEYS.WORK_SCHEDULE, golfCourseId, date],
+    queryFn: async () => {
       const data = await fetchWorkSchedule(golfCourseId, date);
-      setSchedule(data);
 
       // 시간 슬롯과 근무 슬롯도 함께 조회
-      const timeSlotsData = await fetchWorkTimeSlots(data.id);
-      const workSlotsData = await fetchWorkSlots(data.id);
+      const [timeSlotsData, workSlotsData] = await Promise.all([
+        fetchWorkTimeSlots(data.id),
+        fetchWorkSlots(data.id),
+      ]);
 
-      setTimeSlots(
-        timeSlotsData.map((slot) => ({
+      return {
+        schedule: data,
+        timeSlots: timeSlotsData.map((slot) => ({
           id: slot.id,
           partId: slot.part, // 실제 partId 필드명에 맞게 수정 필요
           partNumber: slot.part_number,
@@ -50,10 +54,8 @@ export const useWorkSchedule = ({
           status: slot.status,
           createdAt: slot.created_at,
           updatedAt: slot.updated_at,
-        }))
-      );
-      setWorkSlots(
-        workSlotsData.map((slot) => ({
+        })),
+        workSlots: workSlotsData.map((slot) => ({
           id: slot.id,
           timeSlotId: slot.time_slot,
           timeSlotStartTime: slot.time_slot_start_time,
@@ -71,19 +73,29 @@ export const useWorkSchedule = ({
           notes: slot.notes ?? "",
           createdAt: slot.created_at,
           updatedAt: slot.updated_at,
-        }))
-      );
+        })),
+      };
+    },
+    enabled: !!(golfCourseId && date),
+    ...QUERY_CONFIG.REALTIME_OPTIONS,
+  });
 
-      return data;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "근무표 조회에 실패했습니다.";
-      setError(errorMessage);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [golfCourseId, date]);
+  // 데이터 추출
+  const schedule = scheduleData?.schedule || null;
+  const timeSlots = scheduleData?.timeSlots || [];
+  const workSlots = scheduleData?.workSlots || [];
+
+  // 표준화된 에러 처리
+  const error = useQueryError(
+    queryError,
+    "스케줄 조회 중 오류가 발생했습니다."
+  );
+
+  // 기존 인터페이스 호환성을 위한 fetchSchedule 함수
+  const fetchSchedule = useCallback(async () => {
+    const result = await refetch();
+    return result.data?.schedule;
+  }, [refetch]);
 
   // 근무표 생성
   const createSchedule = useCallback(async () => {

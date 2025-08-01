@@ -1,7 +1,13 @@
 import { apiClient } from "@/shared/lib/api-client";
 import {
   AdminsApiResponse,
+  BulkDeleteAdminsRequest,
+  BulkDeleteAdminsResponse,
   CaddieAssignmentOverviewResponse,
+  CreateAdminRequest,
+  CreateAdminResponse,
+  UpdateAdminRequest,
+  UpdateAdminResponse,
   UserDetailApiResponse,
 } from "../types/user";
 
@@ -9,14 +15,23 @@ import {
 export type { AdminsApiResponse, UserDetailApiResponse };
 
 /**
- * 관리자 목록 조회
+ * 관리자 목록 조회 (검색 및 필터링 지원)
  */
 export const getAdmins = async (params?: {
+  search?: string;
+  role?: string;
   page?: number;
   page_size?: number;
-  search?: string;
 }): Promise<AdminsApiResponse> => {
   const searchParams = new URLSearchParams();
+
+  if (params?.search) {
+    searchParams.append("search", params.search);
+  }
+
+  if (params?.role) {
+    searchParams.append("role", params.role);
+  }
 
   if (params?.page) {
     searchParams.append("page", params.page.toString());
@@ -26,25 +41,21 @@ export const getAdmins = async (params?: {
     searchParams.append("page_size", params.page_size.toString());
   }
 
-  if (params?.search) {
-    searchParams.append("search", params.search);
-  }
-
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/users/admins/${
-    queryString ? `?${queryString}` : ""
-  }`;
+  const url = `/api/v1/users/admins/${queryString ? `?${queryString}` : ""}`;
 
-  return apiClient.get<AdminsApiResponse>(endpoint);
+  return apiClient.get(url);
 };
 
 /**
- * 사용자 상세 조회
+ * 어드민 상세 조회
  */
 export const getUserDetail = async (
   userId: string
 ): Promise<UserDetailApiResponse> => {
-  return apiClient.get<UserDetailApiResponse>(`/api/v1/users/${userId}/`);
+  return apiClient.get<UserDetailApiResponse>(
+    `/api/v1/users/admins/${userId}/`
+  );
 };
 
 /**
@@ -69,6 +80,30 @@ export const getCaddieAssignmentOverview = async (
   }`;
 
   return apiClient.get<CaddieAssignmentOverviewResponse>(endpoint);
+};
+
+// 어드민 생성
+export const createAdmin = async (
+  data: CreateAdminRequest
+): Promise<CreateAdminResponse> => {
+  return apiClient.post("/api/v1/users/admins/", data);
+};
+
+// 어드민 벌크 삭제
+export const bulkDeleteAdmins = async (
+  data: BulkDeleteAdminsRequest
+): Promise<BulkDeleteAdminsResponse> => {
+  return apiClient.delete("/api/v1/users/admins/bulk-delete/", {
+    body: JSON.stringify(data),
+  });
+};
+
+// 어드민 수정
+export const updateAdmin = async (
+  userId: string,
+  data: UpdateAdminRequest
+): Promise<UpdateAdminResponse> => {
+  return apiClient.patch(`/api/v1/users/admins/${userId}/`, data);
 };
 
 /**

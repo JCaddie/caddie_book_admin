@@ -16,6 +16,7 @@ export interface AnnouncementFormData {
   title: string;
   content: string;
   isPublished: boolean;
+  announcementType?: string;
   category?: AnnouncementCategory;
   priority?: AnnouncementPriority;
   isPinned?: boolean;

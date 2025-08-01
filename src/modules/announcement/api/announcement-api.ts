@@ -2,6 +2,7 @@ import { apiClient } from "@/shared/lib/api-client";
 import type {
   Announcement,
   AnnouncementDetailApiData,
+  AnnouncementDetailApiResponse,
   AnnouncementFilters,
   AnnouncementListApiResponse,
   CreateAnnouncementData,
@@ -57,6 +58,7 @@ export const createAnnouncement = async (
   const requestData = {
     title: data.title,
     content: data.content,
+    announcement_type: data.announcementType,
     is_published: data.isPublished,
     ...(data.category && { category: data.category }),
     ...(data.priority && { priority: data.priority }),
@@ -65,13 +67,13 @@ export const createAnnouncement = async (
     ...(data.validUntil && { valid_until: data.validUntil }),
   };
 
-  const response = await apiClient.post<AnnouncementDetailApiData>(
+  const response = await apiClient.post<AnnouncementDetailApiResponse>(
     ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENTS,
     requestData
   );
 
   // 응답 데이터를 프론트엔드 형식으로 변환
-  return transformAnnouncementDetailApiData(response);
+  return transformAnnouncementDetailApiData(response.data);
 };
 
 /**
@@ -88,19 +90,21 @@ export const updateAnnouncement = async (
   if (data.content !== undefined) requestData.content = data.content;
   if (data.isPublished !== undefined)
     requestData.is_published = data.isPublished;
+  if (data.announcementType !== undefined)
+    requestData.announcement_type = data.announcementType;
   if (data.category !== undefined) requestData.category = data.category;
   if (data.priority !== undefined) requestData.priority = data.priority;
   if (data.isPinned !== undefined) requestData.is_pinned = data.isPinned;
   if (data.validFrom !== undefined) requestData.valid_from = data.validFrom;
   if (data.validUntil !== undefined) requestData.valid_until = data.validUntil;
 
-  const response = await apiClient.patch<AnnouncementDetailApiData>(
+  const response = await apiClient.patch<AnnouncementDetailApiResponse>(
     ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_DETAIL(id),
     requestData
   );
 
   // 응답 데이터를 프론트엔드 형식으로 변환
-  return transformAnnouncementDetailApiData(response);
+  return transformAnnouncementDetailApiData(response.data);
 };
 
 /**
@@ -128,11 +132,11 @@ export const deleteAnnouncements = async (ids: string[]): Promise<void> => {
 export const publishAnnouncement = async (
   id: string
 ): Promise<Announcement> => {
-  const response = await apiClient.post<AnnouncementDetailApiData>(
+  const response = await apiClient.post<AnnouncementDetailApiResponse>(
     ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_PUBLISH(id)
   );
 
-  return transformAnnouncementDetailApiData(response);
+  return transformAnnouncementDetailApiData(response.data);
 };
 
 /**
@@ -141,9 +145,9 @@ export const publishAnnouncement = async (
 export const unpublishAnnouncement = async (
   id: string
 ): Promise<Announcement> => {
-  const response = await apiClient.post<AnnouncementDetailApiData>(
+  const response = await apiClient.post<AnnouncementDetailApiResponse>(
     ANNOUNCEMENT_CONSTANTS.API.ENDPOINTS.ANNOUNCEMENT_UNPUBLISH(id)
   );
 
-  return transformAnnouncementDetailApiData(response);
+  return transformAnnouncementDetailApiData(response.data);
 };

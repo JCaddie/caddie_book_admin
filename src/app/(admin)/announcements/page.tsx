@@ -1,28 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { Pagination, SelectableDataTable } from "@/shared/components/ui";
 import { useAnnouncementList } from "@/modules/announcement/hooks";
 import {
   AnnouncementActionBar,
+  AnnouncementCreateModal,
   useAnnouncementColumns,
 } from "@/modules/announcement/components";
-import { AnnouncementWithNo } from "@/modules/announcement/types";
+import { Announcement, AnnouncementWithNo } from "@/modules/announcement/types";
 import { isValidAnnouncement } from "@/modules/announcement/utils";
-import { useGolfCourseFilter } from "@/shared/hooks";
+import { createAnnouncement } from "@/modules/announcement/api/announcement-api";
 
 const AnnouncementsPage: React.FC = () => {
   const router = useRouter();
-
-  // 골프장 필터링 (MASTER 권한에서만 사용, UI만 제공)
-  const {
-    selectedGolfCourseId,
-    searchTerm: golfCourseSearchTerm,
-    handleGolfCourseChange,
-    handleSearchChange: handleGolfCourseSearchChange,
-  } = useGolfCourseFilter();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // 컬럼 정의 (메모이제이션)
   const columns = useAnnouncementColumns();
@@ -39,11 +33,34 @@ const AnnouncementsPage: React.FC = () => {
     isDeleting,
     error,
     clearError,
+    refetch,
   } = useAnnouncementList();
 
-  // 새 공지사항 생성 페이지로 이동
+  // 새 공지사항 생성 모달 열기
   const handleCreateNew = () => {
-    router.push("/announcements/new");
+    setIsCreateModalOpen(true);
+  };
+
+  // 공지사항 생성 처리
+  const handleCreateAnnouncement = async (
+    data: Omit<
+      Announcement,
+      "id" | "createdAt" | "updatedAt" | "views" | "files"
+    >
+  ) => {
+    try {
+      await createAnnouncement({
+        title: data.title,
+        content: data.content,
+        announcementType: data.announcementType,
+        isPublished: data.isPublished,
+      });
+      // 생성 후 목록 새로고침
+      await refetch();
+    } catch (error) {
+      console.error("공지사항 생성 실패:", error);
+      throw error;
+    }
   };
 
   // 공지사항 상세 페이지로 이동
@@ -81,10 +98,6 @@ const AnnouncementsPage: React.FC = () => {
         onDeleteSelected={deleteSelectedAnnouncements}
         onCreateNew={handleCreateNew}
         isDeleting={isDeleting}
-        selectedGolfCourseId={selectedGolfCourseId}
-        golfCourseSearchTerm={golfCourseSearchTerm}
-        onGolfCourseChange={handleGolfCourseChange}
-        onGolfCourseSearchChange={handleGolfCourseSearchChange}
       />
 
       {/* 에러 메시지 표시 */}
@@ -121,6 +134,14 @@ const AnnouncementsPage: React.FC = () => {
 
         {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
+
+      {/* 공지사항 생성 모달 */}
+      <AnnouncementCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateAnnouncement}
+        isLoading={false}
+      />
     </div>
   );
 };

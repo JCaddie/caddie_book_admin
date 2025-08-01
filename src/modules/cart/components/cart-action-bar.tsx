@@ -35,7 +35,6 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
     onCreateNew,
     isDeleting = false,
     selectedGolfCourseId = "",
-    golfCourseSearchTerm = "",
     onGolfCourseChange,
     onGolfCourseSearchChange,
   }) => {
@@ -68,24 +67,7 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
     return (
       <>
         <div className="space-y-4">
-          {/* MASTER 권한일 때만 골프장 선택 영역 표시 */}
-          {isMaster && onGolfCourseChange && onGolfCourseSearchChange && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-base font-bold text-black">
-                  골프장 선택
-                </span>
-              </div>
-              <GolfCourseSelector
-                selectedGolfCourseId={selectedGolfCourseId}
-                searchTerm={golfCourseSearchTerm}
-                onGolfCourseChange={onGolfCourseChange}
-                onSearchChange={onGolfCourseSearchChange}
-              />
-            </div>
-          )}
-
-          {/* 기존 액션바 영역 */}
+          {/* 액션바 영역 */}
           <div className="flex items-center justify-between">
             {/* 좌측: 총 건수 */}
             <div className="flex items-center gap-3">
@@ -94,8 +76,16 @@ const CartActionBar: React.FC<CartActionBarProps> = memo(
               </span>
             </div>
 
-            {/* 우측: 검색창과 버튼들 */}
+            {/* 우측: 골프장 선택기(MASTER 권한일 때만), 검색창, 버튼들 */}
             <div className="flex items-center gap-8">
+              {/* MASTER 권한일 때만 골프장 선택기 표시 */}
+              {isMaster && onGolfCourseChange && onGolfCourseSearchChange && (
+                <GolfCourseSelector
+                  selectedGolfCourseId={selectedGolfCourseId}
+                  onGolfCourseChange={onGolfCourseChange}
+                />
+              )}
+
               {/* 검색창 */}
               <SearchWithButton placeholder="카트명, 골프장명 검색" />
 

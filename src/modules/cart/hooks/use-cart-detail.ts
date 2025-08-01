@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ApiCartDetailResponse, CartDetail, CartHistoryItem } from "../types";
+import { CartDetail, CartHistoryItem } from "../types";
 import { fetchCartDetail, fetchCartHistories } from "../api/cart-api";
 import {
   mapApiCartDetailToCartDetail,
@@ -41,10 +41,14 @@ export const useCartDetail = ({
   const [cartDetail, setCartDetail] = useState<CartDetail>({
     id: "",
     name: "",
-    status: "대기",
-    fieldName: "",
+    status: "",
+    location: "",
     managerName: "",
     golfCourseName: "",
+    golfCourseId: "",
+    batteryLevel: 0,
+    batteryStatus: "",
+    isAvailable: false,
     createdAt: "",
     updatedAt: "",
   });
@@ -64,9 +68,7 @@ export const useCartDetail = ({
       const response = await fetchCartDetail(cartId);
 
       // 카트 상세 정보 매핑
-      const mappedCartDetail = mapApiCartDetailToCartDetail(
-        response as unknown as ApiCartDetailResponse
-      );
+      const mappedCartDetail = mapApiCartDetailToCartDetail(response);
       setCartDetail(mappedCartDetail);
     } catch (err) {
       const errorMessage =
@@ -93,10 +95,10 @@ export const useCartDetail = ({
 
       // 이력 데이터 매핑
       const mappedHistories = mapApiCartHistoriesToCartHistories(
-        response.results
+        response.data?.results || []
       );
       setHistoryData(mappedHistories);
-      setTotalPages(response.total_pages);
+      setTotalPages(response.data?.total_pages || 1);
     } catch (err) {
       const errorMessage =
         err instanceof Error

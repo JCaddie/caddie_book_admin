@@ -29,10 +29,10 @@ export const useCartColumns = (): Column<Cart>[] => {
         render: basicRenderers.text, // 🎉 일반 텍스트로 변경!
       },
       {
-        key: "fieldName",
+        key: "location",
         title: "필드명",
-        width: CART_COLUMN_WIDTHS.fieldName,
-        render: basicRenderers.text, // 🎉 중복 제거!
+        width: CART_COLUMN_WIDTHS.location || CART_COLUMN_WIDTHS.fieldName,
+        render: basicRenderers.text,
       },
       {
         key: "golfCourseName",
@@ -45,6 +45,24 @@ export const useCartColumns = (): Column<Cart>[] => {
         title: "담당자",
         width: CART_COLUMN_WIDTHS.managerName,
         render: basicRenderers.text, // 🎉 중복 제거!
+      },
+      {
+        key: "batteryLevel",
+        title: "배터리 레벨",
+        width: CART_COLUMN_WIDTHS.batteryLevel || 100,
+        render: (value: unknown) => `${value}%`,
+      },
+      {
+        key: "batteryStatus",
+        title: "배터리 상태",
+        width: CART_COLUMN_WIDTHS.batteryStatus || 100,
+        render: basicRenderers.text,
+      },
+      {
+        key: "isAvailable",
+        title: "사용 가능",
+        width: CART_COLUMN_WIDTHS.isAvailable || 100,
+        render: (value: unknown) => (value ? "가능" : "불가능"),
       },
     ],
     []
