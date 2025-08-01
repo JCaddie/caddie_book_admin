@@ -49,6 +49,11 @@ export const transformAnnouncementDetailApiData = (
     updatedAt: apiData.updated_at,
     authorId: apiData.author,
     authorName: apiData.author_name,
+    golfCourseId: apiData.golf_course,
+    golfCourseName: apiData.golf_course_name,
+    targetGroup: apiData.target_group,
+    announcementType: apiData.announcement_type,
+    announcementTypeDisplay: apiData.announcement_type_display,
   };
 };
 

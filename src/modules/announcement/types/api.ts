@@ -38,8 +38,18 @@ export interface AnnouncementDetailApiData {
   author_name: string;
   golf_course: string;
   golf_course_name: string;
+  target_group: string | null;
+  announcement_type: string;
+  announcement_type_display: string;
   created_at: string;
   updated_at: string;
+}
+
+// 공지사항 상세 API 응답 구조 (data 래퍼 포함)
+export interface AnnouncementDetailApiResponse {
+  success: boolean;
+  message: string;
+  data: AnnouncementDetailApiData;
 }
 
 // 공지사항 목록 API 응답 데이터
@@ -79,6 +89,7 @@ export interface UpdateAnnouncementRequest {
   title?: string;
   content?: string;
   is_published?: boolean;
+  announcement_type?: string;
   category?: AnnouncementCategory;
   priority?: AnnouncementPriority;
   is_pinned?: boolean;

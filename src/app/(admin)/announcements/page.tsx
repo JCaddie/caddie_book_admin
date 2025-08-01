@@ -1,19 +1,21 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { Pagination, SelectableDataTable } from "@/shared/components/ui";
 import { useAnnouncementList } from "@/modules/announcement/hooks";
 import {
   AnnouncementActionBar,
+  AnnouncementCreateModal,
   useAnnouncementColumns,
 } from "@/modules/announcement/components";
-import { AnnouncementWithNo } from "@/modules/announcement/types";
+import { Announcement, AnnouncementWithNo } from "@/modules/announcement/types";
 import { isValidAnnouncement } from "@/modules/announcement/utils";
 
 const AnnouncementsPage: React.FC = () => {
   const router = useRouter();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // 컬럼 정의 (메모이제이션)
   const columns = useAnnouncementColumns();
@@ -32,9 +34,27 @@ const AnnouncementsPage: React.FC = () => {
     clearError,
   } = useAnnouncementList();
 
-  // 새 공지사항 생성 페이지로 이동
+  // 새 공지사항 생성 모달 열기
   const handleCreateNew = () => {
-    router.push("/announcements/new");
+    setIsCreateModalOpen(true);
+  };
+
+  // 공지사항 생성 처리
+  const handleCreateAnnouncement = async (
+    data: Omit<
+      Announcement,
+      "id" | "createdAt" | "updatedAt" | "views" | "files"
+    >
+  ) => {
+    try {
+      // TODO: 실제 API 호출
+      console.log("공지사항 생성:", data);
+      // 생성 후 목록 새로고침
+      // await loadAnnouncements();
+    } catch (error) {
+      console.error("공지사항 생성 실패:", error);
+      throw error;
+    }
   };
 
   // 공지사항 상세 페이지로 이동
@@ -108,6 +128,14 @@ const AnnouncementsPage: React.FC = () => {
 
         {totalPages > 1 && <Pagination totalPages={totalPages} />}
       </div>
+
+      {/* 공지사항 생성 모달 */}
+      <AnnouncementCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateAnnouncement}
+        isLoading={false}
+      />
     </div>
   );
 };

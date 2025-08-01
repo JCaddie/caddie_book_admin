@@ -6,6 +6,12 @@
 export { default as AnnouncementActionBar } from "./announcement-action-bar";
 export { useAnnouncementColumns } from "./announcement-columns";
 
+// 모달 관련 컴포넌트들
+export { default as AnnouncementCreateModal } from "./announcement-create-modal";
+
+// 편집 가능한 필드 컴포넌트
+export { EditableAnnouncementField } from "./editable-announcement-field";
+
 // 폼 관련 컴포넌트들
 export { default as AnnouncementForm } from "./announcement-form";
 

@@ -7,15 +7,23 @@ import { AnnouncementWithNo } from "../types";
 import { ANNOUNCEMENT_COLUMN_WIDTHS } from "../constants";
 
 // 제목 컴포넌트 (복잡한 로직이 있어서 유지)
-const TitleCell: React.FC<{ title: string; isPublished: boolean }> = ({
-  title,
-  isPublished,
-}) => {
+const TitleCell: React.FC<{
+  title: string;
+  isPublished: boolean;
+  id: string;
+}> = ({ title, isPublished, id }) => {
+  const handleClick = () => {
+    window.location.href = `/announcements/${id}`;
+  };
+
   return (
     <div className="flex items-center justify-start gap-2">
-      <span className="text-sm font-medium text-gray-800 truncate">
+      <button
+        onClick={handleClick}
+        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline text-left"
+      >
         {title}
-      </span>
+      </button>
       {!isPublished && (
         <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-300">
           비공개
@@ -45,6 +53,7 @@ export const useAnnouncementColumns = (): Column<AnnouncementWithNo>[] => {
             <TitleCell
               title={value as string}
               isPublished={record.isPublished}
+              id={record.id}
             />
           );
         },
