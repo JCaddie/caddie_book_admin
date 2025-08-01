@@ -1,29 +1,36 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createAdmin } from "../api/user-api";
+import { CreateAdminRequest } from "../types";
 // import {
-//   createUser,
 //   deleteMultipleUsers,
 //   deleteUser,
 //   updateUser,
 //   updateUserPassword,
 // } from "../api/user-api";
-import { ADMIN_LIST_QUERY_KEY } from "./use-admin-list";
 
 /**
- * 사용자 생성 mutation 훅 (임시 주석 처리)
+ * 어드민 생성 mutation 훅
  */
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      throw new Error("사용자 생성 기능이 아직 구현되지 않았습니다.");
+    mutationFn: async (data: CreateAdminRequest) => {
+      const response = await createAdmin(data);
+
+      // API 응답이 실패인 경우 에러 던지기
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      return response;
     },
     onSuccess: () => {
-      // 관리자 목록 쿼리 무효화하여 재페치
-      queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
+      // 관리자 목록 쿼리 무효화하여 재페치 (새로운 쿼리 키 사용)
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
     },
     onError: (error) => {
-      console.error("사용자 생성 중 오류 발생:", error);
+      console.error("어드민 생성 중 오류 발생:", error);
     },
   });
 };

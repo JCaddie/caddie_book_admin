@@ -51,6 +51,36 @@ export interface UserDetailApiResponse {
   data: User;
 }
 
+// 어드민 생성 요청 타입
+export interface CreateAdminRequest {
+  username: string;
+  name: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+  role: UserRole;
+  golf_course_id: string;
+}
+
+// 어드민 생성 성공 응답 타입
+export interface CreateAdminSuccessResponse {
+  success: true;
+  message: string;
+  data: User;
+}
+
+// 어드민 생성 실패 응답 타입
+export interface CreateAdminErrorResponse {
+  success: false;
+  message: string;
+  error_code: string;
+}
+
+// 어드민 생성 응답 타입 (성공/실패 모두 포함)
+export type CreateAdminResponse =
+  | CreateAdminSuccessResponse
+  | CreateAdminErrorResponse;
+
 // 액션바 Props 타입
 export interface UserActionBarProps {
   totalCount: number;
@@ -91,7 +121,7 @@ export interface UseUserManagementReturn {
   handleDeleteUsers: () => void;
   handleCreateUser: () => void;
   handleCloseModal: () => void;
-  handleSubmitUser: () => void;
+  handleSubmitUser: (userData: CreateAdminRequest) => Promise<void>;
   handleRowClick: (user: User) => void;
   setSearchTerm: (search: string) => void;
   setRoleFilter: (role: string) => void;

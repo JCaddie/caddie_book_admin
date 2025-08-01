@@ -13,7 +13,12 @@ export const useUserManagement = (): UseUserManagementReturn => {
   const { search: searchTerm, role: roleFilter, page: urlPage } = params;
 
   // API 훅 사용 (URL 파라미터 기반)
-  const { data: adminData, isLoading, error, refetch } = useAdminList({
+  const {
+    data: adminData,
+    isLoading,
+    error,
+    refetch,
+  } = useAdminList({
     search: searchTerm || undefined,
     role: roleFilter || undefined,
     page: urlPage,
@@ -33,7 +38,11 @@ export const useUserManagement = (): UseUserManagementReturn => {
     if (!adminData) return [];
 
     // 새로운 API 응답 형태: { success, message, data: { count, page, page_size, total_pages, results } }
-    if (adminData.data && adminData.data.results && Array.isArray(adminData.data.results)) {
+    if (
+      adminData.data &&
+      adminData.data.results &&
+      Array.isArray(adminData.data.results)
+    ) {
       return adminData.data.results as User[];
     }
 
@@ -54,9 +63,12 @@ export const useUserManagement = (): UseUserManagementReturn => {
   }, [filteredData, currentPage]);
 
   // 페이지 변경 핸들러
-  const handlePageChange = React.useCallback((page: number) => {
-    setPage(page);
-  }, [setPage]);
+  const handlePageChange = React.useCallback(
+    (page: number) => {
+      setPage(page);
+    },
+    [setPage]
+  );
 
   // 액션 핸들러들
   const handleUpdateSelection = React.useCallback(
@@ -81,7 +93,7 @@ export const useUserManagement = (): UseUserManagementReturn => {
       // 선택 상태 초기화
       setSelectedRowKeys([]);
       setSelectedRows([]);
-      
+
       // 데이터 새로고침
       refetch();
     } catch (error) {
@@ -98,20 +110,23 @@ export const useUserManagement = (): UseUserManagementReturn => {
     setIsCreateModalOpen(false);
   }, []);
 
-  const handleSubmitUser = React.useCallback(async () => {
-    try {
-      await createUserMutation.mutateAsync();
+  const handleSubmitUser = React.useCallback(
+    async (userData: import("../types").CreateAdminRequest) => {
+      try {
+        await createUserMutation.mutateAsync(userData);
 
-      // 모달 닫기
-      setIsCreateModalOpen(false);
-      
-      // 데이터 새로고침
-      refetch();
-    } catch (error) {
-      console.error("사용자 생성 중 오류:", error);
-      // 에러 처리 (토스트 메시지 등)
-    }
-  }, [createUserMutation, refetch]);
+        // 모달 닫기
+        setIsCreateModalOpen(false);
+
+        // 데이터 새로고침
+        refetch();
+      } catch (error) {
+        console.error("사용자 생성 중 오류:", error);
+        // 에러 처리 (토스트 메시지 등)
+      }
+    },
+    [createUserMutation, refetch]
+  );
 
   const handleRowClick = React.useCallback((user: User) => {
     if (user.isEmpty) return;

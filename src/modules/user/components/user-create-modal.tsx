@@ -4,22 +4,13 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { Button, Dropdown, Input } from "@/shared/components/ui";
 import { useGolfCoursesSimple } from "@/modules/golf-course/hooks/use-golf-courses-simple";
-
-interface UserSubmitData {
-  username: string;
-  password: string;
-  password_confirm: string;
-  name: string;
-  phone: string;
-  phonePrefix: string;
-  email: string;
-  golf_course_id: string;
-}
+import { CreateAdminRequest } from "../types";
+import { UserRole } from "@/shared/types/user";
 
 interface UserCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (userData: UserSubmitData) => void;
+  onSubmit: (userData: CreateAdminRequest) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -28,20 +19,13 @@ interface UserFormData {
   password: string;
   password_confirm: string;
   name: string;
-  phone: string;
-  phonePrefix: string;
   email: string;
+  role: UserRole;
   golf_course_id: string;
 }
 
-const PHONE_PREFIX_OPTIONS = [
-  { label: "010", value: "010" },
-  { label: "011", value: "011" },
-  { label: "016", value: "016" },
-  { label: "017", value: "017" },
-  { label: "018", value: "018" },
-  { label: "019", value: "019" },
-];
+// 마스터는 관리자만 생성 가능하므로 역할 고정
+const DEFAULT_ROLE: UserRole = "ADMIN";
 
 export const UserCreateModal: React.FC<UserCreateModalProps> = ({
   isOpen,
@@ -66,13 +50,13 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
     password: "",
     password_confirm: "",
     name: "",
-    phone: "",
-    phonePrefix: "010",
     email: "",
+    role: DEFAULT_ROLE,
     golf_course_id: "",
   });
 
   const [errors, setErrors] = useState<Partial<UserFormData>>({});
+  const [apiError, setApiError] = useState<string>("");
 
   if (!isOpen) return null;
 
@@ -113,17 +97,13 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
       newErrors.name = "이름을 입력해주세요.";
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "전화번호를 입력해주세요.";
-    } else if (!/^\d{7,8}$/.test(formData.phone)) {
-      newErrors.phone = "전화번호 형식이 올바르지 않습니다.";
-    }
-
     if (!formData.email.trim()) {
       newErrors.email = "이메일을 입력해주세요.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "이메일 형식이 올바르지 않습니다.";
     }
+
+    // 역할은 기본값으로 고정되므로 검증 불필요
 
     if (!formData.golf_course_id.trim()) {
       newErrors.golf_course_id = "골프장을 선택해주세요.";
@@ -133,15 +113,31 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    const userData = {
-      ...formData,
-      phone: `${formData.phonePrefix}-${formData.phone}`,
+    // API 에러 초기화
+    setApiError("");
+
+    const userData: CreateAdminRequest = {
+      username: formData.username,
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      password_confirm: formData.password_confirm,
+      role: formData.role,
+      golf_course_id: formData.golf_course_id,
     };
 
-    onSubmit(userData);
+    try {
+      await onSubmit(userData);
+    } catch (error) {
+      if (error instanceof Error) {
+        setApiError(error.message);
+      } else {
+        setApiError("사용자 생성 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   const handleClose = () => {
@@ -151,12 +147,12 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
         password: "",
         password_confirm: "",
         name: "",
-        phone: "",
-        phonePrefix: "010",
         email: "",
+        role: DEFAULT_ROLE,
         golf_course_id: "",
       });
       setErrors({});
+      setApiError("");
       onClose();
     }
   };
@@ -177,7 +173,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
         {/* 모달 헤더 */}
         <div className="flex items-center justify-between p-6 pb-4">
           <h2 className="text-xl font-semibold text-gray-900">
-            관리자 계정 생성
+            관리자 생성
           </h2>
           <button
             onClick={handleClose}
@@ -190,136 +186,131 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
 
         {/* 모달 콘텐츠 */}
         <div className="px-6 pb-6">
-          <div className="space-y-4">
-            {/* 아이디 입력 */}
-            <div>
-              <Input
-                type="text"
-                placeholder="아이디 입력*"
-                value={formData.username}
-                onChange={(e) => handleInputChange("username", e.target.value)}
-                disabled={isLoading}
-                error={errors.username}
-                containerClassName="w-full"
-              />
-            </div>
-
-            {/* 비밀번호 입력 */}
-            <div>
-              <Input
-                type="password"
-                placeholder="비밀번호 입력*"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                disabled={isLoading}
-                error={errors.password}
-                showVisibilityToggle
-                containerClassName="w-full"
-              />
-            </div>
-
-            {/* 비밀번호 확인 입력 */}
-            <div>
-              <Input
-                type="password"
-                placeholder="비밀번호 확인*"
-                value={formData.password_confirm}
-                onChange={(e) =>
-                  handleInputChange("password_confirm", e.target.value)
-                }
-                disabled={isLoading}
-                error={errors.password_confirm}
-                showVisibilityToggle
-                containerClassName="w-full"
-              />
-            </div>
-
-            {/* 이름 입력 */}
-            <div>
-              <Input
-                type="text"
-                placeholder="이름 입력*"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                disabled={isLoading}
-                error={errors.name}
-                containerClassName="w-full"
-              />
-            </div>
-
-            {/* 전화번호 입력 */}
-            <div>
-              <div className="flex gap-2">
-                <Dropdown
-                  options={PHONE_PREFIX_OPTIONS}
-                  value={formData.phonePrefix}
-                  onChange={(value) => handleInputChange("phonePrefix", value)}
-                  disabled={isLoading}
-                  containerClassName="w-20"
-                />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
+            <div className="space-y-4">
+              {/* 아이디 입력 */}
+              <div>
                 <Input
-                  type="tel"
-                  placeholder="숫자만 입력해주세요.(예.12345678)*"
-                  value={formData.phone}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "");
-                    handleInputChange("phone", value);
-                  }}
+                  type="text"
+                  placeholder="아이디 입력*"
+                  value={formData.username}
+                  onChange={(e) =>
+                    handleInputChange("username", e.target.value)
+                  }
                   disabled={isLoading}
-                  error={errors.phone}
-                  containerClassName="flex-1"
+                  error={errors.username}
+                  containerClassName="w-full"
                 />
+              </div>
+
+              {/* 비밀번호 입력 */}
+              <div>
+                <Input
+                  type="password"
+                  placeholder="비밀번호 입력*"
+                  value={formData.password}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
+                  disabled={isLoading}
+                  error={errors.password}
+                  showVisibilityToggle
+                  containerClassName="w-full"
+                />
+              </div>
+
+              {/* 비밀번호 확인 입력 */}
+              <div>
+                <Input
+                  type="password"
+                  placeholder="비밀번호 확인*"
+                  value={formData.password_confirm}
+                  onChange={(e) =>
+                    handleInputChange("password_confirm", e.target.value)
+                  }
+                  disabled={isLoading}
+                  error={errors.password_confirm}
+                  showVisibilityToggle
+                  containerClassName="w-full"
+                />
+              </div>
+
+              {/* 이름 입력 */}
+              <div>
+                <Input
+                  type="text"
+                  placeholder="이름 입력*"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  disabled={isLoading}
+                  error={errors.name}
+                  containerClassName="w-full"
+                />
+              </div>
+
+              {/* 이메일 입력 */}
+              <div>
+                <Input
+                  type="email"
+                  placeholder="이메일 입력*"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  disabled={isLoading}
+                  error={errors.email}
+                  containerClassName="w-full"
+                />
+              </div>
+
+              {/* 골프장 선택 */}
+              <div>
+                <Dropdown
+                  options={golfCourseOptions}
+                  value={formData.golf_course_id}
+                  onChange={(value) =>
+                    handleInputChange("golf_course_id", value)
+                  }
+                  placeholder="골프장 선택*"
+                  disabled={isLoading}
+                  containerClassName="w-full"
+                />
+                {errors.golf_course_id && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.golf_course_id}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* 이메일 입력 */}
-            <div>
-              <Input
-                type="email"
-                placeholder="이메일 입력*"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                disabled={isLoading}
-                error={errors.email}
-                containerClassName="w-full"
-              />
-            </div>
+            {/* API 에러 메시지 */}
+            {apiError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{apiError}</p>
+              </div>
+            )}
 
-            {/* 골프장 선택 */}
-            <div>
-              <Dropdown
-                options={golfCourseOptions}
-                value={formData.golf_course_id}
-                onChange={(value) => handleInputChange("golf_course_id", value)}
-                placeholder="골프장 선택*"
+            {/* 생성하기 버튼 */}
+            <div className="flex justify-end mt-6">
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
                 disabled={isLoading}
-                containerClassName="w-full"
-              />
-              {errors.golf_course_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.golf_course_id}
-                </p>
-              )}
+                loading={isLoading}
+                className="w-full"
+                style={{
+                  backgroundColor: "#FEB912",
+                  boxShadow: "0px 2px 8px 2px rgba(254, 185, 18, 0.42)",
+                }}
+              >
+                생성하기
+              </Button>
             </div>
-          </div>
-
-          {/* 생성하기 버튼 */}
-          <div className="flex justify-end mt-6">
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              loading={isLoading}
-              className="w-full"
-              style={{
-                backgroundColor: "#FEB912",
-                boxShadow: "0px 2px 8px 2px rgba(254, 185, 18, 0.42)",
-              }}
-            >
-              생성하기
-            </Button>
-          </div>
+          </form>
         </div>
       </div>
     </div>

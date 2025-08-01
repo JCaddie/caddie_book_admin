@@ -2,6 +2,8 @@ import { apiClient } from "@/shared/lib/api-client";
 import {
   AdminsApiResponse,
   CaddieAssignmentOverviewResponse,
+  CreateAdminRequest,
+  CreateAdminResponse,
   UserDetailApiResponse,
   UserListApiResponse,
 } from "../types/user";
@@ -52,26 +54,26 @@ export const getAdmins = async (params?: {
   page_size?: number;
 }): Promise<AdminsApiResponse> => {
   const searchParams = new URLSearchParams();
-  
+
   if (params?.search) {
     searchParams.append("search", params.search);
   }
-  
+
   if (params?.role) {
     searchParams.append("role", params.role);
   }
-  
+
   if (params?.page) {
     searchParams.append("page", params.page.toString());
   }
-  
+
   if (params?.page_size) {
     searchParams.append("page_size", params.page_size.toString());
   }
 
   const queryString = searchParams.toString();
   const url = `/api/v1/users/admins/${queryString ? `?${queryString}` : ""}`;
-  
+
   return apiClient.get(url);
 };
 
@@ -106,6 +108,13 @@ export const getCaddieAssignmentOverview = async (
   }`;
 
   return apiClient.get<CaddieAssignmentOverviewResponse>(endpoint);
+};
+
+// 어드민 생성
+export const createAdmin = async (
+  data: CreateAdminRequest
+): Promise<CreateAdminResponse> => {
+  return apiClient.post("/api/v1/users/admins/", data);
 };
 
 /**
