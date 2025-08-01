@@ -34,6 +34,7 @@ export {
 // 통합 캐디 API 함수들
 export {
   fetchCaddieList,
+  fetchCaddiesSimple,
   fetchCaddieDetail,
   updateCaddie,
   deleteCaddie,

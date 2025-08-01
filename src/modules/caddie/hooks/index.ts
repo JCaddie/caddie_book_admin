@@ -10,3 +10,6 @@ export * from "./new-caddie";
 
 // 공통 옵션 관리 훅
 export { useCaddieOptions } from "./use-caddie-options";
+
+// 캐디 간소 목록 훅
+export { useCaddiesSimple } from "./use-caddies-simple";

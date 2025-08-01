@@ -12,6 +12,9 @@ export const CADDIE_ENDPOINTS = {
   // 캐디 목록
   LIST: `${BASE_API_PATH}/caddies`,
 
+  // 캐디 간소 목록 (드롭다운용)
+  SIMPLE_LIST: `${BASE_API_PATH}/caddies/simple`,
+
   // 캐디 상세
   DETAIL: (id: string) => `${BASE_API_PATH}/caddies/${id}`,
 

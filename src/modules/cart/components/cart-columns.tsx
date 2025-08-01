@@ -46,6 +46,24 @@ export const useCartColumns = (): Column<Cart>[] => {
         width: CART_COLUMN_WIDTHS.managerName,
         render: basicRenderers.text, // 🎉 중복 제거!
       },
+      {
+        key: "batteryLevel",
+        title: "배터리 레벨",
+        width: CART_COLUMN_WIDTHS.batteryLevel || 100,
+        render: (value: unknown) => `${value}%`,
+      },
+      {
+        key: "batteryStatus",
+        title: "배터리 상태",
+        width: CART_COLUMN_WIDTHS.batteryStatus || 100,
+        render: basicRenderers.text,
+      },
+      {
+        key: "isAvailable",
+        title: "사용 가능",
+        width: CART_COLUMN_WIDTHS.isAvailable || 100,
+        render: (value: unknown) => (value ? "가능" : "불가능"),
+      },
     ],
     []
   );

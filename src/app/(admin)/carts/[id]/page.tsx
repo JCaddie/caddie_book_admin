@@ -8,7 +8,6 @@ import {
   cartHistoryColumns,
   EditableCartField,
 } from "@/modules/cart/components";
-import { useAuth } from "@/shared/hooks/use-auth";
 
 interface CartDetailPageProps {
   params: Promise<{
@@ -18,8 +17,6 @@ interface CartDetailPageProps {
 
 const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
   const resolvedParams = use(params);
-  const { user } = useAuth();
-  const isMaster = user?.role === "MASTER";
 
   // 커스텀 훅으로 카트 상세 데이터 가져오기
   const {
@@ -37,12 +34,10 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
   const {
     statusChoices,
     batteryLevelChoices,
-    golfCourseChoices,
     caddieChoices,
     updateName,
     updateStatus,
     updateBatteryLevel,
-    updateGolfCourse,
     updateManager,
     isLoading: isEditLoading,
     error: editError,
@@ -66,10 +61,6 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
 
   const handleBatteryLevelUpdate = async (value: string | number) => {
     await updateBatteryLevel(Number(value));
-  };
-
-  const handleGolfCourseUpdate = async (value: string | number) => {
-    await updateGolfCourse(String(value));
   };
 
   const handleManagerUpdate = async (value: string | number) => {
@@ -152,7 +143,7 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
               </div>
               <div className="flex-1 flex items-center px-4 py-3">
                 <span className="text-sm text-blue-600 font-medium">
-                  {cartDetail.fieldName}
+                  {cartDetail.location || "일반"}
                 </span>
               </div>
             </div>
@@ -187,27 +178,16 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
               />
             </div>
             <div className="border-b border-gray-200">
-              {isMaster ? (
-                <EditableCartField
-                  label="골프장"
-                  value={cartDetail.golfCourseId || ""}
-                  onSave={handleGolfCourseUpdate}
-                  type="select"
-                  options={golfCourseChoices}
-                  disabled={isEditLoading}
-                />
-              ) : (
-                <div className="flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">골프장</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {cartDetail.golfCourseName}
-                    </span>
-                  </div>
+              <div className="flex">
+                <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                  <span className="text-sm font-bold">골프장</span>
                 </div>
-              )}
+                <div className="flex-1 flex items-center px-4 py-3">
+                  <span className="text-sm text-black">
+                    {cartDetail.golfCourseName}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

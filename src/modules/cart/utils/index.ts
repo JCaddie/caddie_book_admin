@@ -114,10 +114,13 @@ export const mapApiCartToCart = (
     id: apiCart.id,
     no: index + 1, // 순서 번호는 별도로 처리
     name: apiCart.name,
-    status: mapApiStatusToCartStatus(apiCart.status),
+    status: apiCart.status_display, // status_display를 그대로 사용
     fieldName: "일반", // API에 필드 정보가 없으므로 기본값
     golfCourseName: apiCart.golf_course.name,
-    managerName: apiCart.manager?.name || "미배정",
+    managerName: apiCart.current_caddie?.name || "미배정",
+    batteryLevel: apiCart.battery_level,
+    batteryStatus: apiCart.battery_status,
+    isAvailable: apiCart.is_available,
     createdAt: apiCart.created_at || new Date().toISOString(),
     updatedAt: apiCart.updated_at || new Date().toISOString(),
   };
@@ -134,21 +137,24 @@ export const mapApiCartsToCartList = (apiCarts: ApiCartData[]): Cart[] => {
  * API 카트 상세 응답을 UI CartDetail 타입으로 변환
  */
 export const mapApiCartDetailToCartDetail = (
-  apiCartDetail: ApiCartDetailResponse
+  apiCartDetailResponse: ApiCartDetailResponse
 ): CartDetail => {
+  const apiCartDetail = apiCartDetailResponse.data;
+
   return {
     id: apiCartDetail.id,
     name: apiCartDetail.name,
-    status: mapApiStatusToCartStatus(apiCartDetail.status),
-    fieldName: apiCartDetail.location || "일반", // location을 필드명으로 사용
+    status: apiCartDetail.status_display, // status_display를 그대로 사용
+    location: apiCartDetail.location || "", // location 필드 직접 사용
     managerName: apiCartDetail.manager?.name || "미배정",
     managerId: apiCartDetail.manager?.id,
     golfCourseName: apiCartDetail.golf_course.name,
     golfCourseId: apiCartDetail.golf_course.id,
-    createdAt: apiCartDetail.created_at,
-    updatedAt: apiCartDetail.updated_at,
     batteryLevel: apiCartDetail.battery_level,
     batteryStatus: apiCartDetail.battery_status,
+    isAvailable: apiCartDetail.is_available,
+    createdAt: apiCartDetail.created_at,
+    updatedAt: apiCartDetail.updated_at,
   };
 };
 
@@ -159,29 +165,19 @@ export const mapApiCartHistoryToCartHistory = (
   apiHistory: ApiCartHistoryItem,
   index: number = 0
 ): CartHistoryItem => {
-  // 날짜 포맷 변환 (2025-01-21 -> 2025.01.21.(화))
-  const date = new Date(apiHistory.usage_date);
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-  const formattedDate = `${apiHistory.usage_date.replace(/-/g, ".")}.(${
-    weekdays[date.getDay()]
-  })`;
-
   return {
     id: apiHistory.id,
     no: index + 1,
-    date: formattedDate,
-    time: apiHistory.start_time.slice(0, 5), // HH:MM 형태로 변환
-    cartName: "카트", // API에 카트명이 별도로 없으므로 기본값
-    group: apiHistory.is_ongoing ? "진행중" : "완료",
-    personInCharge: apiHistory.caddie?.name || "셀프",
-    fieldName: "일반", // API에 필드명이 없으므로 기본값
-    managerName: apiHistory.caddie?.name || "없음",
-    // 추가 정보는 Record<string, unknown>에 저장
-    duration: apiHistory.duration,
+    caddieName: apiHistory.caddie.name,
+    caddieRole: apiHistory.caddie.role_display,
+    usageDate: apiHistory.usage_date,
+    startTime: apiHistory.start_time,
     endTime: apiHistory.end_time,
+    duration: apiHistory.duration,
     isOngoing: apiHistory.is_ongoing,
-    notes: apiHistory.notes,
-  } as CartHistoryItem;
+    notes: apiHistory.notes || "",
+    createdAt: apiHistory.created_at,
+  };
 };
 
 /**

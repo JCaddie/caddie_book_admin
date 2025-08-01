@@ -34,6 +34,27 @@ export const fetchCaddieList = async (
   return apiClient.get<CaddieListResponse>(url);
 };
 
+/**
+ * 캐디 간소 목록 조회 (드롭다운용)
+ * GET /api/v1/caddies/simple/
+ */
+export const fetchCaddiesSimple = async (
+  golfCourseId?: string
+): Promise<CaddieSimpleResponse> => {
+  const params = new URLSearchParams();
+
+  if (golfCourseId) {
+    params.append("golf_course", golfCourseId);
+  }
+
+  const queryString = params.toString();
+  const url = `${CADDIE_ENDPOINTS.SIMPLE_LIST}${
+    queryString ? `?${queryString}` : ""
+  }`;
+
+  return apiClient.get<CaddieSimpleResponse>(url);
+};
+
 // ================================
 // 캐디 상세 관련 API
 // ================================

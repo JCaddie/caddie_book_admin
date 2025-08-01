@@ -38,4 +38,7 @@ export const CART_COLUMN_WIDTHS = {
   fieldName: 160,
   golfCourseName: 200,
   managerName: 120,
+  batteryLevel: 100,
+  batteryStatus: 100,
+  isAvailable: 100,
 } as const;

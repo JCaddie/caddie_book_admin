@@ -10,6 +10,7 @@ interface EditableCartFieldProps {
   type?: "text" | "select";
   options?: Array<{ value: string | number; label: string }>;
   disabled?: boolean;
+  displayValue?: string; // 표시용 값 (select 타입에서 사용)
 }
 
 export const EditableCartField: React.FC<EditableCartFieldProps> = ({
@@ -19,6 +20,7 @@ export const EditableCartField: React.FC<EditableCartFieldProps> = ({
   type = "text",
   options = [],
   disabled = false,
+  displayValue,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -117,7 +119,7 @@ export const EditableCartField: React.FC<EditableCartFieldProps> = ({
           </div>
         ) : (
           <div className="flex items-center justify-between w-full">
-            <span className="text-sm text-black">{value}</span>
+            <span className="text-sm text-black">{displayValue || value}</span>
             {!disabled && (
               <button
                 onClick={handleEdit}

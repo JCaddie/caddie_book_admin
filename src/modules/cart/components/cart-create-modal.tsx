@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button, Dropdown, Input } from "@/shared/components/ui";
 import { useAuth } from "@/shared/hooks";
-import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
+import { useGolfCoursesSimple } from "@/modules/golf-course/hooks/use-golf-courses-simple";
 
 export interface CartCreateModalProps {
   isOpen: boolean;
@@ -24,8 +24,26 @@ const CartCreateModal: React.FC<CartCreateModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useAuth();
-
   const isMaster = user?.role === "MASTER";
+
+  // 골프장 간소 목록 데이터 가져오기 (MASTER 권한일 때만)
+  const {
+    data: golfCoursesData,
+    isLoading: isLoadingGolfCourses,
+    error: golfCourseError,
+  } = useGolfCoursesSimple();
+
+  // 드롭다운 옵션 생성
+  const dropdownOptions = React.useMemo(() => {
+    if (!golfCoursesData?.data) {
+      return [];
+    }
+
+    return golfCoursesData.data.map((golfCourse) => ({
+      value: golfCourse.id,
+      label: golfCourse.name,
+    }));
+  }, [golfCoursesData]);
 
   // 모달이 열릴 때 초기화
   useEffect(() => {
@@ -90,13 +108,20 @@ const CartCreateModal: React.FC<CartCreateModalProps> = ({
     }
   };
 
-  // 현재 사용자의 골프장명 찾기
+  // 현재 사용자의 골프장명 찾기 (ADMIN용)
   const getCurrentGolfCourseName = () => {
     if (!user?.golfCourseId) return "미설정";
-    const course = GOLF_COURSE_DROPDOWN_OPTIONS.find(
-      (option) => option.value === user.golfCourseId
-    );
-    return course ? course.label : "알 수 없음";
+
+    // MASTER 권한이고 골프장 데이터가 있으면 API 데이터에서 찾기
+    if (isMaster && golfCoursesData?.data) {
+      const course = golfCoursesData.data.find(
+        (golfCourse) => golfCourse.id === user.golfCourseId
+      );
+      return course ? course.name : "알 수 없음";
+    }
+
+    // ADMIN 권한이거나 데이터가 없으면 기본값
+    return user.golfCourseName || "알 수 없음";
   };
 
   return (
@@ -140,14 +165,24 @@ const CartCreateModal: React.FC<CartCreateModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 골프장 <span className="text-red-500">*</span>
               </label>
-              <Dropdown
-                options={GOLF_COURSE_DROPDOWN_OPTIONS}
-                value={selectedGolfCourseId}
-                onChange={setSelectedGolfCourseId}
-                placeholder="골프장을 선택하세요"
-                disabled={isLoading}
-                className="w-full"
-              />
+              {isLoadingGolfCourses ? (
+                <div className="w-full h-10 bg-gray-200 animate-pulse rounded-md"></div>
+              ) : golfCourseError ? (
+                <div className="w-full h-10 bg-red-100 border border-red-300 rounded-md flex items-center justify-center">
+                  <span className="text-red-600 text-sm">
+                    골프장 목록 조회 실패
+                  </span>
+                </div>
+              ) : (
+                <Dropdown
+                  options={dropdownOptions}
+                  value={selectedGolfCourseId}
+                  onChange={setSelectedGolfCourseId}
+                  placeholder="골프장을 선택하세요"
+                  disabled={isLoading}
+                  className="w-full"
+                />
+              )}
             </div>
           )}
 

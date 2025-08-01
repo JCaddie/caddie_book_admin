@@ -1,19 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  fetchBatteryLevelChoices,
-  fetchStatusChoices,
-  updateCartField,
-} from "../api/cart-api";
-import {
-  ApiBatteryLevelChoice,
-  ApiCartDetailResponse,
-  ApiCartStatus,
-  ApiStatusChoice,
-} from "../types";
+import React, { useCallback } from "react";
+import { updateCartField } from "../api/cart-api";
+import { ApiCartDetailResponse, ApiCartStatus } from "../types";
 import { GOLF_COURSE_DROPDOWN_OPTIONS } from "@/shared/constants/golf-course";
-import { useCaddieOptions } from "@/shared/hooks/use-caddie-options";
+import { useCaddiesSimple } from "@/modules/caddie/hooks";
+import {
+  useBatteryLevelConstants,
+  useCartStatusConstants,
+} from "@/shared/hooks/use-constants";
 
 interface UseCartEditProps {
   cartId: string;
@@ -40,61 +35,51 @@ export const useCartEdit = ({
   currentGolfCourseId,
   onUpdate,
 }: UseCartEditProps): UseCartEditReturn => {
-  const [statusChoices, setStatusChoices] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
-  const [batteryLevelChoices, setBatteryLevelChoices] = useState<
-    Array<{ value: number; label: string }>
-  >([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // 상수값 가져오기 (전역 캐시 사용)
+  const { constants: statusConstants, isLoading: isLoadingStatus } =
+    useCartStatusConstants();
+  const { constants: batteryConstants, isLoading: isLoadingBattery } =
+    useBatteryLevelConstants();
 
-  // 골프장별 캐디 목록 가져오기
-  const { caddieOptions } = useCaddieOptions({
-    golfCourseId: currentGolfCourseId,
-    enabled: !!currentGolfCourseId,
-  });
+  // 골프장별 캐디 간소 목록 가져오기
+  const { data: caddiesSimpleData, isLoading: isLoadingCaddies } =
+    useCaddiesSimple(currentGolfCourseId);
 
-  // 선택지 데이터 로드
-  const loadChoices = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  // 선택지 데이터 생성 (상수값에서)
+  const statusChoices = React.useMemo(() => {
+    return (
+      statusConstants?.map((item) => ({
+        value: String(item.id),
+        label: item.value,
+      })) || []
+    );
+  }, [statusConstants]);
 
-    try {
-      const [statusResponse, batteryResponse] = await Promise.all([
-        fetchStatusChoices(),
-        fetchBatteryLevelChoices(),
-      ]);
+  const batteryLevelChoices = React.useMemo(() => {
+    return (
+      batteryConstants?.map((item) => ({
+        value: Number(item.id),
+        label: item.value,
+      })) || []
+    );
+  }, [batteryConstants]);
 
-      // 상태 선택지 매핑
-      const mappedStatusChoices = statusResponse.status_choices.map(
-        (choice: ApiStatusChoice) => ({
-          value: choice.value,
-          label: choice.label,
-        })
-      );
-
-      // 배터리 레벨 선택지 매핑
-      const mappedBatteryChoices = batteryResponse.battery_level_choices.map(
-        (choice: ApiBatteryLevelChoice) => ({
-          value: choice.value,
-          label: choice.label,
-        })
-      );
-
-      setStatusChoices(mappedStatusChoices);
-      setBatteryLevelChoices(mappedBatteryChoices);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "선택지 로딩 중 오류가 발생했습니다.";
-      setError(errorMessage);
-      console.error("선택지 로딩 중 오류:", err);
-    } finally {
-      setIsLoading(false);
+  // 캐디 드롭다운 옵션 생성
+  const caddieOptions = React.useMemo(() => {
+    if (!caddiesSimpleData?.data?.results) {
+      return [{ value: "", label: "캐디 선택" }];
     }
-  }, []);
+
+    return [
+      { value: "", label: "캐디 선택" },
+      ...caddiesSimpleData.data.results.map(
+        (caddie: { id: string; name: string }) => ({
+          value: caddie.id,
+          label: caddie.name,
+        })
+      ),
+    ];
+  }, [caddiesSimpleData]);
 
   // 카트명 수정
   const updateName = useCallback(
@@ -193,11 +178,6 @@ export const useCartEdit = ({
     [cartId, onUpdate]
   );
 
-  // 컴포넌트 마운트 시 선택지 로드
-  useEffect(() => {
-    loadChoices();
-  }, [loadChoices]);
-
   return {
     statusChoices,
     batteryLevelChoices,
@@ -208,7 +188,7 @@ export const useCartEdit = ({
     updateBatteryLevel,
     updateGolfCourse,
     updateManager,
-    isLoading,
-    error,
+    isLoading: isLoadingStatus || isLoadingBattery || isLoadingCaddies,
+    error: null,
   };
 };

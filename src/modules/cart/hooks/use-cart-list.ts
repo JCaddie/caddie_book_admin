@@ -77,7 +77,7 @@ export const useCartList = () => {
       );
 
       // API 응답 구조 검증
-      if (!response.results || !Array.isArray(response.results)) {
+      if (!response.data?.results || !Array.isArray(response.data.results)) {
         console.warn("⚠️ 예상과 다른 API 응답 구조:", response);
         setCarts([]);
         setTotalCount(0);
@@ -85,10 +85,10 @@ export const useCartList = () => {
         return;
       }
 
-      const mappedCarts = mapApiCartsToCartList(response.results);
+      const mappedCarts = mapApiCartsToCartList(response.data.results);
       setCarts(mappedCarts);
-      setTotalCount(response.count || 0);
-      setTotalPages(response.total_pages || 1);
+      setTotalCount(response.data.count || 0);
+      setTotalPages(response.data.total_pages || 1);
     } catch (err) {
       const errorMessage =
         err instanceof Error
