@@ -73,7 +73,8 @@ export interface CreateAdminSuccessResponse {
 export interface CreateAdminErrorResponse {
   success: false;
   message: string;
-  error_code: string;
+  error_code?: string;
+  non_field_errors?: string[];
 }
 
 // 어드민 생성 응답 타입 (성공/실패 모두 포함)
@@ -106,6 +107,36 @@ export interface BulkDeleteAdminsErrorResponse {
 export type BulkDeleteAdminsResponse =
   | BulkDeleteAdminsSuccessResponse
   | BulkDeleteAdminsErrorResponse;
+
+// 어드민 수정 요청 타입
+export interface UpdateAdminRequest {
+  name?: string;
+  email?: string;
+  is_active?: boolean;
+  golf_course_id?: string;
+  password?: string;
+  password_confirm?: string;
+}
+
+// 어드민 수정 성공 응답 타입
+export interface UpdateAdminSuccessResponse {
+  success: true;
+  message: string;
+  data: User;
+}
+
+// 어드민 수정 실패 응답 타입
+export interface UpdateAdminErrorResponse {
+  success: false;
+  message: string;
+  error_code?: string;
+  non_field_errors?: string[];
+}
+
+// 어드민 수정 응답 타입 (성공/실패 모두 포함)
+export type UpdateAdminResponse =
+  | UpdateAdminSuccessResponse
+  | UpdateAdminErrorResponse;
 
 // 액션바 Props 타입
 export interface UserActionBarProps {

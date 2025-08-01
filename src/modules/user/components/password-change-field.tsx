@@ -29,17 +29,20 @@ export const PasswordChangeField: React.FC<PasswordChangeFieldProps> = ({
     password: "",
     password_confirm: "",
   });
+  const [apiError, setApiError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleEdit = () => {
     setPasswords({ password: "", password_confirm: "" });
     setErrors({ password: "", password_confirm: "" });
+    setApiError("");
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setPasswords({ password: "", password_confirm: "" });
     setErrors({ password: "", password_confirm: "" });
+    setApiError("");
     setIsEditing(false);
   };
 
@@ -73,6 +76,7 @@ export const PasswordChangeField: React.FC<PasswordChangeFieldProps> = ({
     if (!validatePasswords()) return;
 
     setIsSaving(true);
+    setApiError("");
     try {
       await onSave({
         password: passwords.password,
@@ -80,9 +84,24 @@ export const PasswordChangeField: React.FC<PasswordChangeFieldProps> = ({
       });
       setIsEditing(false);
       setPasswords({ password: "", password_confirm: "" });
+      setApiError("");
     } catch (error) {
       console.error("비밀번호 변경 중 오류:", error);
-      // 에러 발생 시 편집 모드 유지
+      if (error instanceof Error) {
+        // 에러 메시지에서 non_field_errors 파싱 시도
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+            setApiError(errorData.non_field_errors.join(' '));
+          } else {
+            setApiError(error.message);
+          }
+        } catch {
+          setApiError(error.message);
+        }
+      } else {
+        setApiError("비밀번호 변경 중 오류가 발생했습니다.");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -136,6 +155,13 @@ export const PasswordChangeField: React.FC<PasswordChangeFieldProps> = ({
               containerClassName="w-full"
             />
           </div>
+
+          {/* API 에러 메시지 */}
+          {apiError && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-600 text-sm">{apiError}</p>
+            </div>
+          )}
 
           {/* 저장/취소 버튼 */}
           <div className="flex items-center gap-2">

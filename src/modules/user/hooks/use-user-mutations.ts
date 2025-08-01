@@ -1,9 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { bulkDeleteAdmins, createAdmin } from "../api/user-api";
-import { BulkDeleteAdminsRequest, CreateAdminRequest } from "../types";
+import { bulkDeleteAdmins, createAdmin, updateAdmin } from "../api/user-api";
+import {
+  BulkDeleteAdminsRequest,
+  CreateAdminRequest,
+  UpdateAdminRequest,
+} from "../types";
 // import {
 //   deleteUser,
-//   updateUser,
 //   updateUserPassword,
 // } from "../api/user-api";
 
@@ -14,14 +17,19 @@ export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateAdminRequest) => {
+        mutationFn: async (data: CreateAdminRequest) => {
       const response = await createAdmin(data);
-
+      
       // API 응답이 실패인 경우 에러 던지기
       if (!response.success) {
-        throw new Error(response.message);
+        // non_field_errors가 있으면 우선적으로 사용
+        if (response.non_field_errors && response.non_field_errors.length > 0) {
+          throw new Error(JSON.stringify({ non_field_errors: response.non_field_errors }));
+        } else {
+          throw new Error(response.message);
+        }
       }
-
+      
       return response;
     },
     onSuccess: () => {
@@ -82,21 +90,41 @@ export const useDeleteUsers = () => {
 };
 
 /**
- * 사용자 기본 정보 수정 mutation 훅 (임시 주석 처리)
+ * 어드민 정보 수정 mutation 훅
  */
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      throw new Error("사용자 정보 수정 기능이 아직 구현되지 않았습니다.");
+    mutationFn: async ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: UpdateAdminRequest;
+    }) => {
+      const response = await updateAdmin(userId, data);
+
+      // API 응답이 실패인 경우 에러 던지기
+      if (!response.success) {
+        // non_field_errors가 있으면 우선적으로 사용
+        if (response.non_field_errors && response.non_field_errors.length > 0) {
+          throw new Error(JSON.stringify({ non_field_errors: response.non_field_errors }));
+        } else {
+          throw new Error(response.message);
+        }
+      }
+
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (_, { userId }) => {
       // 관리자 목록 쿼리 무효화하여 재페치
-      queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
+      // 해당 어드민 상세 쿼리도 무효화
+      queryClient.invalidateQueries({ queryKey: ["admins", "detail", userId] });
     },
     onError: (error) => {
-      console.error("사용자 정보 수정 중 오류 발생:", error);
+      console.error("어드민 정보 수정 중 오류 발생:", error);
     },
   });
 };

@@ -133,7 +133,17 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
       await onSubmit(userData);
     } catch (error) {
       if (error instanceof Error) {
-        setApiError(error.message);
+        // 에러 메시지에서 non_field_errors 파싱 시도
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+            setApiError(errorData.non_field_errors.join(' '));
+          } else {
+            setApiError(error.message);
+          }
+        } catch {
+          setApiError(error.message);
+        }
       } else {
         setApiError("사용자 생성 중 오류가 발생했습니다.");
       }

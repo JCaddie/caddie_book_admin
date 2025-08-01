@@ -6,6 +6,8 @@ import {
   CaddieAssignmentOverviewResponse,
   CreateAdminRequest,
   CreateAdminResponse,
+  UpdateAdminRequest,
+  UpdateAdminResponse,
   UserDetailApiResponse,
   UserListApiResponse,
 } from "../types/user";
@@ -85,7 +87,9 @@ export const getAdmins = async (params?: {
 export const getUserDetail = async (
   userId: string
 ): Promise<UserDetailApiResponse> => {
-  return apiClient.get<UserDetailApiResponse>(`/api/v1/users/admins/${userId}/`);
+  return apiClient.get<UserDetailApiResponse>(
+    `/api/v1/users/admins/${userId}/`
+  );
 };
 
 /**
@@ -126,6 +130,14 @@ export const bulkDeleteAdmins = async (
   return apiClient.delete("/api/v1/users/admins/bulk-delete/", {
     body: JSON.stringify(data),
   });
+};
+
+// 어드민 수정
+export const updateAdmin = async (
+  userId: string,
+  data: UpdateAdminRequest
+): Promise<UpdateAdminResponse> => {
+  return apiClient.patch(`/api/v1/users/admins/${userId}/`, data);
 };
 
 /**
