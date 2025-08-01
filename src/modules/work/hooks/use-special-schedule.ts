@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchSpecialScheduleDetail } from "../api/work-api";
+import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
+import { useQueryError } from "@/shared/hooks/use-query-error";
 
 // 특수 스케줄 데이터 타입
 export interface SpecialScheduleData {
@@ -44,33 +47,32 @@ export interface SpecialScheduleData {
 }
 
 export const useSpecialSchedule = (scheduleId?: string) => {
-  const [specialSchedule, setSpecialSchedule] =
-    useState<SpecialScheduleData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // React Query를 사용한 데이터 페칭
+  const {
+    data: specialSchedule,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: [CACHE_KEYS.SPECIAL_SCHEDULE, scheduleId],
+    queryFn: () => fetchSpecialScheduleDetail(scheduleId!),
+    enabled: !!scheduleId, // scheduleId가 있을 때만 쿼리 실행
+    ...QUERY_CONFIG.REALTIME_OPTIONS,
+  });
 
+  // 표준화된 에러 처리
+  const error = useQueryError(queryError, "특수 스케줄 조회에 실패했습니다.");
+
+  // 기존 인터페이스 호환성을 위한 fetchSchedule 함수
   const fetchSchedule = async (id: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await fetchSpecialScheduleDetail(id);
-      setSpecialSchedule(data);
-    } catch (err) {
-      console.error("특수 스케줄 조회 실패:", err);
-      setError(
-        err instanceof Error ? err.message : "특수 스케줄 조회에 실패했습니다."
+    if (id === scheduleId) {
+      await refetch();
+    } else {
+      console.warn(
+        "fetchSchedule: scheduleId가 변경되었습니다. useQuery가 자동으로 처리합니다."
       );
-      setSpecialSchedule(null);
-    } finally {
-      setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (scheduleId) {
-      fetchSchedule(scheduleId);
-    }
-  }, [scheduleId]);
 
   // 빈 데이터 상태 체크 함수들
   const hasNoParts = specialSchedule?.parts.length === 0;
@@ -81,13 +83,13 @@ export const useSpecialSchedule = (scheduleId?: string) => {
     false;
 
   return {
-    specialSchedule,
+    specialSchedule: specialSchedule || null,
     isLoading,
     error,
     fetchSchedule,
     hasNoParts,
     hasNoTimeSettings,
     hasNoMatrix,
-    refetch: () => scheduleId && fetchSchedule(scheduleId),
+    refetch,
   };
 };

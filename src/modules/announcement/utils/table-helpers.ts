@@ -5,6 +5,7 @@
 import { Announcement, AnnouncementWithNo } from "../types";
 
 /**
+ * @deprecated Use addNumberToItems from @/shared/utils/pagination-utils instead
  * 공지사항에 번호 추가
  */
 export function addNumberToAnnouncements(
@@ -12,6 +13,9 @@ export function addNumberToAnnouncements(
   currentPage: number,
   pageSize: number
 ): AnnouncementWithNo[] {
+  console.warn(
+    "addNumberToAnnouncements is deprecated. Use addNumberToItems from @/shared/utils/pagination-utils instead"
+  );
   return announcements.map((announcement, index) => ({
     ...announcement,
     no: (currentPage - 1) * pageSize + index + 1,

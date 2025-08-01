@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import {
   DayOffRequest,
@@ -11,6 +12,8 @@ import {
 } from "../types";
 import { getDayOffRequests } from "../api/day-off-api";
 import { DAY_OFF_CONSTANTS, DAY_OFF_ERROR_MESSAGES } from "../constants";
+import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
+import { useQueryError } from "@/shared/hooks/use-query-error";
 
 interface UseDayOffListReturn {
   // 데이터
@@ -34,15 +37,6 @@ interface UseDayOffListReturn {
 export const useDayOffList = (): UseDayOffListReturn => {
   const searchParams = useSearchParams();
 
-  // 상태 관리
-  const [data, setData] = useState<DayOffRequest[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // 페이지네이션 상태
-  const [totalPages, setTotalPages] = useState(1);
-  const [filteredCount, setFilteredCount] = useState(0);
-
   // URL 파라미터에서 현재 페이지와 필터 가져오기
   const currentPage = Number(searchParams.get("page") || 1);
   const currentFilters = useMemo(
@@ -56,7 +50,7 @@ export const useDayOffList = (): UseDayOffListReturn => {
   );
 
   // API 파라미터 생성
-  const createApiParams = useCallback((): DayOffSearchParams => {
+  const apiParams = useMemo((): DayOffSearchParams => {
     const params: DayOffSearchParams = {
       page: currentPage,
       page_size: DAY_OFF_CONSTANTS.PAGE_SIZE,
@@ -77,40 +71,38 @@ export const useDayOffList = (): UseDayOffListReturn => {
     return params;
   }, [currentPage, currentFilters]);
 
-  // 데이터 로드
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // React Query를 사용한 데이터 페칭
+  const {
+    data: apiResponse,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      CACHE_KEYS.DAY_OFF_REQUESTS,
+      currentPage,
+      currentFilters.request_type,
+      currentFilters.status,
+      currentFilters.searchTerm,
+    ],
+    queryFn: () => getDayOffRequests(apiParams),
+    ...QUERY_CONFIG.DEFAULT_OPTIONS,
+  });
 
-    try {
-      const params = createApiParams();
-      const response = await getDayOffRequests(params);
+  // 데이터 추출
+  const data = apiResponse?.results || [];
+  const totalPages = apiResponse?.total_pages || 1;
+  const filteredCount = apiResponse?.count || 0;
 
-      setData(response.results);
-      setTotalPages(response.total_pages);
-      setFilteredCount(response.count);
-    } catch (err) {
-      setError(DAY_OFF_ERROR_MESSAGES.FETCH_FAILED);
-      console.error("Failed to load day-off data:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [createApiParams]);
+  // 표준화된 에러 처리
+  const error = useQueryError(queryError, DAY_OFF_ERROR_MESSAGES.FETCH_FAILED);
 
-  // 컴포넌트 마운트 시 데이터 로드
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  // 기존 인터페이스 호환성을 위한 함수들
+  const clearError = () => {
+    // React Query에서는 자동으로 에러가 관리되므로 빈 함수
+  };
 
-  // 에러 초기화
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  // 데이터 새로고침
-  const refreshData = useCallback(() => {
-    loadData();
-  }, [loadData]);
+  const refreshData = () => refetch();
 
   return {
     // 데이터

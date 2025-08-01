@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Cart, CartFilters, CartStatus } from "../types";
 import { mapApiCartsToCartList, mapCartStatusToApiStatus } from "../utils";
 import { fetchCartList } from "../api";
 import { CART_ITEMS_PER_PAGE } from "../constants";
+import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
+import { useQueryError } from "@/shared/hooks/use-query-error";
+import { addNumberToItems } from "@/shared/utils/pagination-utils";
 
 interface UseCartDataProps {
   selectedGolfCourseId?: string;
@@ -23,37 +27,32 @@ export const useCartData = ({
   const urlSearchTerm = searchParams.get("search") || "";
   const urlStatus = searchParams.get("status") as CartStatus | undefined;
 
-  // 상태 관리
-  const [carts, setCarts] = useState<Cart[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   // 필터 상태 (URL과 동기화)
-  const [filters, setFilters] = useState<CartFilters>({
-    searchTerm: urlSearchTerm,
-    status: urlStatus,
-    golfCourseId: undefined,
-    fieldId: undefined,
-  });
-
-  // URL 파라미터 변경 시 필터 상태 동기화
-  useEffect(() => {
-    setFilters({
+  const filters = useMemo(
+    (): CartFilters => ({
       searchTerm: urlSearchTerm,
       status: urlStatus,
       golfCourseId: undefined,
       fieldId: undefined,
-    });
-  }, [urlSearchTerm, urlStatus]);
+    }),
+    [urlSearchTerm, urlStatus]
+  );
 
-  // API 호출 함수
-  const loadCarts = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
+  // React Query를 사용한 데이터 페칭
+  const {
+    data: apiResponse,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      CACHE_KEYS.CARTS,
+      currentPage,
+      urlSearchTerm,
+      urlStatus,
+      isMaster ? selectedGolfCourseId : undefined,
+    ],
+    queryFn: async () => {
       const apiStatus = urlStatus
         ? mapCartStatusToApiStatus(urlStatus)
         : undefined;
@@ -70,41 +69,45 @@ export const useCartData = ({
       // API 응답 구조 검증
       if (!response.data?.results || !Array.isArray(response.data.results)) {
         console.warn("⚠️ 예상과 다른 API 응답 구조:", response);
-        setCarts([]);
-        setTotalCount(0);
-        setTotalPages(1);
-        return;
+        return {
+          results: [],
+          count: 0,
+          total_pages: 1,
+        };
       }
 
-      const mappedCarts = mapApiCartsToCartList(response.data.results);
-      setCarts(mappedCarts);
-      setTotalCount(response.data.count || 0);
-      setTotalPages(response.data.total_pages || 1);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "카트 목록 조회 중 오류가 발생했습니다.";
-      setError(errorMessage);
-      console.error("카트 목록 조회 중 오류 발생:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, urlSearchTerm, urlStatus, selectedGolfCourseId, isMaster]);
+      return response.data;
+    },
+    ...QUERY_CONFIG.REALTIME_OPTIONS,
+  });
+
+  // 데이터 변환
+  const carts = useMemo(() => {
+    if (!apiResponse?.results) return [];
+    return mapApiCartsToCartList(apiResponse.results);
+  }, [apiResponse?.results]);
+
+  const totalCount = apiResponse?.count || 0;
+  const totalPages = apiResponse?.total_pages || 1;
+
+  // 표준화된 에러 처리
+  const error = useQueryError(
+    queryError,
+    "카트 목록 조회 중 오류가 발생했습니다."
+  );
 
   // 페이지네이션된 데이터에 번호 추가
   const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * CART_ITEMS_PER_PAGE;
-    return carts.map((cart, index) => ({
-      ...cart,
-      no: startIndex + index + 1,
-    }));
+    return addNumberToItems(carts, currentPage, CART_ITEMS_PER_PAGE);
   }, [carts, currentPage]);
 
-  // 필터나 페이지 변경 시 데이터 로드
-  useEffect(() => {
-    loadCarts();
-  }, [loadCarts]);
+  // 기존 인터페이스 호환성을 위한 함수들
+  const loadCarts = () => refetch();
+
+  // React Query 구조에서는 필터가 URL에서 직접 관리되므로 빈 함수로 유지
+  const setFilters = () => {
+    // URL 파라미터는 외부에서 직접 관리됨
+  };
 
   return {
     // 데이터

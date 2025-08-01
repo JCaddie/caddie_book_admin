@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   approveDayOffRequests,
   rejectDayOffRequests,
 } from "../api/day-off-api";
+import { CACHE_KEYS } from "@/shared/lib/query-config";
+import { useMutationError } from "@/shared/hooks/use-query-error";
 
 interface UseDayOffActionsReturn {
   // 상태
@@ -23,53 +26,76 @@ interface UseDayOffActionsReturn {
 }
 
 export const useDayOffActions = (): UseDayOffActionsReturn => {
-  const [isApproving, setIsApproving] = useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
+  const queryClient = useQueryClient();
+
+  // 승인 mutation
+  const approveMutation = useMutation({
+    mutationFn: async (requestIds: string[]) => {
+      return approveDayOffRequests(requestIds);
+    },
+    onSuccess: () => {
+      // day-off 요청 목록 캐시 무효화
+      queryClient.invalidateQueries({
+        queryKey: [CACHE_KEYS.DAY_OFF_REQUESTS],
+      });
+    },
+    onError: (error: Error) => {
+      console.error("승인 처리 중 오류:", error);
+    },
+  });
+
+  // 반려 mutation
+  const rejectMutation = useMutation({
+    mutationFn: async ({
+      requestIds,
+      rejectionReason,
+    }: {
+      requestIds: string[];
+      rejectionReason?: string;
+    }) => {
+      return rejectDayOffRequests(requestIds, rejectionReason);
+    },
+    onSuccess: () => {
+      // day-off 요청 목록 캐시 무효화
+      queryClient.invalidateQueries({
+        queryKey: [CACHE_KEYS.DAY_OFF_REQUESTS],
+      });
+    },
+    onError: (error: Error) => {
+      console.error("반려 처리 중 오류:", error);
+    },
+  });
 
   // 승인 처리
-  const approveRequests = useCallback(async (requestIds: string[]) => {
-    if (requestIds.length === 0) return;
-
-    setIsApproving(true);
-    try {
-      await approveDayOffRequests(requestIds);
-    } catch (error) {
-      console.error("승인 처리 중 오류:", error);
-      throw error; // 상위 컴포넌트에서 처리하도록 에러를 다시 던짐
-    } finally {
-      setIsApproving(false);
-    }
-  }, []);
+  const approveRequests = useCallback(
+    async (requestIds: string[]) => {
+      if (requestIds.length === 0) return;
+      await approveMutation.mutateAsync(requestIds);
+    },
+    [approveMutation]
+  );
 
   // 반려 처리
   const rejectRequests = useCallback(
     async (requestIds: string[], rejectionReason?: string) => {
       if (requestIds.length === 0) return;
-
-      setIsRejecting(true);
-      try {
-        await rejectDayOffRequests(requestIds, rejectionReason);
-      } catch (error) {
-        console.error("반려 처리 중 오류:", error);
-        throw error; // 상위 컴포넌트에서 처리하도록 에러를 다시 던짐
-      } finally {
-        setIsRejecting(false);
-      }
+      await rejectMutation.mutateAsync({ requestIds, rejectionReason });
     },
-    []
+    [rejectMutation]
   );
 
-  // 로딩 상태 초기화
+  // 로딩 상태 초기화 - React Query에서는 자동으로 관리됨
   const resetLoadingStates = useCallback(() => {
-    setIsApproving(false);
-    setIsRejecting(false);
+    // React Query에서 mutation 상태가 자동 관리되므로 빈 함수
   }, []);
 
   return {
-    isApproving,
-    isRejecting,
+    isApproving: approveMutation.isPending,
+    isRejecting: rejectMutation.isPending,
     approveRequests,
     rejectRequests,
     resetLoadingStates,
+    approveError: useMutationError(approveMutation.error, "update"),
+    rejectError: useMutationError(rejectMutation.error, "update"),
   };
 };

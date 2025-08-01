@@ -3,10 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { AnnouncementFilters, AnnouncementWithNo } from "../types";
 import { ANNOUNCEMENT_CONSTANTS } from "../constants";
 import { fetchAnnouncements } from "../api/announcement-api";
-import {
-  addNumberToAnnouncements,
-  transformAnnouncementListResponse,
-} from "../utils";
+import { transformAnnouncementListResponse } from "../utils";
+import { addNumberToItems } from "@/shared/utils/pagination-utils";
 
 /**
  * 공지사항 데이터 조회 훅
@@ -49,7 +47,7 @@ export const useAnnouncementData = (
   const dataWithNo = useMemo((): AnnouncementWithNo[] => {
     if (!transformedData?.items) return [];
 
-    return addNumberToAnnouncements(
+    return addNumberToItems(
       transformedData.items,
       currentPage,
       ANNOUNCEMENT_CONSTANTS.UI.PAGE_SIZE

@@ -1,51 +1,46 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Work } from "@/modules/work/types";
 import { fetchWorkSchedules } from "@/modules/work/api";
+import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
+import { useQueryError } from "@/shared/hooks/use-query-error";
 
 export function useWorkDetail(golfCourseId: string) {
-  const [work, setWork] = useState<Work | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // React Query를 사용한 데이터 페칭
+  const {
+    data: allWorks = [],
+    isLoading,
+    error: queryError,
+  } = useQuery({
+    queryKey: [CACHE_KEYS.WORK_SCHEDULES],
+    queryFn: fetchWorkSchedules,
+    ...QUERY_CONFIG.REALTIME_OPTIONS,
+  });
 
-  // API에서 데이터 가져오기
-  useEffect(() => {
-    const fetchWorkData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  // golfCourseId로 해당 work 찾기
+  const work = useMemo(() => {
+    if (!allWorks.length) return null;
 
-        // API에서 모든 work 데이터 가져오기
-        const allWorks = await fetchWorkSchedules();
+    const foundWork = allWorks.find(
+      (w: Work) => w.golfCourseId === golfCourseId
+    );
 
-        // golfCourseId로 해당 work 찾기
-        const foundWork = allWorks.find(
-          (w: Work) => w.golfCourseId === golfCourseId
-        );
-
-        if (foundWork) {
-          setWork(foundWork);
-        } else {
-          // 임시 해결책: 첫 번째 데이터를 사용하고 golfCourseId 업데이트
-          if (allWorks.length > 0) {
-            const firstWork = { ...allWorks[0], golfCourseId };
-            setWork(firstWork);
-          }
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "데이터를 불러오는데 실패했습니다."
-        );
-      } finally {
-        setIsLoading(false);
+    if (foundWork) {
+      return foundWork;
+    } else {
+      // 임시 해결책: 첫 번째 데이터를 사용하고 golfCourseId 업데이트
+      if (allWorks.length > 0) {
+        return { ...allWorks[0], golfCourseId };
       }
-    };
+    }
 
-    fetchWorkData();
-  }, [golfCourseId]);
+    return null;
+  }, [allWorks, golfCourseId]);
+
+  // 표준화된 에러 처리
+  const error = useQueryError(queryError, "데이터를 불러오는데 실패했습니다.");
 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
