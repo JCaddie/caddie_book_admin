@@ -14,6 +14,7 @@ export { EditableAnnouncementField } from "./editable-announcement-field";
 
 // 폼 관련 컴포넌트들
 export { default as AnnouncementForm } from "./announcement-form";
+export { default as AnnouncementCreateForm } from "./announcement-create-form";
 
 // 분해된 폼 서브 컴포넌트들 (필요시 개별 사용 가능)
 export * from "./form";
