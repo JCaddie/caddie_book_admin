@@ -36,6 +36,11 @@ export interface Announcement
   isPinned?: boolean;
   validFrom?: string;
   validUntil?: string;
+  golfCourseId: string;
+  golfCourseName: string;
+  targetGroup: string | null;
+  announcementType: string;
+  announcementTypeDisplay: string;
 }
 
 /**

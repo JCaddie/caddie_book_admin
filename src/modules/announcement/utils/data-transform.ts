@@ -14,15 +14,20 @@ export const transformAnnouncementApiData = (
   return {
     id: apiData.id,
     title: apiData.title,
-    content: "", // API에서 제공되지 않음 (상세 조회에서만 제공)
+    content: apiData.content,
     views: apiData.views,
     isPublished: apiData.is_published,
     publishedAt: apiData.is_published ? apiData.created_at : undefined,
     files: [], // TODO: 추후 파일 기능 활성화 시 추가
     createdAt: apiData.created_at,
-    updatedAt: apiData.created_at, // API에서 제공되지 않으므로 created_at 사용
-    authorId: "", // API에서 제공되지 않음
+    updatedAt: apiData.updated_at,
+    authorId: apiData.author,
     authorName: apiData.author_name,
+    golfCourseId: apiData.golf_course,
+    golfCourseName: apiData.golf_course_name,
+    targetGroup: apiData.target_group,
+    announcementType: apiData.announcement_type,
+    announcementTypeDisplay: apiData.announcement_type_display,
   };
 };
 
@@ -54,11 +59,11 @@ export const transformAnnouncementListResponse = (
   apiResponse: AnnouncementListApiResponse
 ) => {
   return {
-    items: apiResponse.results.map(transformAnnouncementApiData),
-    totalCount: apiResponse.count,
-    currentPage: apiResponse.page,
-    pageSize: apiResponse.page_size,
-    totalPages: apiResponse.total_pages,
-    hasMore: apiResponse.page < apiResponse.total_pages,
+    items: apiResponse.data.results.map(transformAnnouncementApiData),
+    totalCount: apiResponse.data.count,
+    currentPage: apiResponse.data.page,
+    pageSize: apiResponse.data.page_size,
+    totalPages: apiResponse.data.total_pages,
+    hasMore: apiResponse.data.page < apiResponse.data.total_pages,
   };
 };

@@ -5,10 +5,8 @@ import { Plus } from "lucide-react";
 import {
   Button,
   ConfirmationModal,
-  GolfCourseSelector,
   SearchWithButton,
 } from "@/shared/components/ui";
-import { useAuth } from "@/shared/hooks/use-auth";
 import { ANNOUNCEMENT_CONSTANTS } from "../constants";
 
 interface AnnouncementActionBarProps {
@@ -17,11 +15,6 @@ interface AnnouncementActionBarProps {
   onDeleteSelected: () => void;
   onCreateNew: () => void;
   isDeleting?: boolean;
-  // 골프장 필터링 props (MASTER 권한에서만 사용)
-  selectedGolfCourseId?: string;
-  golfCourseSearchTerm?: string;
-  onGolfCourseChange?: (golfCourseId: string) => void;
-  onGolfCourseSearchChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const AnnouncementActionBar: React.FC<AnnouncementActionBarProps> = memo(
@@ -31,13 +24,7 @@ const AnnouncementActionBar: React.FC<AnnouncementActionBarProps> = memo(
     onDeleteSelected,
     onCreateNew,
     isDeleting = false,
-    selectedGolfCourseId = "",
-    golfCourseSearchTerm = "",
-    onGolfCourseChange,
-    onGolfCourseSearchChange,
   }) => {
-    const { user } = useAuth();
-    const isMaster = user?.role === "MASTER";
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const handleDeleteClick = useCallback(() => {
@@ -57,65 +44,45 @@ const AnnouncementActionBar: React.FC<AnnouncementActionBarProps> = memo(
 
     return (
       <>
-        <div className="space-y-4">
-          {/* MASTER 권한일 때만 골프장 선택 영역 표시 */}
-          {isMaster && onGolfCourseChange && onGolfCourseSearchChange && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-base font-bold text-black">
-                  골프장 선택
-                </span>
-              </div>
-              <GolfCourseSelector
-                selectedGolfCourseId={selectedGolfCourseId}
-                searchTerm={golfCourseSearchTerm}
-                onGolfCourseChange={onGolfCourseChange}
-                onSearchChange={onGolfCourseSearchChange}
-              />
-            </div>
-          )}
+        <div className="flex items-center justify-between">
+          {/* 좌측: 총 건수 */}
+          <div className="flex items-center gap-3">
+            <span className="text-base font-bold text-black">
+              총 {totalCount}건
+            </span>
+          </div>
 
-          {/* 기존 액션바 영역 */}
-          <div className="flex items-center justify-between">
-            {/* 좌측: 총 건수 */}
-            <div className="flex items-center gap-3">
-              <span className="text-base font-bold text-black">
-                총 {totalCount}건
-              </span>
-            </div>
+          {/* 우측: 검색창과 버튼들 */}
+          <div className="flex items-center gap-4">
+            {/* 검색창 */}
+            <SearchWithButton
+              placeholder={ANNOUNCEMENT_CONSTANTS.FORM.PLACEHOLDERS.SEARCH}
+            />
 
-            {/* 우측: 검색창과 버튼들 */}
-            <div className="flex items-center gap-4">
-              {/* 검색창 */}
-              <SearchWithButton
-                placeholder={ANNOUNCEMENT_CONSTANTS.FORM.PLACEHOLDERS.SEARCH}
-              />
+            {/* 버튼 그룹 */}
+            <div className="flex items-center gap-2">
+              {/* 삭제 버튼 */}
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={handleDeleteClick}
+                disabled={selectedCount === 0 || isDeleting}
+                loading={isDeleting}
+                className="w-24"
+              >
+                삭제
+              </Button>
 
-              {/* 버튼 그룹 */}
-              <div className="flex items-center gap-2">
-                {/* 삭제 버튼 */}
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={handleDeleteClick}
-                  disabled={selectedCount === 0 || isDeleting}
-                  loading={isDeleting}
-                  className="w-24"
-                >
-                  삭제
-                </Button>
-
-                {/* 생성 버튼 */}
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={onCreateNew}
-                  icon={<Plus size={24} />}
-                  className="w-24"
-                >
-                  생성
-                </Button>
-              </div>
+              {/* 생성 버튼 */}
+              <Button
+                variant="primary"
+                size="md"
+                onClick={onCreateNew}
+                icon={<Plus size={24} />}
+                className="w-24"
+              >
+                생성
+              </Button>
             </div>
           </div>
         </div>

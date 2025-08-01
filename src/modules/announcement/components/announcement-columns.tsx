@@ -65,7 +65,28 @@ export const useAnnouncementColumns = (): Column<AnnouncementWithNo>[] => {
         key: "authorName",
         title: "작성자",
         width: ANNOUNCEMENT_COLUMN_WIDTHS.author,
-        render: basicRenderers.text, // 🎉 중복 제거!
+        render: basicRenderers.text,
+      },
+      {
+        key: "golfCourseName",
+        title: "골프장",
+        width: 150,
+        render: basicRenderers.text,
+      },
+      {
+        key: "announcementTypeDisplay",
+        title: "공지 유형",
+        width: 120,
+        render: basicRenderers.text,
+      },
+      {
+        key: "targetGroup",
+        title: "대상 그룹",
+        width: 120,
+        render: (value: unknown) => {
+          if (!value) return "-";
+          return String(value);
+        },
       },
     ],
     []
