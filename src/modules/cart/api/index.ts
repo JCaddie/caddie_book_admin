@@ -12,9 +12,6 @@ export {
   updateCartField,
 } from "./cart-api";
 
-// Constants API를 사용하는 함수들
-export { fetchStatusChoices, fetchBatteryLevelChoices } from "./cart-api";
-
 // 타입들도 함께 export
 export type {
   ApiCartListResponse,

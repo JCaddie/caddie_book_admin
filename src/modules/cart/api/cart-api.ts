@@ -1,5 +1,4 @@
 import { apiClient } from "@/shared/lib/api-client";
-import { constantsApi } from "@/shared/lib/constants-api";
 import {
   ApiCartDetailResponse,
   ApiCartHistoryResponse,
@@ -144,46 +143,6 @@ export const deleteCartsBulk = async (ids: string[]): Promise<void> => {
     });
   } catch (error) {
     console.error("카트 일괄 삭제 실패:", error);
-    throw error;
-  }
-};
-
-/**
- * 카트 상태 선택지 조회 (constants API 사용)
- */
-export const fetchStatusChoices = async () => {
-  try {
-    const response = await constantsApi.getConstants();
-    return {
-      success: true,
-      message: "카트 상태 선택지 조회 성공",
-      status_choices: response.data.cart_statuses.map((item) => ({
-        value: item.id,
-        label: item.value,
-      })),
-    };
-  } catch (error) {
-    console.error("카트 상태 선택지 조회 실패:", error);
-    throw error;
-  }
-};
-
-/**
- * 카트 배터리 레벨 선택지 조회 (constants API 사용)
- */
-export const fetchBatteryLevelChoices = async () => {
-  try {
-    const response = await constantsApi.getConstants();
-    return {
-      success: true,
-      message: "카트 배터리 레벨 선택지 조회 성공",
-      battery_level_choices: response.data.battery_levels.map((item) => ({
-        value: item.id,
-        label: item.value,
-      })),
-    };
-  } catch (error) {
-    console.error("카트 배터리 레벨 선택지 조회 실패:", error);
     throw error;
   }
 };

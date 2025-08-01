@@ -4,12 +4,12 @@
 export type CartStatus = string; // "사용 가능", "사용 중", "점검 중" 등
 
 // 카트 타입 정의
-export interface Cart extends Record<string, unknown> {
+export interface Cart {
   id: string;
   no: number;
   name: string;
   status: CartStatus;
-  fieldName: string;
+  location: string; // location으로 통일 (fieldName 대신)
   golfCourseName: string;
   managerName: string; // current_caddie.name 또는 "미배정"
   batteryLevel: number;
@@ -38,7 +38,7 @@ export interface CartDetail {
 }
 
 // 카트 이력 아이템
-export interface CartHistoryItem extends Record<string, unknown> {
+export interface CartHistoryItem {
   id: string;
   no: number;
   caddieName: string;
