@@ -88,7 +88,7 @@ export const useUserManagement = (): UseUserManagementReturn => {
     if (selectedRowKeys.length === 0) return;
 
     try {
-      await deleteUsersMutation.mutateAsync();
+      await deleteUsersMutation.mutateAsync({ ids: selectedRowKeys });
 
       // 선택 상태 초기화
       setSelectedRowKeys([]);

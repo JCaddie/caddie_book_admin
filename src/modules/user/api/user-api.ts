@@ -1,6 +1,8 @@
 import { apiClient } from "@/shared/lib/api-client";
 import {
   AdminsApiResponse,
+  BulkDeleteAdminsRequest,
+  BulkDeleteAdminsResponse,
   CaddieAssignmentOverviewResponse,
   CreateAdminRequest,
   CreateAdminResponse,
@@ -115,6 +117,15 @@ export const createAdmin = async (
   data: CreateAdminRequest
 ): Promise<CreateAdminResponse> => {
   return apiClient.post("/api/v1/users/admins/", data);
+};
+
+// 어드민 벌크 삭제
+export const bulkDeleteAdmins = async (
+  data: BulkDeleteAdminsRequest
+): Promise<BulkDeleteAdminsResponse> => {
+  return apiClient.delete("/api/v1/users/admins/bulk-delete/", {
+    body: JSON.stringify(data),
+  });
 };
 
 /**

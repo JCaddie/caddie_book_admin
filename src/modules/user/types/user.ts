@@ -81,6 +81,32 @@ export type CreateAdminResponse =
   | CreateAdminSuccessResponse
   | CreateAdminErrorResponse;
 
+// 어드민 벌크 삭제 요청 타입
+export interface BulkDeleteAdminsRequest {
+  ids: string[];
+}
+
+// 어드민 벌크 삭제 성공 응답 타입
+export interface BulkDeleteAdminsSuccessResponse {
+  success: true;
+  message: string;
+  data: {
+    deleted_count: number;
+  };
+}
+
+// 어드민 벌크 삭제 실패 응답 타입
+export interface BulkDeleteAdminsErrorResponse {
+  success: false;
+  message: string;
+  error_code: string;
+}
+
+// 어드민 벌크 삭제 응답 타입 (성공/실패 모두 포함)
+export type BulkDeleteAdminsResponse =
+  | BulkDeleteAdminsSuccessResponse
+  | BulkDeleteAdminsErrorResponse;
+
 // 액션바 Props 타입
 export interface UserActionBarProps {
   totalCount: number;
