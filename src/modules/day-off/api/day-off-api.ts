@@ -79,7 +79,7 @@ export const rejectDayOffRequests = async (
 };
 
 // ================================
-// Deprecated Functions (하위 호환성을 위해 유지)
+// Legacy Functions (하위 호환성을 위해 유지)
 // ================================
 
 /**

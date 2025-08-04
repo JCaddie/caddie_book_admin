@@ -10,6 +10,11 @@ import {
 } from "@/shared/components/ui";
 import { useDocumentTitle } from "@/shared/hooks";
 import { useDayOffActions, useDayOffDetail } from "@/modules/day-off/hooks";
+import {
+  formatProcessResult,
+  getProcessResultColor,
+} from "@/modules/day-off/utils";
+import { DAY_OFF_UI_TEXT } from "@/modules/day-off/constants";
 
 interface DayOffDetailPageProps {
   params: Promise<{
@@ -26,7 +31,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
   // 페이지 타이틀 설정
-  useDocumentTitle({ title: "휴무 신청 상세" });
+  useDocumentTitle({ title: DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE });
 
   // 휴무 신청 데이터 조회
   const {
@@ -46,7 +51,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
     return (
       <div className="min-h-screen bg-gray-50" style={{ minWidth: "1600px" }}>
         <div className="bg-white rounded-xl p-8">
-          <AdminPageHeader title="휴무 신청 상세" />
+          <AdminPageHeader title={DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE} />
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <p className="text-lg text-red-600 mb-4">오류가 발생했습니다</p>
@@ -71,7 +76,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
     return (
       <div className="min-h-screen bg-gray-50" style={{ minWidth: "1600px" }}>
         <div className="bg-white rounded-xl p-8">
-          <AdminPageHeader title="휴무 신청 상세" />
+          <AdminPageHeader title={DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE} />
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -144,7 +149,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
         {/* 메인 콘텐츠 */}
         <div className="flex-1 p-8 space-y-10">
           {/* 페이지 헤더 */}
-          <AdminPageHeader title="휴무 신청 상세" />
+          <AdminPageHeader title={DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE} />
 
           {/* 기본 정보 섹션 */}
           <div className="space-y-2">
@@ -305,13 +310,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {dayOffRequest.process_result === "APPROVED"
-                        ? "승인"
-                        : dayOffRequest.process_result === "REJECTED"
-                        ? "반려"
-                        : dayOffRequest.process_result === "PENDING"
-                        ? "대기"
-                        : dayOffRequest.process_result}
+                      {formatProcessResult(dayOffRequest.process_result)}
                     </span>
                   </div>
                 </div>

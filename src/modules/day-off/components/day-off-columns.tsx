@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { basicRenderers } from "@/shared/components/ui";
 import { Column } from "@/shared/types/table";
 import { DayOffRequest } from "../types";
+import { formatProcessResult, getProcessResultColor } from "../utils";
 
 // 사유 텍스트 말줄임표 렌더러
 const reasonRenderer = (value: unknown) => (
@@ -52,27 +53,9 @@ export const useDayOffColumns = (): Column<DayOffRequest>[] => {
         width: 100,
         render: (value: unknown) => {
           const result = String(value);
-          const getStatusColor = (status: string) => {
-            switch (status) {
-              case "APPROVED":
-                return "text-green-600";
-              case "REJECTED":
-                return "text-red-600";
-              case "PENDING":
-                return "text-yellow-600";
-              default:
-                return "text-gray-600";
-            }
-          };
           return (
-            <span className={`font-medium ${getStatusColor(result)}`}>
-              {result === "APPROVED"
-                ? "승인"
-                : result === "REJECTED"
-                ? "반려"
-                : result === "PENDING"
-                ? "대기"
-                : result}
+            <span className={`font-medium ${getProcessResultColor(result)}`}>
+              {formatProcessResult(result)}
             </span>
           );
         },
