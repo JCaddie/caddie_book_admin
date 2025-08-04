@@ -182,20 +182,20 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
                   {/* 두 번째 행 */}
                   <div className="border-b border-gray-200 flex">
                     <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">근무처</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {dayOffRequest.golf_course_name}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
                       <span className="text-sm font-bold">역할</span>
                     </div>
                     <div className="flex-1 flex items-center px-4 py-3">
                       <span className="text-sm text-black">캐디</span>
+                    </div>
+                  </div>
+                  <div className="border-b border-gray-200 flex">
+                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                      <span className="text-sm font-bold">신청일</span>
+                    </div>
+                    <div className="flex-1 flex items-center px-4 py-3">
+                      <span className="text-sm text-black">
+                        {formatDate(dayOffRequest.date)}
+                      </span>
                     </div>
                   </div>
 
@@ -287,40 +287,36 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
                   </div>
                   <div className="flex-1 flex items-center px-4 py-3">
                     <span className="text-sm text-black">
-                      {dayOffRequest.request_type_display}
+                      {dayOffRequest.display_status}
                     </span>
                   </div>
                 </div>
                 <div className="border-b border-gray-200 flex">
                   <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">상태</span>
+                    <span className="text-sm font-bold">처리결과</span>
                   </div>
                   <div className="flex-1 flex items-center px-4 py-3">
                     <span
                       className={`px-2 py-1 rounded text-sm font-medium ${
-                        dayOffRequest.status === "approved"
+                        dayOffRequest.process_result === "APPROVED"
                           ? "bg-green-100 text-green-800"
-                          : dayOffRequest.status === "rejected"
+                          : dayOffRequest.process_result === "REJECTED"
                           ? "bg-red-100 text-red-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {dayOffRequest.status_display}
+                      {dayOffRequest.process_result === "APPROVED"
+                        ? "승인"
+                        : dayOffRequest.process_result === "REJECTED"
+                        ? "반려"
+                        : dayOffRequest.process_result === "PENDING"
+                        ? "대기"
+                        : dayOffRequest.process_result}
                     </span>
                   </div>
                 </div>
 
                 {/* 두 번째 행 */}
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">휴무 신청일</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {formatDate(dayOffRequest.date)}
-                    </span>
-                  </div>
-                </div>
                 <div className="border-b border-gray-200 flex">
                   <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
                     <span className="text-sm font-bold">신청 날짜</span>
@@ -331,8 +327,32 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
                     </span>
                   </div>
                 </div>
+                <div className="border-b border-gray-200 flex">
+                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                    <span className="text-sm font-bold">요청 날짜</span>
+                  </div>
+                  <div className="flex-1 flex items-center px-4 py-3">
+                    <span className="text-sm text-black">
+                      {dayOffRequest.requested_at
+                        ? formatDate(dayOffRequest.requested_at)
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
 
                 {/* 세 번째 행 */}
+                <div className="border-b border-gray-200 flex">
+                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                    <span className="text-sm font-bold">수정 날짜</span>
+                  </div>
+                  <div className="flex-1 flex items-center px-4 py-3">
+                    <span className="text-sm text-black">
+                      {formatDate(dayOffRequest.updated_at)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 네 번째 행 */}
                 <div className="border-b border-gray-200 flex">
                   <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
                     <span className="text-sm font-bold">처리자</span>
@@ -363,25 +383,44 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
                   </div>
                   <div className="flex-1 flex items-center px-4 py-3">
                     <span className="text-sm text-black">
-                      {dayOffRequest.reason}
+                      {dayOffRequest.request_reason}
                     </span>
                   </div>
                 </div>
 
-                {/* 반려 사유 행 (반려된 경우에만 표시) */}
-                {dayOffRequest.status === "rejected" &&
-                  dayOffRequest.rejection_reason && (
-                    <div className="col-span-2 border-b border-gray-200 flex">
-                      <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                        <span className="text-sm font-bold">반려 사유</span>
-                      </div>
-                      <div className="flex-1 flex items-center px-4 py-3">
-                        <span className="text-sm text-red-600">
-                          {dayOffRequest.rejection_reason}
-                        </span>
-                      </div>
+                {/* 메모 행 (전체 너비) */}
+                {dayOffRequest.notes && (
+                  <div className="col-span-2 border-b border-gray-200 flex">
+                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                      <span className="text-sm font-bold">메모</span>
                     </div>
-                  )}
+                    <div className="flex-1 flex items-center px-4 py-3">
+                      <span className="text-sm text-gray-600">
+                        {dayOffRequest.notes}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 처리내용 행 (처리된 경우에만 표시) */}
+                {dayOffRequest.process_notes && (
+                  <div className="col-span-2 border-b border-gray-200 flex">
+                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
+                      <span className="text-sm font-bold">처리내용</span>
+                    </div>
+                    <div className="flex-1 flex items-center px-4 py-3">
+                      <span
+                        className={`text-sm ${
+                          dayOffRequest.process_result === "REJECTED"
+                            ? "text-red-600"
+                            : "text-black"
+                        }`}
+                      >
+                        {dayOffRequest.process_notes}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

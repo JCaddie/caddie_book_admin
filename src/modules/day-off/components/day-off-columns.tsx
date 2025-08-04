@@ -23,9 +23,9 @@ export const useDayOffColumns = (): Column<DayOffRequest>[] => {
         render: basicRenderers.index,
       },
       {
-        key: "request_type_display",
+        key: "display_status",
         title: "신청구분",
-        width: 100,
+        width: 120,
         render: basicRenderers.text,
       },
       {
@@ -35,34 +35,59 @@ export const useDayOffColumns = (): Column<DayOffRequest>[] => {
         render: basicRenderers.text,
       },
       {
-        key: "reason",
+        key: "request_reason",
         title: "사유",
         width: 280,
         render: reasonRenderer,
-      },
-      {
-        key: "golf_course_name",
-        title: "골프장",
-        width: 200,
-        render: basicRenderers.text,
-      },
-      {
-        key: "status_display",
-        title: "상태",
-        width: 100,
-        render: basicRenderers.text,
-      },
-      {
-        key: "processed_by_name",
-        title: "처리자",
-        width: 120,
-        render: basicRenderers.text,
       },
       {
         key: "date",
         title: "휴무 신청일",
         width: 140,
         render: basicRenderers.dateOnly,
+      },
+      {
+        key: "process_result",
+        title: "처리결과",
+        width: 100,
+        render: (value: unknown) => {
+          const result = String(value);
+          const getStatusColor = (status: string) => {
+            switch (status) {
+              case "APPROVED":
+                return "text-green-600";
+              case "REJECTED":
+                return "text-red-600";
+              case "PENDING":
+                return "text-yellow-600";
+              default:
+                return "text-gray-600";
+            }
+          };
+          return (
+            <span className={`font-medium ${getStatusColor(result)}`}>
+              {result === "APPROVED"
+                ? "승인"
+                : result === "REJECTED"
+                ? "반려"
+                : result === "PENDING"
+                ? "대기"
+                : result}
+            </span>
+          );
+        },
+      },
+      {
+        key: "process_notes",
+        title: "처리내용",
+        width: 200,
+        render: reasonRenderer,
+      },
+      {
+        key: "processed_by_name",
+        title: "처리자",
+        width: 120,
+        render: basicRenderers.text,
       },
       {
         key: "created_at",

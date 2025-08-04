@@ -5,8 +5,23 @@
 export type DayOffRequestType = "day_off" | "waiting";
 export type DayOffRequestTypeDisplay = "휴무" | "대기";
 
-export type DayOffStatus = "reviewing" | "approved" | "rejected";
-export type DayOffStatusDisplay = "검토 중" | "승인" | "반려";
+export type DayOffStatus =
+  | "SICK_LEAVE_REQUEST"
+  | "APPROVED"
+  | "REJECTED"
+  | "reviewing"
+  | "approved"
+  | "rejected";
+export type DayOffStatusDisplay =
+  | "병가 신청"
+  | "승인"
+  | "반려"
+  | "검토 중"
+  | "승인"
+  | "반려";
+
+export type ProcessResult = "APPROVED" | "REJECTED" | "PENDING";
+export type ProcessResultDisplay = "승인" | "반려" | "대기";
 
 export type EmploymentType = "FULL_TIME" | "PART_TIME" | "CONTRACT";
 export type EmploymentTypeDisplay = "정규직" | "계약직" | "파트타임";
@@ -17,21 +32,30 @@ export type EmploymentTypeDisplay = "정규직" | "계약직" | "파트타임";
 
 export interface DayOffRequest extends Record<string, unknown> {
   id: string;
-  request_type: DayOffRequestType;
-  request_type_display: DayOffRequestTypeDisplay;
   caddie: string;
   caddie_name: string;
-  reason: string;
-  golf_course: number;
-  golf_course_name: string;
+  date: string;
   status: DayOffStatus;
-  status_display: DayOffStatusDisplay;
+  display_status: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+  request_type: DayOffRequestType;
+  request_reason: string;
+  requested_at: string | null;
   processed_by: string | null;
   processed_by_name: string | null;
   processed_at: string | null;
-  rejection_reason: string | null;
-  date: string;
-  created_at: string;
+  process_result: ProcessResult;
+  process_notes: string;
+
+  // 하위 호환성을 위한 필드들
+  request_type_display?: DayOffRequestTypeDisplay;
+  status_display?: DayOffStatusDisplay;
+  reason?: string;
+  rejection_reason?: string;
+  golf_course?: number;
+  golf_course_name?: string;
 
   // 캐디 상세 정보 (상세 조회 시에만 포함)
   caddie_employment_type?: EmploymentType;
@@ -71,9 +95,17 @@ export interface DayOffSearchParams {
 export interface DayOffRequestListResponse {
   success: boolean;
   message: string;
-  count: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-  results: DayOffRequest[];
+  data: {
+    count: number;
+    page: number;
+    page_size: number;
+    total_pages: number;
+    results: DayOffRequest[];
+  };
+}
+
+export interface DayOffRequestDetailResponse {
+  success: boolean;
+  message: string;
+  data: DayOffRequest;
 }
