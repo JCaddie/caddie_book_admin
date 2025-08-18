@@ -18,6 +18,9 @@ export const DAY_OFF_REQUEST_TYPES: DayOffRequestType[] = [
 ];
 
 export const DAY_OFF_STATUSES: DayOffStatus[] = [
+  "SICK_LEAVE_REQUEST",
+  "APPROVED",
+  "REJECTED",
   "reviewing",
   "approved",
   "rejected",
@@ -31,6 +34,9 @@ export const DAY_OFF_REQUEST_TYPE_OPTIONS = [
 
 export const DAY_OFF_STATUS_OPTIONS = [
   { value: "", label: "상태" },
+  { value: "SICK_LEAVE_REQUEST", label: "병가 신청" },
+  { value: "APPROVED", label: "승인" },
+  { value: "REJECTED", label: "반려" },
   { value: "reviewing", label: "검토 중" },
   { value: "approved", label: "승인" },
   { value: "rejected", label: "반려" },
@@ -58,6 +64,10 @@ export const DAY_OFF_UI_TEXT = {
   // 확인 메시지
   APPROVE_CONFIRM: "승인하시겠습니까?",
   REJECT_CONFIRM: "반려하시겠습니까?",
+
+  // 페이지 타이틀
+  PAGE_TITLE: "휴무관리",
+  DETAIL_PAGE_TITLE: "휴무 신청 상세",
 } as const;
 
 // ================================

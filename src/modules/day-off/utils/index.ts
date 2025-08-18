@@ -31,9 +31,10 @@ export const filterDayOffRequests = (
       const searchTerm = filters.searchTerm.toLowerCase();
       const searchableFields = [
         item.caddie_name,
-        item.reason,
-        item.golf_course_name,
-      ];
+        item.request_reason,
+        item.notes,
+        item.process_notes,
+      ].filter(Boolean); // null/undefined 값 제거
 
       return searchableFields.some((field) =>
         field.toLowerCase().includes(searchTerm)
@@ -73,8 +74,75 @@ export const sortDayOffRequestsByDate = (
 export const calculateDayOffStats = (data: DayOffRequest[]) => {
   return {
     total: data.length,
-    reviewing: data.filter((item) => item.status === "reviewing").length,
-    approved: data.filter((item) => item.status === "approved").length,
-    rejected: data.filter((item) => item.status === "rejected").length,
+    sickLeaveRequest: data.filter(
+      (item) => item.status === "SICK_LEAVE_REQUEST"
+    ).length,
+    approved: data.filter(
+      (item) => item.process_result === "APPROVED" || item.status === "approved"
+    ).length,
+    rejected: data.filter(
+      (item) => item.process_result === "REJECTED" || item.status === "rejected"
+    ).length,
+    pending: data.filter(
+      (item) => item.process_result === "PENDING" || item.status === "reviewing"
+    ).length,
   };
+};
+
+// ================================
+// 포맷팅 유틸리티
+// ================================
+
+/**
+ * 처리 결과를 한글로 변환
+ */
+export const formatProcessResult = (result: string): string => {
+  switch (result) {
+    case "APPROVED":
+      return "승인";
+    case "REJECTED":
+      return "반려";
+    case "PENDING":
+      return "대기";
+    default:
+      return result;
+  }
+};
+
+/**
+ * 처리 결과에 따른 색상 클래스 반환
+ */
+export const getProcessResultColor = (result: string): string => {
+  switch (result) {
+    case "APPROVED":
+      return "text-green-600";
+    case "REJECTED":
+      return "text-red-600";
+    case "PENDING":
+      return "text-yellow-600";
+    default:
+      return "text-gray-600";
+  }
+};
+
+/**
+ * 상태를 한글로 변환
+ */
+export const formatStatus = (status: string): string => {
+  switch (status) {
+    case "SICK_LEAVE_REQUEST":
+      return "병가 신청";
+    case "APPROVED":
+      return "승인";
+    case "REJECTED":
+      return "반려";
+    case "reviewing":
+      return "검토 중";
+    case "approved":
+      return "승인";
+    case "rejected":
+      return "반려";
+    default:
+      return status;
+  }
 };

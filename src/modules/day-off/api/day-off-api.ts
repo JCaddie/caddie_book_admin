@@ -2,6 +2,7 @@ import { apiClient } from "@/shared/lib/api-client";
 import {
   DayOffRequest,
   DayOffRequestListResponse,
+  DayOffRequestDetailResponse,
   DayOffSearchParams,
 } from "../types";
 
@@ -11,7 +12,10 @@ import {
 export const getDayOffRequestDetail = async (
   id: string
 ): Promise<DayOffRequest> => {
-  return apiClient.get<DayOffRequest>(`/api/v1/users/day-off-requests/${id}/`);
+  const response = await apiClient.get<DayOffRequestDetailResponse>(
+    `/api/v1/caddies/daily-statuses/${id}/`
+  );
+  return response.data;
 };
 
 /**
@@ -43,7 +47,7 @@ export const getDayOffRequests = async (
   }
 
   const queryString = searchParams.toString();
-  const url = `/api/v1/users/day-off-requests/${
+  const url = `/api/v1/caddies/daily-statuses/pending_requests/${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -51,47 +55,31 @@ export const getDayOffRequests = async (
 };
 
 /**
- * 휴무 신청 승인 (단일 또는 일괄)
+ * 휴무 신청 승인 (일괄 처리)
  */
 export const approveDayOffRequests = async (
   requestIds: string[]
 ): Promise<void> => {
-  if (requestIds.length === 1) {
-    // 단일 승인
-    await apiClient.patch(
-      `/api/v1/users/day-off-requests/${requestIds[0]}/approve/`
-    );
-  } else {
-    // 일괄 승인
-    await apiClient.post("/api/v1/users/day-off-requests/bulk_approve/", {
-      request_ids: requestIds,
-    });
-  }
+  await apiClient.post("/api/v1/caddies/daily-statuses/bulk-approve/", {
+    request_ids: requestIds,
+  });
 };
 
 /**
- * 휴무 신청 반려 (단일 또는 일괄)
+ * 휴무 신청 반려 (일괄 처리)
  */
 export const rejectDayOffRequests = async (
   requestIds: string[],
   rejectionReason?: string
 ): Promise<void> => {
-  if (requestIds.length === 1) {
-    // 단일 반려
-    await apiClient.patch(
-      `/api/v1/users/day-off-requests/${requestIds[0]}/reject/`
-    );
-  } else {
-    // 일괄 반려
-    await apiClient.post("/api/v1/users/day-off-requests/bulk_reject/", {
-      request_ids: requestIds,
-      rejection_reason: rejectionReason || "",
-    });
-  }
+  await apiClient.post("/api/v1/caddies/daily-statuses/bulk-reject/", {
+    request_ids: requestIds,
+    rejection_reason: rejectionReason || "",
+  });
 };
 
 // ================================
-// Deprecated Functions (하위 호환성을 위해 유지)
+// Legacy Functions (하위 호환성을 위해 유지)
 // ================================
 
 /**

@@ -45,7 +45,7 @@ export default function DayOffManagementPage() {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
 
   // 페이지 타이틀 설정
-  useDocumentTitle({ title: "휴무관리" });
+  useDocumentTitle({ title: DAY_OFF_UI_TEXT.PAGE_TITLE });
 
   // 테이블 컬럼 생성
   const columns = useDayOffColumns();
@@ -124,7 +124,7 @@ export default function DayOffManagementPage() {
   if (error) {
     return (
       <div className="bg-white rounded-xl p-8 space-y-6">
-        <AdminPageHeader title="휴무관리" />
+        <AdminPageHeader title={DAY_OFF_UI_TEXT.PAGE_TITLE} />
         <div className="flex flex-col items-center justify-center py-12">
           <div className="text-red-500 text-center mb-4">
             <p className="text-lg font-semibold">오류가 발생했습니다</p>
@@ -152,7 +152,7 @@ export default function DayOffManagementPage() {
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
       {/* 페이지 헤더 */}
-      <AdminPageHeader title="휴무관리" />
+      <AdminPageHeader title={DAY_OFF_UI_TEXT.PAGE_TITLE} />
 
       {/* 상단 액션 바 */}
       <div className="flex items-center justify-between">

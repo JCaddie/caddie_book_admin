@@ -90,9 +90,9 @@ export const useDayOffList = (): UseDayOffListReturn => {
   });
 
   // 데이터 추출
-  const data = apiResponse?.results || [];
-  const totalPages = apiResponse?.total_pages || 1;
-  const filteredCount = apiResponse?.count || 0;
+  const data = apiResponse?.data?.results || [];
+  const totalPages = apiResponse?.data?.total_pages || 1;
+  const filteredCount = apiResponse?.data?.count || 0;
 
   // 표준화된 에러 처리
   const error = useQueryError(queryError, DAY_OFF_ERROR_MESSAGES.FETCH_FAILED);
