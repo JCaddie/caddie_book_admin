@@ -12,6 +12,7 @@ interface BaseScheduleProps<T> {
   onResetClick: () => void;
   hideHeader?: boolean;
   isFullWidth?: boolean;
+  activeParts?: Array<{ part_number: number; name: string }>; // 실제 활성화된 부 정보
 
   // 추가 액션 버튼들
   onRoundingSettingsClick?: () => void;
@@ -64,6 +65,11 @@ export default function BaseSchedule<T>({
   onResetClick,
   hideHeader = false,
   isFullWidth = false,
+  activeParts = [
+    { part_number: 1, name: "1부" },
+    { part_number: 2, name: "2부" },
+    { part_number: 3, name: "3부" },
+  ], // 기본값으로 3개 부 제공
   onRoundingSettingsClick,
   onFillClick,
   draggedItem,
@@ -208,110 +214,65 @@ export default function BaseSchedule<T>({
           </thead>
 
           <tbody>
-            {/* 1부 섹션 */}
-            <tr>
-              <td
-                colSpan={fields.length + 1}
-                className="py-3 px-0 bg-[#FEB912] text-center border-0"
-              >
-                <span className="text-[22px] font-bold text-black">1부</span>
-              </td>
-            </tr>
-            {timeSlots.part1.map((time, timeIndex) => (
-              <tr key={`part1-${timeIndex}`} className="hover:bg-gray-50">
-                <td className="py-3 px-4 text-sm font-medium text-black/80 bg-gray-50 sticky left-0 z-10">
-                  {time}
-                </td>
-                {fields.map((field, fieldIndex) => (
-                  <td
-                    key={field.id}
-                    className={getDefaultCellClassName(
-                      fieldIndex,
-                      timeIndex,
-                      1
-                    )}
-                    onDragOver={(e) =>
-                      handleDragOver(e, fieldIndex, timeIndex, 1)
-                    }
-                    onDrop={(e) => handleDrop(e, fieldIndex, timeIndex, 1)}
-                    onDoubleClick={() => onRemove?.(fieldIndex, timeIndex, 1)}
-                    title="더블클릭하여 제거"
-                  >
-                    {renderCell(fieldIndex, timeIndex, 1)}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {/* 동적 부 섹션 렌더링 */}
+            {activeParts.map((part) => {
+              const partNumber = part.part_number;
+              const partTimes =
+                timeSlots[`part${partNumber}` as keyof TimeSlots] || [];
 
-            {/* 2부 섹션 */}
-            <tr>
-              <td
-                colSpan={fields.length + 1}
-                className="py-3 px-0 bg-[#FEB912] text-center border-0"
-              >
-                <span className="text-[22px] font-bold text-black">2부</span>
-              </td>
-            </tr>
-            {timeSlots.part2.map((time, timeIndex) => (
-              <tr key={`part2-${timeIndex}`} className="hover:bg-gray-50">
-                <td className="py-3 px-4 text-sm font-medium text-black/80 bg-gray-50 sticky left-0 z-10">
-                  {time}
-                </td>
-                {fields.map((field, fieldIndex) => (
-                  <td
-                    key={field.id}
-                    className={getDefaultCellClassName(
-                      fieldIndex,
-                      timeIndex,
-                      2
-                    )}
-                    onDragOver={(e) =>
-                      handleDragOver(e, fieldIndex, timeIndex, 2)
-                    }
-                    onDrop={(e) => handleDrop(e, fieldIndex, timeIndex, 2)}
-                    onDoubleClick={() => onRemove?.(fieldIndex, timeIndex, 2)}
-                    title="더블클릭하여 제거"
-                  >
-                    {renderCell(fieldIndex, timeIndex, 2)}
-                  </td>
-                ))}
-              </tr>
-            ))}
+              // 해당 부에 시간이 없으면 렌더링하지 않음
+              if (partTimes.length === 0) return null;
 
-            {/* 3부 섹션 */}
-            <tr>
-              <td
-                colSpan={fields.length + 1}
-                className="py-3 px-0 bg-[#FEB912] text-center border-0"
-              >
-                <span className="text-[22px] font-bold text-black">3부</span>
-              </td>
-            </tr>
-            {timeSlots.part3.map((time, timeIndex) => (
-              <tr key={`part3-${timeIndex}`} className="hover:bg-gray-50">
-                <td className="py-3 px-4 text-sm font-medium text-black/80 bg-gray-50 sticky left-0 z-10">
-                  {time}
-                </td>
-                {fields.map((field, fieldIndex) => (
-                  <td
-                    key={field.id}
-                    className={getDefaultCellClassName(
-                      fieldIndex,
-                      timeIndex,
-                      3
-                    )}
-                    onDragOver={(e) =>
-                      handleDragOver(e, fieldIndex, timeIndex, 3)
-                    }
-                    onDrop={(e) => handleDrop(e, fieldIndex, timeIndex, 3)}
-                    onDoubleClick={() => onRemove?.(fieldIndex, timeIndex, 3)}
-                    title="더블클릭하여 제거"
-                  >
-                    {renderCell(fieldIndex, timeIndex, 3)}
-                  </td>
-                ))}
-              </tr>
-            ))}
+              return (
+                <React.Fragment key={`part-${partNumber}`}>
+                  {/* 부 헤더 */}
+                  <tr>
+                    <td
+                      colSpan={fields.length + 1}
+                      className="py-3 px-0 bg-[#FEB912] text-center border-0"
+                    >
+                      <span className="text-[22px] font-bold text-black">
+                        {part.name}
+                      </span>
+                    </td>
+                  </tr>
+
+                  {/* 부별 시간 슬롯 */}
+                  {partTimes.map((time, timeIndex) => (
+                    <tr
+                      key={`part${partNumber}-${timeIndex}`}
+                      className="hover:bg-gray-50"
+                    >
+                      <td className="py-3 px-4 text-sm font-medium text-black/80 bg-gray-50 sticky left-0 z-10">
+                        {time}
+                      </td>
+                      {fields.map((field, fieldIndex) => (
+                        <td
+                          key={field.id}
+                          className={getDefaultCellClassName(
+                            fieldIndex,
+                            timeIndex,
+                            partNumber
+                          )}
+                          onDragOver={(e) =>
+                            handleDragOver(e, fieldIndex, timeIndex, partNumber)
+                          }
+                          onDrop={(e) =>
+                            handleDrop(e, fieldIndex, timeIndex, partNumber)
+                          }
+                          onDoubleClick={() =>
+                            onRemove?.(fieldIndex, timeIndex, partNumber)
+                          }
+                          title="더블클릭하여 제거"
+                        >
+                          {renderCell(fieldIndex, timeIndex, partNumber)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -411,6 +411,10 @@ export default function SpecialGroupSchedule({
       onResetClick={onResetClick}
       hideHeader={hideHeader}
       isFullWidth={isFullWidth}
+      activeParts={scheduleParts.map((part) => ({
+        part_number: part.part_number,
+        name: part.name,
+      }))}
       renderCell={renderCell}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
