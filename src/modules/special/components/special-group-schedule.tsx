@@ -5,7 +5,8 @@ import BaseSchedule from "@/shared/components/schedule/base-schedule";
 import { Field, PersonnelStats, TimeSlots } from "@/modules/work/types";
 import { SpecialGroupUI } from "../types";
 import SpecialGroupCard from "./special-group-card";
-import { assignSpecialGroupToSlot, removeSpecialGroupFromSlot } from "../api";
+import { assignSpecialGroupToSlot } from "../api";
+import { removeSlotAssignment } from "@/modules/work/api/work-api";
 
 interface SpecialGroupPosition {
   fieldIndex: number;
@@ -187,11 +188,39 @@ export default function SpecialGroupSchedule({
     const rawData = e.dataTransfer.getData("text/plain");
 
     try {
-      const dragData = JSON.parse(rawData);
+      // JSON 파싱 검증
+      if (!rawData || rawData.trim() === "") {
+        console.warn("빈 드래그 데이터");
+        if (onDragEnd) onDragEnd();
+        return;
+      }
+
+      let dragData;
+      try {
+        dragData = JSON.parse(rawData);
+      } catch (parseError) {
+        console.error("드래그 데이터 파싱 실패:", parseError);
+        alert("잘못된 드래그 데이터 형식입니다.");
+        if (onDragEnd) onDragEnd();
+        return;
+      }
 
       // 타입 검증: 특수반 데이터만 허용
       if (!dragData || dragData.type !== "special-group") {
-        console.warn("잘못된 드래그 데이터 타입:", dragData?.type);
+        console.warn("특수반만 배치할 수 있습니다. 현재 타입:", dragData?.type);
+        alert(
+          "특수반만 배치할 수 있습니다. 캐디는 일반 근무표에서 배치해주세요."
+        );
+        if (onDragEnd) {
+          onDragEnd();
+        }
+        return;
+      }
+
+      // 특수반 데이터 검증
+      if (!dragData.data || !dragData.data.id) {
+        console.error("잘못된 특수반 데이터:", dragData.data);
+        alert("잘못된 특수반 데이터입니다.");
         if (onDragEnd) {
           onDragEnd();
         }
@@ -272,7 +301,24 @@ export default function SpecialGroupSchedule({
       }
     } catch (error) {
       console.error("특수반 배치 실패:", error);
-      alert("특수반 배치에 실패했습니다. 다시 시도해주세요.");
+
+      // 에러 타입에 따른 구체적인 메시지
+      let errorMessage = "특수반 배치에 실패했습니다.";
+
+      if (error instanceof Error) {
+        if (error.message.includes("already assigned")) {
+          errorMessage = "해당 시간대에 이미 특수반이 배치되어 있습니다.";
+        } else if (error.message.includes("invalid")) {
+          errorMessage = "잘못된 배치 정보입니다. 다시 시도해주세요.";
+        } else if (error.message.includes("permission")) {
+          errorMessage = "배치 권한이 없습니다.";
+        } else {
+          errorMessage = `배치 실패: ${error.message}`;
+        }
+      }
+
+      alert(errorMessage);
+
       if (onDragEnd) {
         onDragEnd();
       }
@@ -295,8 +341,16 @@ export default function SpecialGroupSchedule({
         return;
       }
 
-      // API 호출
-      await removeSpecialGroupFromSlot(slotId);
+      // 새로운 API 호출
+      if (!scheduleId) {
+        console.error("스케줄 ID가 없습니다.");
+        return;
+      }
+
+      await removeSlotAssignment(scheduleId, {
+        slot_id: slotId,
+        assignment_type: "special",
+      });
 
       // 성공 시 스케줄 업데이트
       if (onScheduleUpdate) {

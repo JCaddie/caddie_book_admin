@@ -50,6 +50,7 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
     specialSchedule,
     isLoading: isScheduleLoading,
     error: scheduleError,
+    hasNoFields,
     hasNoParts,
     hasNoTimeSettings,
     hasNoMatrix,
@@ -211,7 +212,7 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
             <p>특수 스케줄 조회에 실패했습니다.</p>
             <p className="text-sm mt-2">{scheduleError}</p>
             <button
-              onClick={refetchSchedule}
+              onClick={() => refetchSchedule()}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               다시 시도
@@ -221,7 +222,23 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
       )}
 
       {/* 빈 데이터 상태 처리 */}
-      {!isScheduleLoading && !scheduleError && hasNoParts && (
+      {/* 필드가 없을 때 */}
+      {!isScheduleLoading && !scheduleError && hasNoFields && (
+        <div className="text-center py-12 text-red-500">
+          <p className="text-lg">필드를 먼저 생성해주세요</p>
+          <p className="text-sm mt-2">
+            특수반 배치를 위해 필드 설정이 필요합니다.
+          </p>
+          <Button
+            onClick={() => (window.location.href = "/fields")}
+            className="mt-4 bg-red-400 hover:bg-red-500 text-white"
+          >
+            필드 관리로 이동
+          </Button>
+        </div>
+      )}
+
+      {!isScheduleLoading && !scheduleError && !hasNoFields && hasNoParts && (
         <div className="text-center py-12 text-gray-500">
           <p className="text-lg">시간표를 설정해주세요</p>
           <p className="text-sm mt-2">라운딩 설정을 먼저 완료해야 합니다.</p>
@@ -236,6 +253,7 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
 
       {!isScheduleLoading &&
         !scheduleError &&
+        !hasNoFields &&
         !hasNoParts &&
         hasNoTimeSettings && (
           <div className="text-center py-12 text-orange-500">
@@ -252,6 +270,7 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
 
       {!isScheduleLoading &&
         !scheduleError &&
+        !hasNoFields &&
         !hasNoParts &&
         !hasNoTimeSettings &&
         hasNoMatrix && (
@@ -266,6 +285,7 @@ const SpecialGroupsDetailPage: React.FC<SpecialGroupsDetailPageProps> = ({
       {/* 메인 콘텐츠 - 정상 데이터가 있을 때만 표시 */}
       {!isScheduleLoading &&
         !scheduleError &&
+        !hasNoFields &&
         !hasNoParts &&
         !hasNoTimeSettings &&
         !hasNoMatrix && (

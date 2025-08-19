@@ -46,11 +46,6 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           label: "그룹현황",
           href: "/caddies/groups",
         },
-        {
-          id: "special-team",
-          label: "특수반 관리",
-          href: "/caddies/special",
-        },
       ],
     },
     {
@@ -63,6 +58,11 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           id: "work-schedule",
           label: "근무 일정",
           href: "/works",
+        },
+        {
+          id: "special-team",
+          label: "특수반 관리",
+          href: "/works/special",
         },
         {
           id: "day-off",
@@ -124,11 +124,6 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           label: "그룹현황",
           href: "/caddies/groups/me",
         },
-        {
-          id: "special-team",
-          label: "특수반 관리",
-          href: "/caddies/special",
-        },
       ],
     },
     {
@@ -141,6 +136,11 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           id: "work-schedule",
           label: "근무 일정",
           href: "/works",
+        },
+        {
+          id: "special-team",
+          label: "특수반 관리",
+          href: "/works/special",
         },
         {
           id: "day-off",
@@ -202,11 +202,6 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           label: "그룹현황",
           href: "/caddies/groups/me",
         },
-        {
-          id: "special-team",
-          label: "특수반 관리",
-          href: "/caddies/special",
-        },
       ],
     },
     {
@@ -219,6 +214,11 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
           id: "work-schedule",
           label: "근무 일정",
           href: "/works",
+        },
+        {
+          id: "special-team",
+          label: "특수반 관리",
+          href: "/works/special",
         },
         {
           id: "day-off",

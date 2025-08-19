@@ -150,7 +150,7 @@ const SpecialGroupsPage: React.FC = () => {
   // 행 클릭 핸들러 (특수 스케줄 상세 페이지로 이동)
   const handleRowClick = (record: SpecialGroupsStatusData) => {
     if (record.special_schedule_id) {
-      router.push(`/caddies/special/${record.special_schedule_id}`);
+      router.push(`/works/special/${record.special_schedule_id}`);
     } else {
       // 스케줄 ID가 없는 경우 알림
       console.warn("특수 스케줄 ID가 없습니다:", record.golf_course_name);
@@ -160,6 +160,23 @@ const SpecialGroupsPage: React.FC = () => {
   // 선택 업데이트
   const handleSelectionChange = (keys: string[]) => {
     setSelectedRowKeys(keys);
+  };
+
+  // 행 키 생성 함수 (빈 행과 실제 데이터 구분)
+  const getRowKey = (record: SpecialGroupsStatusData) => {
+    const emptyRecord = record as SpecialGroupsStatusData & {
+      isEmpty?: boolean;
+      id?: string;
+    };
+
+    if (emptyRecord.isEmpty) {
+      return emptyRecord.id || `empty-${Math.random()}`;
+    }
+    return (
+      record.golf_course_id ||
+      record.special_schedule_id ||
+      `special-${Math.random()}`
+    );
   };
 
   // 삭제 버튼 클릭 핸들러
@@ -239,7 +256,7 @@ const SpecialGroupsPage: React.FC = () => {
           selectedRowKeys={selectedRowKeys}
           onSelectChange={handleSelectionChange}
           onRowClick={handleRowClick}
-          rowKey="golf_course_id"
+          getRowKey={getRowKey}
           layout="flexible"
           loading={loading}
         />
