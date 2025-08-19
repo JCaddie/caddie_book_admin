@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import BaseSchedule from "@/shared/components/schedule/base-schedule";
 import { Field, PersonnelStats, TimeSlots } from "@/modules/work/types";
 import { SpecialGroupUI } from "../types";
-import SpecialGroupCard from "./special-group-card";
-import { assignSpecialGroupToSlot } from "../api";
-import { removeSlotAssignment } from "@/modules/work/api/work-api";
+import SpecialScheduleCell from "./special-schedule-cell";
+import { useSpecialScheduleDrag } from "../hooks/use-special-schedule-drag";
 
 interface SpecialGroupPosition {
   fieldIndex: number;
@@ -68,20 +67,22 @@ export default function SpecialGroupSchedule({
   scheduleId,
   onScheduleUpdate,
 }: SpecialGroupScheduleProps) {
-  // 특수반 위치 상태 관리
-  const [groupPositions, setGroupPositions] = useState<
-    Map<string, SpecialGroupPosition>
-  >(new Map());
-
-  // 외부에서 드래그된 특수반들을 저장
-  const [externalGroups, setExternalGroups] = useState<
-    Map<string, SpecialGroupUI>
-  >(new Map());
-
-  // slot ID 매핑을 위한 state
-  const [slotIdMap, setSlotIdMap] = useState<
-    Map<string, string> // key: fieldIndex_timeIndex_part, value: slot_id
-  >(new Map());
+  // 드래그 앤 드롭 로직을 커스텀 훅으로 분리
+  const {
+    groupPositions,
+    setGroupPositions,
+    externalGroups,
+    setExternalGroups,
+    setSlotIdMap,
+    handleDrop,
+    handleRemove,
+  } = useSpecialScheduleDrag(
+    scheduleId,
+    scheduleParts,
+    timeSlots,
+    onScheduleUpdate,
+    onDragEnd
+  );
 
   // API 데이터에서 기존 배치된 특수반들을 초기화
   React.useEffect(() => {
@@ -150,7 +151,13 @@ export default function SpecialGroupSchedule({
     setExternalGroups(newExternalGroups);
     setGroupPositions(newGroupPositions);
     setSlotIdMap(newSlotIdMap);
-  }, [scheduleParts, timeSlots]);
+  }, [
+    scheduleParts,
+    timeSlots,
+    setExternalGroups,
+    setGroupPositions,
+    setSlotIdMap,
+  ]);
 
   // 특정 위치에 배정된 특수반 찾기
   const getGroupAtPosition = (
@@ -177,214 +184,19 @@ export default function SpecialGroupSchedule({
     return null;
   };
 
-  // 드롭 핸들러
-  const handleDrop = async (
-    e: React.DragEvent,
-    fieldIndex: number,
-    timeIndex: number,
-    part: number
-  ) => {
-    e.preventDefault();
-    const rawData = e.dataTransfer.getData("text/plain");
-
-    try {
-      // JSON 파싱 검증
-      if (!rawData || rawData.trim() === "") {
-        console.warn("빈 드래그 데이터");
-        if (onDragEnd) onDragEnd();
-        return;
-      }
-
-      let dragData;
-      try {
-        dragData = JSON.parse(rawData);
-      } catch (parseError) {
-        console.error("드래그 데이터 파싱 실패:", parseError);
-        alert("잘못된 드래그 데이터 형식입니다.");
-        if (onDragEnd) onDragEnd();
-        return;
-      }
-
-      // 타입 검증: 특수반 데이터만 허용
-      if (!dragData || dragData.type !== "special-group") {
-        console.warn("특수반만 배치할 수 있습니다. 현재 타입:", dragData?.type);
-        alert(
-          "특수반만 배치할 수 있습니다. 캐디는 일반 근무표에서 배치해주세요."
-        );
-        if (onDragEnd) {
-          onDragEnd();
-        }
-        return;
-      }
-
-      // 특수반 데이터 검증
-      if (!dragData.data || !dragData.data.id) {
-        console.error("잘못된 특수반 데이터:", dragData.data);
-        alert("잘못된 특수반 데이터입니다.");
-        if (onDragEnd) {
-          onDragEnd();
-        }
-        return;
-      }
-
-      const group: SpecialGroupUI = dragData.data;
-
-      // API 호출을 위한 데이터 준비
-      if (!scheduleId) {
-        console.error("스케줄 ID가 없습니다.");
-        return;
-      }
-
-      // 해당 part의 정보 찾기
-      const targetPart = scheduleParts?.find((p) => p.part_number === part);
-      if (!targetPart) {
-        console.error("해당 부를 찾을 수 없습니다.");
-        return;
-      }
-
-      // 시간 정보 가져오기 - timeSlots에서 가져오되 안전하게 처리
-      const allPartTimes = [
-        timeSlots.part1 || [],
-        timeSlots.part2 || [],
-        timeSlots.part3 || [],
-      ];
-      const currentPartTimes = allPartTimes[part - 1] || [];
-      const time = currentPartTimes[timeIndex];
-
-      if (!time) {
-        console.error("시간 정보를 찾을 수 없습니다.", {
-          part,
-          timeIndex,
-          currentPartTimes,
-          allPartTimes,
-        });
-        return;
-      }
-
-      // API 호출 데이터 로깅
-      const requestData = {
-        part_id: targetPart.id,
-        time: time + ":00", // HH:MM:SS 형식으로 변환
-        field_number: fieldIndex + 1, // 1부터 시작하는 필드 번호
-        special_group_id: group.id,
-      };
-
-      console.log("특수반 배치 요청 데이터:", {
-        scheduleId,
-        requestData,
-        targetPart: {
-          id: targetPart.id,
-          part_number: targetPart.part_number,
-          matrix_length: targetPart.schedule_matrix.length,
-        },
-        timeSlot: {
-          time,
-          timeIndex,
-          fieldIndex,
-        },
-        debug: {
-          currentPartTimes,
-          allPartTimes,
-          part,
-        },
-      });
-
-      await assignSpecialGroupToSlot(scheduleId, requestData);
-
-      // 성공 시 스케줄 업데이트
-      if (onScheduleUpdate) {
-        onScheduleUpdate();
-      }
-
-      if (onDragEnd) {
-        onDragEnd();
-      }
-    } catch (error) {
-      console.error("특수반 배치 실패:", error);
-
-      // 에러 타입에 따른 구체적인 메시지
-      let errorMessage = "특수반 배치에 실패했습니다.";
-
-      if (error instanceof Error) {
-        if (error.message.includes("already assigned")) {
-          errorMessage = "해당 시간대에 이미 특수반이 배치되어 있습니다.";
-        } else if (error.message.includes("invalid")) {
-          errorMessage = "잘못된 배치 정보입니다. 다시 시도해주세요.";
-        } else if (error.message.includes("permission")) {
-          errorMessage = "배치 권한이 없습니다.";
-        } else {
-          errorMessage = `배치 실패: ${error.message}`;
-        }
-      }
-
-      alert(errorMessage);
-
-      if (onDragEnd) {
-        onDragEnd();
-      }
-    }
-  };
-
-  // 특수반 제거 핸들러
-  const handleRemove = async (
-    fieldIndex: number,
-    timeIndex: number,
-    part: number
-  ) => {
-    try {
-      // slot ID 찾기
-      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
-      const slotId = slotIdMap.get(slotKey);
-
-      if (!slotId) {
-        console.error("슬롯 ID를 찾을 수 없습니다.");
-        return;
-      }
-
-      // 새로운 API 호출
-      if (!scheduleId) {
-        console.error("스케줄 ID가 없습니다.");
-        return;
-      }
-
-      await removeSlotAssignment(scheduleId, {
-        slot_id: slotId,
-        assignment_type: "special",
-      });
-
-      // 성공 시 스케줄 업데이트
-      if (onScheduleUpdate) {
-        onScheduleUpdate();
-      }
-    } catch (error) {
-      console.error("특수반 제거 실패:", error);
-      alert("특수반 제거에 실패했습니다. 다시 시도해주세요.");
-    }
-  };
-
   // 셀 렌더러
   const renderCell = (fieldIndex: number, timeIndex: number, part: number) => {
     const group = getGroupAtPosition(fieldIndex, timeIndex, part);
 
-    if (group) {
-      return (
-        <SpecialGroupCard
-          key={`${group.id}-${fieldIndex}-${timeIndex}-${part}`}
-          group={group}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          isDragging={draggedGroup?.id === group.id}
-          showDeleteButton={false} // 워크슬롯에 있는 특수반은 삭제 버튼 숨김
-        />
-      );
-    }
-
-    // 빈 슬롯일 때 미배정 카드 표시
     return (
-      <SpecialGroupCard
-        key={`empty-${fieldIndex}-${timeIndex}-${part}`}
-        isEmpty={true}
-        emptyText="배치 가능"
+      <SpecialScheduleCell
+        group={group}
+        fieldIndex={fieldIndex}
+        timeIndex={timeIndex}
+        part={part}
+        draggedGroup={draggedGroup}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
       />
     );
   };
