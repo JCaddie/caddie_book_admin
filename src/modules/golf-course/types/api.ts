@@ -11,7 +11,7 @@ export interface GolfCourseApiResponse {
   phone: string;
   membership_type: string;
   total_caddies: number;
-  field_count: number;
+  total_holes: number;
 }
 
 /**
@@ -40,7 +40,7 @@ export interface GolfCourseListResponse {
 export interface GolfCourseDetail {
   id: string;
   total_caddies: number;
-  field_count: number;
+  total_holes: number;
   cart_count: number;
   manager_count: number;
   work_count: number;
@@ -135,7 +135,7 @@ export interface GolfCourseGroupStatusListResponse {
  */
 export interface GolfCourseFilters {
   contract: string;
-  field_count: string;
+  total_holes: string;
   membership_type: string;
   category: string;
 }

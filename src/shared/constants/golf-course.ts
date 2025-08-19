@@ -59,8 +59,8 @@ export const GOLF_COURSE_TABLE_COLUMNS = [
     render: renderCell,
   },
   {
-    key: "fields",
-    title: "필드",
+    key: "holes",
+    title: "홀",
     width: 80,
     align: "center" as const,
     render: renderCell,
@@ -76,7 +76,7 @@ export const GOLF_COURSE_EMPTY_ROW_TEMPLATE = {
   phone: "",
   membershipType: "",
   caddies: 0,
-  fields: 0,
+  holes: 0,
 };
 
 // 운영현황 카드 생성 함수

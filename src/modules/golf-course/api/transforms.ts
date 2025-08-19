@@ -32,7 +32,7 @@ export const transformApiResponseToTableItem = (
     phone: apiResponse.phone,
     membershipType: apiResponse.membership_type,
     caddies: apiResponse.total_caddies,
-    fields: apiResponse.field_count,
+    holes: apiResponse.total_holes,
   };
 };
 
@@ -56,7 +56,7 @@ export const transformDetailApiToDomain = (
 
   const operationStats: GolfCourseOperationStats = {
     totalCaddies: detail.total_caddies,
-    fieldCount: detail.field_count,
+    fieldCount: detail.total_holes,
     cartCount: detail.cart_count,
     managerCount: detail.manager_count,
     workCount: detail.work_count,
