@@ -35,45 +35,8 @@ export interface SpecialGroupUI {
   isActive: boolean; // 기존 is_active와 호환성을 위한 별칭
 }
 
-// 특수반 멤버 타입
-export interface SpecialGroupMember {
-  id: string;
-  caddieId: string;
-  caddieName: string;
-  groupId: string;
-  joinedAt: string;
-  isActive: boolean;
-}
-
-// 특수반 스케줄 타입
-export interface SpecialGroupScheduleData {
-  id: string;
-  groupId: string;
-  date: string;
-  timeSlot: string;
-  caddieId: string;
-  caddieName: string;
-  status: "scheduled" | "completed" | "cancelled";
-}
-
-// 특수반 관리 필터 타입
-export interface SpecialGroupFilter {
-  search: string;
-  status: string;
-  group: string;
-  dateRange?: {
-    start: string;
-    end: string;
-  };
-}
-
-// 특수반 생성/수정 폼 데이터 타입
-export interface SpecialGroupFormData {
-  name: string;
-  color: string;
-  description?: string;
-  isActive: boolean;
-}
+// 사용되지 않는 타입들 제거됨
+// 필요시 개별 컴포넌트에서 직접 정의하여 사용
 
 // ================================
 // 페이지 및 컴포넌트 Props 타입
@@ -86,13 +49,7 @@ export interface SpecialGroupDetailPageProps {
   }>;
 }
 
-// 특수반 테이블 Props
-export interface SpecialGroupTableProps {
-  groups: SpecialGroupUI[];
-  onEdit: (group: SpecialGroupUI) => void;
-  onDelete: (groupId: string) => void;
-  onStatusChange: (groupId: string, isActive: boolean) => void;
-}
+// 실제 사용되는 Props 타입들만 유지
 
 // 특수반 설정 모달 Props
 export interface SpecialGroupSettingModalProps {
@@ -119,30 +76,4 @@ export interface SpecialGroupDeleteModalProps {
   onConfirm: () => void;
   groupName: string;
   isLoading?: boolean;
-}
-
-// 특수반 스케줄 테이블 Props
-export interface SpecialGroupScheduleTableProps {
-  groups: SpecialGroupUI[];
-  timeSlots: string[];
-  schedules: SpecialGroupScheduleData[];
-  onScheduleChange: (
-    groupId: string,
-    timeSlot: string,
-    caddieId: string
-  ) => void;
-  onScheduleRemove: (scheduleId: string) => void;
-}
-
-// ================================
-// 유틸리티 타입
-// ================================
-
-// 특수반 통계 타입
-export interface SpecialGroupStats {
-  totalGroups: number;
-  activeGroups: number;
-  totalMembers: number;
-  activeMembers: number;
-  scheduleCount: number;
 }

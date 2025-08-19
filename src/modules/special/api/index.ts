@@ -15,7 +15,7 @@ export {
   getSpecialScheduleDetail,
   fetchSpecialGroupsStatus,
   assignSpecialGroupToSlot,
-  removeSpecialGroupFromSlot,
+  removeSpecialGroupFromSlot, // @deprecated - removeSlotAssignment 사용 권장
 } from "./special-api";
 
 // 타입 정의

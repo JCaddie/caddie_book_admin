@@ -766,3 +766,32 @@ export const removeSpecialGroupFromSlot = async (
     throw error;
   }
 };
+
+/**
+ * 새로운 슬롯 배정 제거 API
+ */
+export interface RemoveSlotAssignmentRequest {
+  slot_id: string;
+  assignment_type: "special" | "caddie" | "all";
+}
+
+export const removeSlotAssignment = async (
+  scheduleId: string,
+  data: RemoveSlotAssignmentRequest
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>(`/api/v1/work/schedules/${scheduleId}/remove-slot-assignment/`, data);
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "슬롯 배정 제거 실패");
+    }
+  } catch (error) {
+    console.error("슬롯 배정 제거 실패:", error);
+    throw error;
+  }
+};

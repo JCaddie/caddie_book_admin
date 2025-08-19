@@ -75,18 +75,19 @@ export const useSpecialSchedule = (scheduleId?: string) => {
   };
 
   // 빈 데이터 상태 체크 함수들
+  const hasNoFields = specialSchedule?.fields.length === 0;
   const hasNoParts = specialSchedule?.parts.length === 0;
   const hasNoTimeSettings =
     specialSchedule?.parts.some((part) => part.start_time === null) || false;
-  const hasNoMatrix =
-    specialSchedule?.parts.every((part) => part.schedule_matrix.length === 0) ||
-    false;
+  // 매트릭스 체크를 더 관대하게: parts가 없거나 시간 설정이 없을 때만 true
+  const hasNoMatrix = hasNoParts || hasNoTimeSettings;
 
   return {
     specialSchedule: specialSchedule || null,
     isLoading,
     error,
     fetchSchedule,
+    hasNoFields,
     hasNoParts,
     hasNoTimeSettings,
     hasNoMatrix,

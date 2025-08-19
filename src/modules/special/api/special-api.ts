@@ -280,11 +280,15 @@ export const assignSpecialGroupToSlot = async (
 };
 
 /**
- * 특수반 배치 제거
+ * @deprecated removeSlotAssignment 사용 권장
+ * 특수반 배치 제거 (하위 호환성을 위해 유지)
  */
 export const removeSpecialGroupFromSlot = async (
   slotId: string
 ): Promise<{ success: boolean; message: string }> => {
+  console.warn(
+    "removeSpecialGroupFromSlot은 deprecated입니다. removeSlotAssignment를 사용하세요."
+  );
   try {
     const response = await apiClient.delete<{
       success: boolean;

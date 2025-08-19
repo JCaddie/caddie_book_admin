@@ -4,6 +4,7 @@
 
 export { default as SpecialGroupCard } from "./special-group-card";
 export { default as SpecialGroupSchedule } from "./special-group-schedule";
+export { default as SpecialScheduleCell } from "./special-schedule-cell";
 export { default as SpecialGroupStatus } from "./special-group-status";
 export { default as SpecialGroupSettingModal } from "./special-group-setting-modal";
 

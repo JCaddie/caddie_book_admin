@@ -37,7 +37,19 @@ const CaddieListPage: React.FC = () => {
 
   // 행 클릭 핸들러 (상세 페이지로 이동)
   const handleRowClick = (caddie: Caddie) => {
-    router.push(`/caddies/${caddie.id}`);
+    // 빈 행 클릭 방지
+    if (caddie.isEmpty) return;
+
+    // user 필드를 사용해서 이동 (고유 식별자)
+    router.push(`/caddies/${caddie.user}`);
+  };
+
+  // 행 키 생성 함수 (빈 행과 실제 데이터 구분)
+  const getRowKey = (caddie: Caddie) => {
+    if (caddie.isEmpty) {
+      return caddie.id || `empty-${Math.random()}`;
+    }
+    return caddie.user || caddie.id || `caddie-${Math.random()}`;
   };
 
   return (
@@ -104,7 +116,7 @@ const CaddieListPage: React.FC = () => {
             columns={CADDIE_COLUMNS}
             data={currentData}
             onRowClick={handleRowClick}
-            rowKey="id"
+            getRowKey={getRowKey}
             layout="flexible"
           />
         )}

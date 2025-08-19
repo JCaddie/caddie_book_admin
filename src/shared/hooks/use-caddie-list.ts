@@ -87,6 +87,7 @@ export const useCaddieList = () => {
         name: caddie.user_name,
         phone: caddie.user_phone,
         id: String(caddie.id), // UI에서 string ID를 사용하므로 변환
+        user: caddie.user, // 실제 고유 식별자
       }));
 
       setCaddies(caddies);

@@ -5,12 +5,14 @@ import { Button } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
 import { useAuth, useDocumentTitle } from "@/shared/hooks";
 import { Plus } from "lucide-react";
-import { GroupCreateModal } from "@/modules/group";
+import { useRouter, useSearchParams } from "next/navigation";
+import { GroupCreateModal, GroupTypeToggle } from "@/modules/group";
 import { GolfCourseInfo } from "@/modules/group/components/golf-course-info";
 import { GroupSummary } from "@/modules/group/components/group-summary";
 import { CaddieStatusPanel } from "@/modules/group/components/caddie-status-panel";
 import { UnassignedCaddieList } from "@/modules/group/components/unassigned-caddie-list";
 import { GroupManagementArea } from "@/modules/group/components/group-management-area";
+import type { GroupType } from "@/modules/group/components/group-type-toggle";
 import { fetchGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
 import { GolfCourseGroupDetailResponse } from "@/modules/golf-course/types/golf-course";
 import {
@@ -77,6 +79,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 }) => {
   const { id } = React.use(params);
   const { user, isLoading: authLoading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // "me"인 경우 현재 사용자의 골프장 ID 사용, 아니면 전달받은 ID 사용
   const isOwnGolfCourse = id === "me";
@@ -108,6 +112,11 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
   // 모달 상태
   const [isGroupCreateModalOpen, setIsGroupCreateModalOpen] = useState(false);
+
+  // URL 파라미터에서 그룹 타입 읽기 (기본값: PRIMARY)
+  const urlGroupType = searchParams.get("type");
+  const selectedGroupType: GroupType =
+    urlGroupType === "SPECIAL" ? "SPECIAL" : "PRIMARY";
 
   // 드래그 앤 드롭 상태
   const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
@@ -186,7 +195,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         golfCourseId = id;
       }
 
-      const response = await getGolfCourseGroupStatus(golfCourseId);
+      const response = await getGolfCourseGroupStatus(
+        golfCourseId,
+        selectedGroupType
+      );
       setAssignmentData(response);
     } catch (err) {
       console.error("캐디 배정 정보 조회 실패:", err);
@@ -210,7 +222,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     } finally {
       setCaddieLoading(false);
     }
-  }, [id, isOwnGolfCourse, user?.golfCourseId]);
+  }, [id, isOwnGolfCourse, user?.golfCourseId, selectedGroupType]);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -238,6 +250,21 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     // 그룹 생성 완료 후 데이터 다시 로드
     await loadData();
     await loadCaddieAssignments();
+  };
+
+  // 그룹 타입 변경 핸들러
+  const handleGroupTypeChange = (newGroupType: GroupType) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (newGroupType === "PRIMARY") {
+      // PRIMARY는 기본값이므로 파라미터 제거
+      params.delete("type");
+    } else {
+      params.set("type", newGroupType);
+    }
+
+    // URL 업데이트 (페이지 새로고침 없이)
+    router.push(`?${params.toString()}`);
   };
 
   // 드래그 앤 드롭 핸들러들 (API 연동)
@@ -283,12 +310,16 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
         const currentGroupId = draggedCaddie.group;
 
         // 드롭 인덱스 결정 (기본값: 마지막 위치)
+        const currentGroups =
+          selectedGroupType === "SPECIAL"
+            ? assignmentData?.data?.special_groups || []
+            : assignmentData?.data?.primary_groups || [];
+
         const dropIndex =
           insertIndex !== undefined
             ? insertIndex
-            : assignmentData?.data?.primary_groups.find(
-                (g) => g.id === targetGroupIdStr
-              )?.member_count || 0;
+            : currentGroups.find((g) => g.id.toString() === targetGroupIdStr)
+                ?.member_count || 0;
 
         // order는 1부터 시작
         const newOrder = dropIndex + 1;
@@ -318,14 +349,14 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             groupId: targetGroupIdStr,
             user_id: draggedCaddie.originalId,
             order: newOrder,
-            membership_type: "PRIMARY",
+            membership_type: selectedGroupType,
             isFromUnassigned: currentGroupId === 0,
           });
 
           await addGroupMember(targetGroupIdStr, {
             user_id: draggedCaddie.originalId,
             order: newOrder,
-            membership_type: "PRIMARY",
+            membership_type: selectedGroupType,
           });
         }
       }
@@ -434,8 +465,13 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
       {/* 그룹 요약 정보 */}
       <GroupSummary
-        primaryGroupCount={assignmentData?.data?.primary_group_count ?? 0}
+        primaryGroupCount={
+          selectedGroupType === "SPECIAL"
+            ? assignmentData?.data?.special_group_count ?? 0
+            : assignmentData?.data?.primary_group_count ?? 0
+        }
         totalCaddies={assignmentData?.data?.total_caddies ?? 0}
+        groupType={selectedGroupType}
       />
 
       {/* 메인 콘텐츠 */}
@@ -450,7 +486,11 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             </div>
           )}
           <GroupManagementArea
-            groups={assignmentData?.data?.primary_groups || []}
+            groups={
+              selectedGroupType === "SPECIAL"
+                ? assignmentData?.data?.special_groups || []
+                : assignmentData?.data?.primary_groups || []
+            }
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
@@ -464,6 +504,18 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
         {/* 오른쪽: 캐디 현황 */}
         <div className="w-96">
+          {/* 그룹 타입 선택 */}
+          <div className="mb-6">
+            <h4 className="text-md font-medium text-gray-900 mb-3">
+              그룹 타입
+            </h4>
+            <GroupTypeToggle
+              value={selectedGroupType}
+              onChange={handleGroupTypeChange}
+              disabled={caddieLoading}
+            />
+          </div>
+
           <CaddieStatusPanel
             totalAssignedCaddies={
               assignmentData?.data?.grouped_caddies_count ?? 0
@@ -511,6 +563,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           name: assignmentData?.data?.name || "골프장 정보 없음",
           contractStatus: assignmentData?.data?.contract_status,
         }}
+        defaultGroupType={selectedGroupType} // 현재 선택된 그룹 타입을 모달에 전달
       />
     </div>
   );

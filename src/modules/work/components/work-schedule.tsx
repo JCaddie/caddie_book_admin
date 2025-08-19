@@ -5,6 +5,7 @@ import BaseSchedule from "@/shared/components/schedule/base-schedule";
 import { CaddieData, Field, PersonnelStats, TimeSlots } from "../types";
 import { SAMPLE_CADDIES } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
+import { removeSlotAssignment } from "../api/work-api";
 
 interface CaddiePosition {
   fieldIndex: number;
@@ -24,6 +25,8 @@ interface WorkScheduleProps {
   onRoundingSettingsClick?: () => void;
   onFillClick?: () => void;
   onResetClick?: () => void;
+  scheduleId?: string; // API 호출을 위한 스케줄 ID
+  onScheduleUpdate?: () => void; // 스케줄 업데이트 콜백
 }
 
 export default function WorkSchedule({
@@ -38,6 +41,8 @@ export default function WorkSchedule({
   onRoundingSettingsClick,
   onFillClick,
   onResetClick,
+  scheduleId,
+  onScheduleUpdate,
 }: WorkScheduleProps) {
   // 캐디 위치 상태 관리
   const [caddiePositions, setCaddiePositions] = useState<
@@ -222,28 +227,47 @@ export default function WorkSchedule({
   };
 
   // 캐디 제거 핸들러
-  const handleRemove = (
+  const handleRemove = async (
     fieldIndex: number,
     timeIndex: number,
     part: number
   ) => {
-    setCaddiePositions((prev) => {
-      const newPositions = new Map(prev);
+    try {
+      // TODO: 실제 슬롯 ID 매핑이 구현되면 API 호출 활성화
+      // if (scheduleId && slotId) {
+      //   await removeSlotAssignment(scheduleId, {
+      //     slot_id: slotId,
+      //     assignment_type: "caddie",
+      //   });
+      // }
 
-      // 해당 위치의 캐디 찾아서 제거
-      for (const [positionKey, position] of newPositions) {
-        if (
-          position.fieldIndex === fieldIndex &&
-          position.timeIndex === timeIndex &&
-          position.part === part
-        ) {
-          newPositions.delete(positionKey);
-          break; // 첫 번째 매치만 제거 (더블클릭으로 하나씩 제거)
+      // 로컬 상태 업데이트
+      setCaddiePositions((prev) => {
+        const newPositions = new Map(prev);
+
+        // 해당 위치의 캐디 찾아서 제거
+        for (const [positionKey, position] of newPositions) {
+          if (
+            position.fieldIndex === fieldIndex &&
+            position.timeIndex === timeIndex &&
+            position.part === part
+          ) {
+            newPositions.delete(positionKey);
+            break; // 첫 번째 매치만 제거 (더블클릭으로 하나씩 제거)
+          }
         }
-      }
 
-      return newPositions;
-    });
+        return newPositions;
+      });
+
+      // 스케줄 업데이트 콜백 호출
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("캐디 제거 실패:", error);
+      alert("캐디 제거에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   // 셀 렌더러 (캐디 특화 로직)
