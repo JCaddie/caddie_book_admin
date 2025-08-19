@@ -35,11 +35,11 @@ const CaddieListPage: React.FC = () => {
   const { currentData, totalCount, isLoading, error, totalPages, refreshData } =
     useCaddieList();
 
-    // 행 클릭 핸들러 (상세 페이지로 이동)
+  // 행 클릭 핸들러 (상세 페이지로 이동)
   const handleRowClick = (caddie: Caddie) => {
     // 빈 행 클릭 방지
     if (caddie.isEmpty) return;
-    
+
     // user 필드를 사용해서 이동 (고유 식별자)
     router.push(`/caddies/${caddie.user}`);
   };

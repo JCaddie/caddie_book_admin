@@ -215,11 +215,14 @@ export interface GolfCourseGroupStatus {
   id: string;
   name: string;
   contract_status: string;
+  group_type?: "PRIMARY" | "SPECIAL"; // API 응답에서 그룹 타입
   primary_group_count: number;
+  special_group_count?: number; // SPECIAL 타입일 때 제공
   total_caddies: number;
   grouped_caddies_count: number;
   ungrouped_caddies_count: number;
   primary_groups: PrimaryGroup[];
+  special_groups?: PrimaryGroup[]; // SPECIAL 타입일 때 제공 (구조는 동일)
   ungrouped_caddies: UnassignedCaddie[];
 }
 

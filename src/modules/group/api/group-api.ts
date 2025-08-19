@@ -187,8 +187,19 @@ export const getGroupAssignmentOverview = async ({
  * 특정 골프장의 그룹 상태 조회 API (상세용)
  */
 export const getGolfCourseGroupStatus = async (
-  golfCourseId: string
+  golfCourseId: string,
+  groupType?: "PRIMARY" | "SPECIAL"
 ): Promise<CaddieAssignmentOverviewResponse> => {
-  const endpoint = `/api/v1/golf-courses/${golfCourseId}/group-status/`;
+  const searchParams = new URLSearchParams();
+
+  if (groupType) {
+    searchParams.append("group_type", groupType);
+  }
+
+  const queryString = searchParams.toString();
+  const endpoint = `/api/v1/golf-courses/${golfCourseId}/group-status/${
+    queryString ? `?${queryString}` : ""
+  }`;
+
   return apiClient.get<CaddieAssignmentOverviewResponse>(endpoint);
 };

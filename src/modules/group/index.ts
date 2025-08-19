@@ -15,4 +15,9 @@ export {
 } from "./constants";
 
 // 컴포넌트들
-export { EmptyGroupsState, GroupSection, GroupCreateModal } from "./components";
+export {
+  EmptyGroupsState,
+  GroupSection,
+  GroupCreateModal,
+  GroupTypeToggle,
+} from "./components";

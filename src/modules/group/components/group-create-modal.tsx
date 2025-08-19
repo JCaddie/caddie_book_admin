@@ -7,6 +7,7 @@ import { useAuth } from "@/shared/hooks";
 import { createGroup } from "../api/group-api";
 import { CreateGroupRequest } from "../types";
 import { fetchGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
+import GroupTypeToggle, { GroupType } from "./group-type-toggle";
 
 export interface GroupCreateModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export interface GroupCreateModalProps {
     name: string;
     contractStatus?: string;
   };
+  defaultGroupType?: GroupType; // 기본 그룹 타입 (상세 페이지에서 전달)
 }
 
 const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
@@ -25,8 +27,11 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
   onSuccess,
   golfCourseId,
   golfCourseInfo,
+  defaultGroupType = "PRIMARY",
 }) => {
   const [groupName, setGroupName] = useState("");
+  const [selectedGroupType, setSelectedGroupType] =
+    useState<GroupType>(defaultGroupType);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [golfCourseName, setGolfCourseName] = useState<string>("");
@@ -38,6 +43,7 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setGroupName("");
+      setSelectedGroupType(defaultGroupType);
       setError(null);
 
       // 골프장 이름 가져오기
@@ -66,7 +72,14 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
 
       fetchGolfCourseName();
     }
-  }, [isOpen, isMaster, golfCourseId, user?.golfCourseId, golfCourseInfo]);
+  }, [
+    isOpen,
+    isMaster,
+    golfCourseId,
+    user?.golfCourseId,
+    golfCourseInfo,
+    defaultGroupType,
+  ]);
 
   if (!isOpen) return null;
 
@@ -119,7 +132,7 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
     try {
       const createData: CreateGroupRequest = {
         name: groupName.trim(),
-        group_type: "PRIMARY",
+        group_type: selectedGroupType,
         golf_course: targetGolfCourseId, // UUID 문자열
         is_active: true,
       };
@@ -163,6 +176,18 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
 
         {/* 폼 */}
         <div className="space-y-4">
+          {/* 그룹 타입 선택 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              그룹 타입 <span className="text-red-500">*</span>
+            </label>
+            <GroupTypeToggle
+              value={selectedGroupType}
+              onChange={setSelectedGroupType}
+              disabled={isLoading}
+            />
+          </div>
+
           {/* 그룹 이름 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -172,7 +197,11 @@ const GroupCreateModal: React.FC<GroupCreateModalProps> = ({
               type="text"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              placeholder="예: 1조, A조, 특수반"
+              placeholder={
+                selectedGroupType === "PRIMARY"
+                  ? "예: 1조, A조"
+                  : "예: 특수반, 관리반"
+              }
               disabled={isLoading}
               className="w-full"
             />
