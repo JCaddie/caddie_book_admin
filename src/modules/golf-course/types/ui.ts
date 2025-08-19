@@ -12,7 +12,7 @@ export interface GolfCourse {
   phone: string;
   membershipType: string;
   caddies: number;
-  fields: number;
+  holes: number;
 }
 
 /**

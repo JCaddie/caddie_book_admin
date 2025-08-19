@@ -95,7 +95,7 @@ const GolfCoursesPage: React.FC = () => {
   // URL 파라미터 기반 필터 객체 생성
   const filters: GolfCourseFilters = {
     contract: searchParams.get("contract") || "",
-    field_count: "", // 사용하지 않지만 타입 호환성을 위해 빈 문자열
+    total_holes: "", // 사용하지 않지만 타입 호환성을 위해 빈 문자열
     membership_type: searchParams.get("membership_type") || "",
     category: "", // 필요시 추가 구현
   };
@@ -211,7 +211,7 @@ const GolfCoursesPage: React.FC = () => {
       phone: item.phone,
       membershipType: membershipLabel,
       caddies: item.total_caddies,
-      fields: item.field_count,
+      holes: item.total_holes,
     };
   });
 
@@ -342,7 +342,7 @@ const GolfCoursesPage: React.FC = () => {
                   <span className="text-sm font-bold text-gray-600">캐디</span>
                 </div>
                 <div className="w-20 text-center">
-                  <span className="text-sm font-bold text-gray-600">필드</span>
+                  <span className="text-sm font-bold text-gray-600">홀</span>
                 </div>
               </div>
             </div>

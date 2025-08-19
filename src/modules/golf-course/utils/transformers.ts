@@ -90,7 +90,7 @@ export const calculateGolfCourseStats = (golfCourses: GolfCourse[]) => {
   golfCourses.forEach((course) => {
     // 총계 계산
     stats.totalCaddies += course.caddies;
-    stats.totalFields += course.fields;
+    stats.totalFields += course.holes;
 
     // 계약 상태별 통계
     const contractStatus = course.contractStatus || "미분류";
@@ -263,7 +263,7 @@ export const domainToDisplayModel = (domain: GolfCourseDomain): GolfCourse => {
     phone: domain.phone,
     membershipType: domain.membershipType,
     caddies: domain.operationStats.totalCaddies,
-    fields: domain.operationStats.fieldCount,
+    holes: domain.operationStats.fieldCount,
   };
 };
 
@@ -324,7 +324,7 @@ export const createGolfCourseSummary = (
       ? golfCourse.caddies
       : golfCourse.operationStats.totalCaddies,
     fieldCount: isGolfCourse
-      ? golfCourse.fields
+      ? golfCourse.holes
       : golfCourse.operationStats.fieldCount,
     contractStatus: golfCourse.contractStatus,
     membershipType: golfCourse.membershipType,
