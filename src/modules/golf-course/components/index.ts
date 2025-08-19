@@ -12,5 +12,8 @@ export { default as EditableGolfCourseInfo } from "./views/editable-golf-course-
 export { default as OperationCards } from "./cards/operation-cards";
 export type { OperationCard } from "./cards/operation-cards";
 
+// Modals
+export { default as GolfCourseCreateModal } from "./golf-course-create-modal";
+
 // 하위 호환성을 위한 기존 export (점진적 마이그레이션용)
 export { default as GolfCourseEditForm } from "./forms/golf-course-edit-form";

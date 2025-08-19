@@ -12,6 +12,7 @@ import {
   SearchWithButton,
   SelectableDataTable,
 } from "@/shared/components/ui";
+import { GolfCourseCreateModal } from "@/modules/golf-course/components";
 
 import { useGolfCourseList } from "@/modules/golf-course/hooks/use-golf-course-list";
 import type {
@@ -66,6 +67,7 @@ const GolfCoursesPage: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // URL 검색 파라미터 처리
   const searchParams = useSearchParams();
@@ -128,7 +130,7 @@ const GolfCoursesPage: React.FC = () => {
       });
       setSelectedRowKeys(filteredKeys);
     },
-    [data]
+    [responseData?.results]
   );
 
   // 삭제 핸들러 등 기존 로직 동일
@@ -155,7 +157,16 @@ const GolfCoursesPage: React.FC = () => {
   }, [selectedRowKeys]);
 
   const handleCreateClick = useCallback(() => {
-    window.location.href = "/golf-courses/new";
+    setIsCreateModalOpen(true);
+  }, []);
+
+  const handleCreateModalClose = useCallback(() => {
+    setIsCreateModalOpen(false);
+  }, []);
+
+  const handleCreateSuccess = useCallback(() => {
+    // 생성 성공 시 페이지 새로고침
+    window.location.reload();
   }, []);
 
   // 로딩/에러/빈 상태 처리
@@ -365,6 +376,13 @@ const GolfCoursesPage: React.FC = () => {
           message={`선택한 ${selectedRowKeys.length}개의 골프장을 삭제하시겠습니까?`}
           confirmText="삭제"
           isLoading={isDeleting}
+        />
+
+        {/* 골프장 생성 모달 */}
+        <GolfCourseCreateModal
+          isOpen={isCreateModalOpen}
+          onClose={handleCreateModalClose}
+          onSuccess={handleCreateSuccess}
         />
       </div>
     </RoleGuard>
