@@ -2,12 +2,16 @@
 
 import { notFound } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
-import { fetchWorkScheduleByDate } from "@/modules/work/api";
+import {
+  autoAssignWorkSlots,
+  fetchDailyScheduleDetail,
+} from "@/modules/work/api";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
 import {
   CaddieData,
+  Field,
   TimeSlots,
   WorkDetailPageProps,
 } from "@/modules/work/types";
@@ -20,6 +24,7 @@ import DateNavigation from "@/modules/work/components/date-navigation";
 import WorkSchedule from "@/modules/work/components/work-schedule";
 import PersonnelStatus from "@/modules/work/components/personnel-status";
 import ConfirmationModal from "@/shared/components/ui/confirmation-modal";
+import { filterCaddies } from "@/modules/work/utils/work-detail-utils";
 
 export default function WorkDetailPage({
   params,
@@ -36,7 +41,7 @@ export default function WorkDetailPage({
     golfCourseId,
     date
   );
-  const { filters, filteredCaddies, updateFilter } = usePersonnelFilter();
+  const { filters, updateFilter } = usePersonnelFilter();
   const { isResetModalOpen, openResetModal, closeResetModal, handleReset } =
     useResetModal();
 
@@ -76,19 +81,141 @@ export default function WorkDetailPage({
       endTime: string;
     }>;
   } | null>(null);
+
+  // 상세 데이터 상태 (새로운 API 응답 구조용)
+  const [detailData, setDetailData] = useState<{
+    fields: Array<{
+      id: string;
+      name: string;
+      order: number;
+      is_active: boolean;
+    }>;
+    caddies: Array<{
+      id: string;
+      name: string;
+      phone: string;
+      primary_group: {
+        id: number;
+        name: string;
+        order: number;
+      };
+      primary_group_order: number;
+      special_group: {
+        id: number;
+        name: string;
+        order: number;
+      };
+      special_group_order: number;
+      today_status: string | null;
+      is_active: boolean;
+    }>;
+    parts: Array<{
+      id: string;
+      part_number: number;
+      name: string;
+      start_time: string;
+      end_time: string;
+      is_active: boolean;
+      slots: Array<{
+        id: string;
+        start_time: string;
+        field_number: number;
+        status: string;
+        slot_type: string;
+        is_locked: boolean;
+        caddie: string | null;
+        special_group: string | null;
+        assigned_by: string | null;
+        assigned_at: string | null;
+      }>;
+    }>;
+  } | null>(null);
+
+  // API 응답의 fields를 Field 타입으로 변환하는 함수
+  const convertFieldsToFieldType = (
+    apiFields:
+      | Array<{
+          id: string;
+          name: string;
+          order: number;
+          is_active: boolean;
+        }>
+      | undefined
+  ): Field[] => {
+    if (!apiFields) return FIELDS;
+    return apiFields
+      .filter((field) => field.is_active)
+      .sort((a, b) => a.order - b.order)
+      .map((field) => ({
+        id: parseInt(field.id) || 0,
+        name: field.name,
+      }));
+  };
   const [, setIsScheduleLoading] = useState(false);
   const [, setScheduleError] = useState<string | null>(null);
+
+  // API caddies -> 화면용 CaddieData 매핑
+  const sourceCaddies: CaddieData[] = (() => {
+    if (!detailData?.caddies) return [];
+    return detailData.caddies.map((c, idx) => ({
+      id: idx + 1, // 내부 표시용 숫자 ID 생성
+      name: c.name,
+      group: c.primary_group?.id ?? 0,
+      badge: c.special_group?.name || "하우스",
+      status: c.today_status || "근무",
+      originalId: c.id, // 원본 UUID 유지
+      order: c.primary_group_order,
+      groupName: c.primary_group?.name,
+    }));
+  })();
+
+  // 필터를 적용한 캐디 리스트
+  const displayCaddies = filterCaddies(sourceCaddies, filters);
 
   // 근무표 데이터 조회
   const fetchScheduleData = useCallback(async () => {
     try {
       setIsScheduleLoading(true);
       setScheduleError(null);
-      const data = await fetchWorkScheduleByDate(
-        currentDate.toISOString().split("T")[0],
-        golfCourseId
-      );
-      setScheduleData(data);
+
+      const formattedDate = currentDate.toISOString().split("T")[0];
+      const data = await fetchDailyScheduleDetail(golfCourseId, formattedDate);
+
+      setScheduleData({
+        date: data.date,
+        golfCourseId: data.golf_course.id,
+        schedules: [
+          {
+            id: data.id,
+            golfCourse: data.golf_course.id,
+            golfCourseName: data.golf_course.name,
+            scheduleType: data.schedule_type,
+            date: data.date,
+            totalStaff: data.total_staff,
+            availableStaff: data.available_staff,
+            status: data.status,
+            createdBy: data.created_by,
+            createdByName: data.created_by,
+            partsCount: data.parts.length,
+            timeInterval: data.time_interval,
+            createdAt: data.created_at,
+            updatedAt: data.created_at,
+          },
+        ],
+        scheduleParts: data.parts.map((part) => ({
+          scheduleId: data.id,
+          partNumber: part.part_number,
+          startTime: part.start_time,
+          endTime: part.end_time,
+        })),
+      });
+
+      // 상세 데이터 설정
+      setDetailData({
+        fields: data.fields,
+        caddies: data.caddies,
+        parts: data.parts,
+      });
     } catch (error) {
       console.error("근무표 조회 실패:", error);
       setScheduleError("근무표 조회에 실패했습니다.");
@@ -167,9 +294,36 @@ export default function WorkDetailPage({
     setDraggedCaddie(null);
   };
 
-  // 채우기 핸들러
+  // 자동 배정 핸들러
+  const handleAutoAssign = async () => {
+    if (!scheduleData?.schedules[0]?.id) {
+      alert("스케줄 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      const formattedDate = currentDate.toISOString().split("T")[0];
+      const result = await autoAssignWorkSlots(golfCourseId, formattedDate, {
+        max_assignments: 2,
+        min_rest_minutes: 300,
+      });
+
+      if (result.success) {
+        alert("자동 배정이 완료되었습니다.");
+        // 데이터 새로고침
+        fetchScheduleData();
+      } else {
+        alert(result.message || "자동 배정에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("자동 배정 실패:", error);
+      alert("자동 배정 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 채우기 핸들러 (자동 배정으로 변경)
   const handleFill = () => {
-    // TODO: 자동 채우기 로직 구현
+    handleAutoAssign();
   };
 
   return (
@@ -206,7 +360,7 @@ export default function WorkDetailPage({
       <div className="flex gap-8">
         {/* 왼쪽: 라운딩 관리 */}
         <WorkSchedule
-          fields={FIELDS}
+          fields={convertFieldsToFieldType(detailData?.fields)}
           timeSlots={timeSlots}
           personnelStats={
             scheduleData?.schedules[0]
@@ -226,7 +380,7 @@ export default function WorkDetailPage({
         {/* 오른쪽: 인력 현황 사이드바 */}
         <PersonnelStatus
           filters={filters}
-          filteredCaddies={filteredCaddies}
+          filteredCaddies={displayCaddies}
           onFilterUpdate={updateFilter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}

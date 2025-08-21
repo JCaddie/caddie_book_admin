@@ -153,27 +153,24 @@ const RoundingSettingsModal: React.FC<RoundingSettingsModalProps> = ({
     try {
       setIsSaving(true);
 
-      // 스케줄 ID 검증
-      if (!scheduleId) {
-        alert("스케줄 정보를 찾을 수 없습니다.");
-        return;
+      // scheduleId가 있는 경우: 기존 스케줄 업데이트
+      if (scheduleId) {
+        // API 호출
+        const partsConfig = settings.roundTimes.map((roundTime) => ({
+          partNumber: roundTime.round,
+          name: `${roundTime.round}부`,
+          startTime: roundTime.startTime + ":00",
+          endTime: roundTime.endTime + ":00",
+        }));
+
+        await bulkUpdateRoundingSettings(
+          scheduleId,
+          settings.timeUnit,
+          partsConfig
+        );
       }
 
-      // API 호출
-      const partsConfig = settings.roundTimes.map((roundTime) => ({
-        partNumber: roundTime.round,
-        name: `${roundTime.round}부`,
-        startTime: roundTime.startTime + ":00",
-        endTime: roundTime.endTime + ":00",
-      }));
-
-      await bulkUpdateRoundingSettings(
-        scheduleId,
-        settings.timeUnit,
-        partsConfig
-      );
-
-      // 성공 시 콜백 호출
+      // 성공 시 콜백 호출 (scheduleId 유무와 관계없이)
       onSave(settings, new Date().toISOString().split("T")[0], golfCourseName);
     } catch (error) {
       console.error("라운딩 설정 저장 실패:", error);

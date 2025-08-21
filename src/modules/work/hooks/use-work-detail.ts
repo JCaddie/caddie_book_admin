@@ -61,7 +61,8 @@ export function useWorkDetail(golfCourseId: string) {
   const handleUpdate = useCallback(
     (updatedData: Partial<Work>) => {
       if (!work) return;
-      setWork((prev) => (prev ? { ...prev, ...updatedData } : null));
+      // 실제로는 API 호출하여 업데이트
+      console.log("업데이트할 데이터:", updatedData);
     },
     [work]
   );

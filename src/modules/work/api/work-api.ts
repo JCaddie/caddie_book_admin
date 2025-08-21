@@ -1,25 +1,103 @@
 import { apiClient } from "@/shared/lib/api-client";
 import { RoundingSettings, Work, WorkSchedule } from "../types";
 
-// API 응답 타입들
-interface WorkScheduleApiResponse {
+interface DailyScheduleListResponse {
   success: boolean;
   message: string;
-  count: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-  results: Array<{
+  data: Array<{
     id: string;
-    date: string;
     golf_course: {
       id: string;
       name: string;
     };
+    date: string;
+    status: string;
+    time_interval: number;
+    parts_count: number;
     total_staff: number;
     available_staff: number;
-    status: string;
+    created_by: string;
+    created_at: string;
   }>;
+}
+
+interface DailyScheduleDetailResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    golf_course: {
+      id: string;
+      name: string;
+    };
+    schedule_type: string;
+    date: string;
+    status: string;
+    time_interval: number;
+    total_staff: number;
+    available_staff: number;
+    created_by: string;
+    created_at: string;
+    fields: Array<{
+      id: string;
+      name: string;
+      order: number;
+      is_active: boolean;
+    }>;
+    caddies: Array<{
+      id: string;
+      name: string;
+      phone: string;
+      primary_group: {
+        id: number;
+        name: string;
+        order: number;
+      };
+      primary_group_order: number;
+      special_group: {
+        id: number;
+        name: string;
+        order: number;
+      };
+      special_group_order: number;
+      today_status: string | null;
+      is_active: boolean;
+    }>;
+    parts: Array<{
+      id: string;
+      part_number: number;
+      name: string;
+      start_time: string;
+      end_time: string;
+      is_active: boolean;
+      slots: Array<{
+        id: string;
+        start_time: string;
+        field_number: number;
+        status: string;
+        slot_type: string;
+        is_locked: boolean;
+        caddie: string | null;
+        special_group: string | null;
+        assigned_by: string | null;
+        assigned_at: string | null;
+      }>;
+    }>;
+  };
+}
+
+interface AutoAssignRequest {
+  max_assignments?: number;
+  min_rest_minutes?: number;
+}
+
+interface AutoAssignResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    assigned_count: number;
+    message: string;
+  };
 }
 
 interface RoundingSettingsResponse {
@@ -176,12 +254,12 @@ interface SpecialScheduleDetailResponse {
 }
 
 // API 엔드포인트 상수
-const WORK_API_ENDPOINTS = {
+export const WORK_API_ENDPOINTS = {
   ROUNDING_SETTINGS: "/api/v1/work/rounding-settings/",
   SCHEDULES: "/api/v1/work/schedules/",
+  DAILY_SCHEDULES: "/api/v1/work/daily-schedules/",
   TIME_SLOTS: "/api/v1/work/time-slots/",
   SLOTS: "/api/v1/work/slots/",
-  SCHEDULES_SIMPLE_LIST: "/api/v1/work/schedules/simple_list/",
 } as const;
 
 /**
@@ -397,7 +475,7 @@ export const createWorkSchedule = async (
   };
 
   const response = await apiClient.post<CreateWorkScheduleResponse>(
-    WORK_API_ENDPOINTS.SCHEDULES,
+    WORK_API_ENDPOINTS.DAILY_SCHEDULES,
     requestData
   );
 
@@ -539,42 +617,6 @@ export const unassignCaddieFromSlot = async (
 };
 
 /**
- * 근무 스케줄 목록 조회 API
- */
-export const fetchWorkSchedules = async (): Promise<Work[]> => {
-  const response = await apiClient.get<WorkScheduleApiResponse>(
-    WORK_API_ENDPOINTS.SCHEDULES_SIMPLE_LIST
-  );
-
-  // 백엔드 형식을 프론트엔드 형식으로 변환
-  return response.results.map((schedule, index) => ({
-    id: schedule.id,
-    no: index + 1,
-    date: schedule.date
-      ? new Date(schedule.date)
-          .toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
-          .replace(/\./g, ".")
-      : "미정",
-    golfCourse: schedule.golf_course.name,
-    golfCourseId: schedule.golf_course.id,
-    totalStaff: schedule.total_staff,
-    availableStaff: schedule.available_staff,
-    status: schedule.status as
-      | "planning"
-      | "confirmed"
-      | "completed"
-      | "cancelled",
-    scheduleType: "regular", // API에서 제공되지 않으므로 기본값 사용
-    createdAt: new Date().toISOString(), // API에서 제공되지 않으므로 현재 시간 사용
-    updatedAt: new Date().toISOString(),
-  }));
-};
-
-/**
  * 라운딩 설정 일괄 업데이트 API
  */
 export const bulkUpdateRoundingSettings = async (
@@ -601,7 +643,7 @@ export const bulkUpdateRoundingSettings = async (
     };
 
     const response = await apiClient.put<BulkUpdateRoundingSettingsResponse>(
-      `/api/v1/work/schedules/${scheduleId}/bulk-update/`,
+      `${WORK_API_ENDPOINTS.SCHEDULES}${scheduleId}/bulk-update/`,
       requestData
     );
 
@@ -627,7 +669,7 @@ export const fetchSpecialScheduleDetail = async (
 ): Promise<SpecialScheduleDetailResponse["data"]> => {
   try {
     const response = await apiClient.get<SpecialScheduleDetailResponse>(
-      `/api/v1/work/schedules/${scheduleId}/special-groups-status/`
+      `${WORK_API_ENDPOINTS.SCHEDULES}${scheduleId}/special-groups-status/`
     );
 
     if (response.success) {
@@ -731,7 +773,10 @@ export const assignSpecialGroupToSlot = async (
     const response = await apiClient.post<{
       success: boolean;
       message: string;
-    }>(`/api/v1/work/schedules/${scheduleId}/assign-special-group/`, data);
+    }>(
+      `${WORK_API_ENDPOINTS.SCHEDULES}${scheduleId}/assign-special-group/`,
+      data
+    );
 
     if (response.success) {
       return response;
@@ -783,7 +828,10 @@ export const removeSlotAssignment = async (
     const response = await apiClient.post<{
       success: boolean;
       message: string;
-    }>(`/api/v1/work/schedules/${scheduleId}/remove-slot-assignment/`, data);
+    }>(
+      `${WORK_API_ENDPOINTS.SCHEDULES}${scheduleId}/remove-slot-assignment/`,
+      data
+    );
 
     if (response.success) {
       return response;
@@ -792,6 +840,96 @@ export const removeSlotAssignment = async (
     }
   } catch (error) {
     console.error("슬롯 배정 제거 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 근무 스케줄 목록 조회 API
+ */
+export const fetchWorkSchedules = async (): Promise<Work[]> => {
+  const response = await apiClient.get<DailyScheduleListResponse>(
+    WORK_API_ENDPOINTS.DAILY_SCHEDULES
+  );
+
+  if (!response.success) {
+    throw new Error(
+      response.message || "근무 스케줄 목록 조회에 실패했습니다."
+    );
+  }
+
+  // 백엔드 형식을 프론트엔드 형식으로 변환
+  return response.data.map((schedule, index) => ({
+    id: schedule.id,
+    no: index + 1,
+    date: schedule.date
+      ? new Date(schedule.date)
+          .toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+          .replace(/\./g, ".")
+      : "미정",
+    golfCourse: schedule.golf_course.name,
+    golfCourseId: schedule.golf_course.id,
+    totalStaff: schedule.total_staff,
+    availableStaff: schedule.available_staff,
+    status: schedule.status as
+      | "planning"
+      | "confirmed"
+      | "completed"
+      | "cancelled",
+    scheduleType: "daily", // API에서 제공되지 않으므로 기본값 사용
+    createdAt: schedule.created_at,
+    updatedAt: schedule.created_at, // updated_at이 없으므로 created_at 사용
+  }));
+};
+
+/**
+ * 특정 골프장의 일일 스케줄 조회 API
+ */
+export const fetchDailyScheduleDetail = async (
+  golfCourseId: string,
+  date: string
+): Promise<DailyScheduleDetailResponse["data"]> => {
+  try {
+    const response = await apiClient.get<DailyScheduleDetailResponse>(
+      `${WORK_API_ENDPOINTS.DAILY_SCHEDULES}${golfCourseId}/${date}/`
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || "근무표 상세 조회 실패");
+    }
+  } catch (error) {
+    console.error("근무표 상세 조회 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 근무표 자동 배정 API
+ */
+export const autoAssignWorkSlots = async (
+  golfCourseId: string,
+  date: string,
+  data: AutoAssignRequest
+): Promise<AutoAssignResponse> => {
+  try {
+    const response = await apiClient.post<AutoAssignResponse>(
+      `${WORK_API_ENDPOINTS.DAILY_SCHEDULES}${golfCourseId}/${date}/auto-assign/`,
+      data
+    );
+
+    if (response.success) {
+      return response;
+    } else {
+      throw new Error(response.message || "근무표 자동 배정 실패");
+    }
+  } catch (error) {
+    console.error("근무표 자동 배정 실패:", error);
     throw error;
   }
 };

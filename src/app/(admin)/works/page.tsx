@@ -152,6 +152,7 @@ const WorksPage: React.FC = () => {
         settings.timeUnit,
         settings.roundTimes.map((roundTime) => ({
           part_number: roundTime.round,
+          name: `${roundTime.round}부`,
           start_time: roundTime.startTime,
           end_time: roundTime.endTime,
         }))
