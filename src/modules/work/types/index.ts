@@ -18,6 +18,24 @@ export interface Work extends Record<string, unknown> {
   isEmpty?: boolean;
 }
 
+// 필터 메타데이터 타입
+export interface FilterMetadata {
+  status_options: Array<{
+    id: string;
+    name: string;
+  }>;
+  primary_groups: Array<{
+    id: string;
+    name: string;
+    order: number;
+  }>;
+  special_groups: Array<{
+    id: string;
+    name: string;
+    order: number;
+  }>;
+}
+
 // 근무표 상세 타입
 export interface WorkSchedule {
   id: string;
@@ -34,6 +52,7 @@ export interface WorkSchedule {
   createdByName: string;
   partsCount: number;
   parts: WorkPart[];
+  filter_metadata?: FilterMetadata;
   createdAt: string;
   updatedAt: string;
 }
@@ -149,6 +168,13 @@ export interface PersonnelFilter {
   status: string;
   group: string;
   badge: string;
+}
+
+// 필터 옵션 타입
+export interface FilterOptions {
+  status: Array<{ id: string; name: string }>;
+  groups: Array<{ id: string; name: string; order: number }>;
+  badges: Array<{ id: string; name: string; order: number }>;
 }
 
 // ================================

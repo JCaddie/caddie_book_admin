@@ -41,7 +41,6 @@ export default function WorkDetailPage({
     golfCourseId,
     date
   );
-  const { filters, updateFilter } = usePersonnelFilter();
   const { isResetModalOpen, openResetModal, closeResetModal, handleReset } =
     useResetModal();
 
@@ -123,12 +122,17 @@ export default function WorkDetailPage({
         status: string;
         slot_type: string;
         is_locked: boolean;
-        caddie: string | null;
+        caddie: { id: string; name: string } | null;
         special_group: string | null;
         assigned_by: string | null;
         assigned_at: string | null;
       }>;
     }>;
+    filter_metadata?: {
+      status_options: Array<{ id: string; name: string }>;
+      primary_groups: Array<{ id: string; name: string; order: number }>;
+      special_groups: Array<{ id: string; name: string; order: number }>;
+    };
   } | null>(null);
 
   // API 응답의 fields를 Field 타입으로 변환하는 함수
@@ -153,6 +157,11 @@ export default function WorkDetailPage({
   };
   const [, setIsScheduleLoading] = useState(false);
   const [, setScheduleError] = useState<string | null>(null);
+
+  // usePersonnelFilter 훅 사용 (detailData가 설정된 후에 호출)
+  const { filters, filterOptions, updateFilter } = usePersonnelFilter(
+    detailData?.filter_metadata
+  );
 
   // API caddies -> 화면용 CaddieData 매핑
   const sourceCaddies: CaddieData[] = (() => {
@@ -387,6 +396,7 @@ export default function WorkDetailPage({
         <PersonnelStatus
           filters={filters}
           filteredCaddies={displayCaddies}
+          filterOptions={filterOptions}
           onFilterUpdate={updateFilter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}

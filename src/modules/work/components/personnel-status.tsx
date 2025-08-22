@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import { CaddieData, PersonnelFilter } from "../types";
-import { FILTER_OPTIONS } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
 import HolidaySettingsModal from "./holiday-settings-modal";
 
 interface PersonnelStatusProps {
   filters: PersonnelFilter;
   filteredCaddies: CaddieData[];
+  filterOptions: {
+    status: Array<{ id: string; name: string }>;
+    groups: Array<{ id: string; name: string; order: number }>;
+    badges: Array<{ id: string; name: string; order: number }>;
+  };
   onFilterUpdate: (key: keyof PersonnelFilter, value: string) => void;
   onDragStart?: (caddie: CaddieData) => void;
   onDragEnd?: (caddie: CaddieData) => void;
@@ -18,6 +22,7 @@ interface PersonnelStatusProps {
 export default function PersonnelStatus({
   filters,
   filteredCaddies,
+  filterOptions,
   onFilterUpdate,
   onDragStart,
   onDragEnd,
@@ -55,17 +60,17 @@ export default function PersonnelStatus({
               </span>
               <div className="flex-1">
                 <div className="flex gap-2 mb-2">
-                  {FILTER_OPTIONS.STATUS.map((status) => (
+                  {filterOptions.status.map((status) => (
                     <button
-                      key={status}
-                      onClick={() => onFilterUpdate("status", status)}
+                      key={status.id}
+                      onClick={() => onFilterUpdate("status", status.name)}
                       className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
-                        filters.status === status
+                        filters.status === status.name
                           ? "bg-[#FEB912] text-white"
                           : "bg-[#E3E3E3] text-black/80"
                       }`}
                     >
-                      {status}
+                      {status.name}
                     </button>
                   ))}
                 </div>
@@ -79,32 +84,17 @@ export default function PersonnelStatus({
               </span>
               <div className="flex-1">
                 <div className="flex gap-2 mb-2">
-                  {FILTER_OPTIONS.GROUP.slice(0, 6).map((group) => (
+                  {filterOptions.groups.map((group) => (
                     <button
-                      key={group}
-                      onClick={() => onFilterUpdate("group", group)}
+                      key={group.id}
+                      onClick={() => onFilterUpdate("group", group.name)}
                       className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
-                        filters.group === group
+                        filters.group === group.name
                           ? "bg-[#FEB912] text-white"
                           : "bg-[#E3E3E3] text-black/80"
                       }`}
                     >
-                      {group}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  {FILTER_OPTIONS.GROUP.slice(6).map((group) => (
-                    <button
-                      key={group}
-                      onClick={() => onFilterUpdate("group", group)}
-                      className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
-                        filters.group === group
-                          ? "bg-[#FEB912] text-white"
-                          : "bg-[#E3E3E3] text-black/80"
-                      }`}
-                    >
-                      {group}
+                      {group.name}
                     </button>
                   ))}
                 </div>
@@ -118,32 +108,17 @@ export default function PersonnelStatus({
               </span>
               <div className="flex-1">
                 <div className="flex gap-2 mb-2">
-                  {FILTER_OPTIONS.BADGE.slice(0, 6).map((badge) => (
+                  {filterOptions.badges.slice(0, 6).map((badge) => (
                     <button
-                      key={badge}
-                      onClick={() => onFilterUpdate("badge", badge)}
+                      key={badge.id}
+                      onClick={() => onFilterUpdate("badge", badge.name)}
                       className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
-                        filters.badge === badge
+                        filters.badge === badge.name
                           ? "bg-[#FEB912] text-white"
                           : "bg-[#E3E3E3] text-black/80"
                       }`}
                     >
-                      {badge}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  {FILTER_OPTIONS.BADGE.slice(6).map((badge) => (
-                    <button
-                      key={badge}
-                      onClick={() => onFilterUpdate("badge", badge)}
-                      className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
-                        filters.badge === badge
-                          ? "bg-[#FEB912] text-white"
-                          : "bg-[#E3E3E3] text-black/80"
-                      }`}
-                    >
-                      {badge}
+                      {badge.name}
                     </button>
                   ))}
                 </div>

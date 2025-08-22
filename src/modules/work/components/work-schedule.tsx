@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import BaseSchedule from "@/shared/components/schedule/base-schedule";
 import { CaddieData, Field, PersonnelStats, TimeSlots } from "../types";
-import { SAMPLE_CADDIES } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
 import {
   assignCaddieToSlotPost,
@@ -105,10 +104,7 @@ export default function WorkSchedule({
   const draggedCaddie = externalDraggedCaddie || internalDraggedCaddie;
 
   // 스케줄용 캐디 데이터 (API에서 전달되면 사용)
-  const caddies =
-    availableCaddies && availableCaddies.length > 0
-      ? availableCaddies
-      : SAMPLE_CADDIES.slice(0, 6);
+  const caddies = availableCaddies || [];
 
   // API 데이터에서 기존 배치된 캐디를 초기화
   React.useEffect(() => {
@@ -142,9 +138,14 @@ export default function WorkSchedule({
 
         // 배정된 캐디가 있는 경우 위치 초기화
         if (slot.caddie) {
+          // slot.caddie.id가 문자열인지 확인하고 안전하게 처리
+          const caddieId =
+            typeof slot.caddie.id === "string"
+              ? slot.caddie.id
+              : String(slot.caddie.id);
           // API 데이터의 캐디 정보를 사용하여 CaddieData 객체 생성
           const apiCaddie: CaddieData = {
-            id: parseInt(slot.caddie.id.slice(-6), 16) || 0,
+            id: parseInt(caddieId.slice(-6), 16) || 0,
             name: slot.caddie.name,
             group: 1, // 기본값
             badge: "일반",
@@ -351,12 +352,14 @@ export default function WorkSchedule({
         } else {
           setInternalDraggedCaddie(null);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("캐디 배정 실패:", error);
 
         // 에러 메시지 표시 (API에서 받은 구체적인 메시지 사용)
-        const errorMessage =
-          error.message || "캐디 배정에 실패했습니다. 다시 시도해주세요.";
+        let errorMessage = "캐디 배정에 실패했습니다. 다시 시도해주세요.";
+        if (error && typeof error === "object" && "message" in error) {
+          errorMessage = (error as { message: string }).message;
+        }
         alert(errorMessage);
 
         if (externalOnDragEnd) {
@@ -602,13 +605,18 @@ export default function WorkSchedule({
 
     // API 데이터에 캐디가 배정된 경우
     if (slot?.caddie) {
+      // slot.caddie.id가 문자열인지 확인하고 안전하게 처리
+      const caddieId =
+        typeof slot.caddie.id === "string"
+          ? slot.caddie.id
+          : String(slot.caddie.id);
       const apiCaddie: CaddieData = {
-        id: parseInt(slot.caddie.id.slice(-6), 16) || 0, // UUID의 마지막 6자리를 숫자로 변환
-        name: slot.caddie.name,
+        id: parseInt(caddieId.slice(-6), 16) || 0, // UUID의 마지막 6자리를 숫자로 변환
+        name: slot.caddie.name || "알 수 없음",
         group: 1, // 기본값
         badge: "일반",
         status: "근무",
-        originalId: slot.caddie.id,
+        originalId: caddieId,
       };
 
       return (
