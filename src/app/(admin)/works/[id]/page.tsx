@@ -224,6 +224,7 @@ export default function WorkDetailPage({
         fields: data.fields,
         caddies: data.caddies,
         parts: data.parts,
+        filter_metadata: data.filter_metadata,
       });
     } catch (error) {
       console.error("근무표 조회 실패:", error);

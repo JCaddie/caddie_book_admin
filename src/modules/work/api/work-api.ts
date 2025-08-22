@@ -83,6 +83,11 @@ interface DailyScheduleDetailResponse {
         assigned_at: string | null;
       }>;
     }>;
+    filter_metadata?: {
+      status_options: Array<{ id: string; name: string }>;
+      primary_groups: Array<{ id: string; name: string; order: number }>;
+      special_groups: Array<{ id: string; name: string; order: number }>;
+    };
   };
 }
 
