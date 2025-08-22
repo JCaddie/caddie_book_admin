@@ -1,13 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FilterOptions, PersonnelFilter } from "../types";
+import { CaddieData, FilterOptions, PersonnelFilter } from "../types";
 
-export function usePersonnelFilter(filterMetadata?: {
-  status_options: Array<{ id: string; name: string }>;
-  primary_groups: Array<{ id: string; name: string; order: number }>;
-  special_groups: Array<{ id: string; name: string; order: number }>;
-}) {
+export function usePersonnelFilter(
+  filterMetadata?: {
+    status_options: Array<{ id: string; name: string }>;
+    primary_groups: Array<{ id: string; name: string; order: number }>;
+    special_groups: Array<{ id: string; name: string; order: number }>;
+  },
+  caddies?: CaddieData[]
+) {
   // API에서 받은 filter_metadata가 있으면 사용, 없으면 "전체"만 표시
   const filterOptions: FilterOptions = useMemo(() => {
     if (filterMetadata) {
@@ -38,6 +41,30 @@ export function usePersonnelFilter(filterMetadata?: {
     badge: "전체",
   });
 
+  // 필터링된 캐디 목록 계산
+  const filteredCaddies = useMemo(() => {
+    if (!caddies) return [];
+    
+    return caddies.filter((caddie) => {
+      // 상태 필터링
+      if (filters.status !== "전체" && caddie.status !== filters.status) {
+        return false;
+      }
+      
+      // 그룹 필터링
+      if (filters.group !== "전체" && caddie.groupName !== filters.group) {
+        return false;
+      }
+      
+      // 특수반 필터링
+      if (filters.badge !== "전체" && caddie.badge !== filters.badge) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [caddies, filters]);
+
   // 필터 업데이트 함수
   const updateFilter = (key: keyof PersonnelFilter, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -46,6 +73,7 @@ export function usePersonnelFilter(filterMetadata?: {
   return {
     filters,
     filterOptions,
+    filteredCaddies,
     updateFilter,
   };
 }

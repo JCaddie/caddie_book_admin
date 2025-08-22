@@ -158,11 +158,6 @@ export default function WorkDetailPage({
   const [, setIsScheduleLoading] = useState(false);
   const [, setScheduleError] = useState<string | null>(null);
 
-  // usePersonnelFilter 훅 사용 (detailData가 설정된 후에 호출)
-  const { filters, filterOptions, updateFilter } = usePersonnelFilter(
-    detailData?.filter_metadata
-  );
-
   // API caddies -> 화면용 CaddieData 매핑
   const sourceCaddies: CaddieData[] = (() => {
     if (!detailData?.caddies) return [];
@@ -177,6 +172,12 @@ export default function WorkDetailPage({
       groupName: c.primary_group?.name,
     }));
   })();
+
+  // usePersonnelFilter 훅 사용 (sourceCaddies가 정의된 후에 호출)
+  const { filters, filterOptions, filteredCaddies, updateFilter } = usePersonnelFilter(
+    detailData?.filter_metadata,
+    sourceCaddies
+  );
 
   // 필터를 적용한 캐디 리스트
   const displayCaddies = filterCaddies(sourceCaddies, filters);
@@ -396,7 +397,7 @@ export default function WorkDetailPage({
         {/* 오른쪽: 인력 현황 사이드바 */}
         <PersonnelStatus
           filters={filters}
-          filteredCaddies={displayCaddies}
+          filteredCaddies={filteredCaddies}
           filterOptions={filterOptions}
           onFilterUpdate={updateFilter}
           onDragStart={handleDragStart}
