@@ -8,6 +8,7 @@ import CaddieCard from "./caddie-card";
 import {
   assignCaddieToSlotPost,
   bulkUpdateSlotStatus,
+  clearAllCaddieAssignments,
   removeCaddieFromSlot,
   removeSlotAssignment,
   toggleSlotStatus,
@@ -34,6 +35,8 @@ interface WorkScheduleProps {
   scheduleId?: string; // API 호출을 위한 스케줄 ID
   onScheduleUpdate?: () => void; // 스케줄 업데이트 콜백
   availableCaddies?: CaddieData[]; // API에서 받은 캐디 리스트
+  golfCourseId?: string; // 골프장 ID (초기화 API용)
+  date?: string; // 날짜 (초기화 API용)
   scheduleParts?: Array<{
     id: string;
     part_number: number;
@@ -74,6 +77,8 @@ export default function WorkSchedule({
   scheduleId,
   onScheduleUpdate,
   availableCaddies,
+  golfCourseId,
+  date,
   scheduleParts = [],
 }: WorkScheduleProps) {
   // 캐디 위치 상태 관리
@@ -467,6 +472,37 @@ export default function WorkSchedule({
     }
   };
 
+  // 모든 캐디 배정 초기화
+  const handleClearAllAssignments = async () => {
+    if (!golfCourseId || !date) {
+      alert("골프장 ID 또는 날짜 정보가 없습니다.");
+      return;
+    }
+
+    const confirmed = confirm("모든 캐디 배정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await clearAllCaddieAssignments(golfCourseId, date);
+
+      // 로컬 상태도 초기화
+      setCaddiePositions(new Map());
+      setExternalCaddies(new Map());
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+
+      alert("모든 캐디 배정이 초기화되었습니다.");
+    } catch (error) {
+      console.error("캐디 배정 초기화 실패:", error);
+      alert("캐디 배정 초기화에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
   // 특정 슬롯의 상태 변경 핸들러
   const handleSlotStatusToggle = async (
     fieldIndex: number,
@@ -643,7 +679,7 @@ export default function WorkSchedule({
       fields={fields}
       timeSlots={timeSlots}
       personnelStats={personnelStats}
-      onResetClick={onResetClick || (() => {})}
+      onResetClick={golfCourseId && date ? handleClearAllAssignments : (onResetClick || (() => {}))}
       hideHeader={hideHeader}
       isFullWidth={isFullWidth}
       onRoundingSettingsClick={onRoundingSettingsClick}

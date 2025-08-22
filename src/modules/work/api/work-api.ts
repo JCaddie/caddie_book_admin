@@ -1016,3 +1016,24 @@ export const removeCaddieFromSlot = async (slotId: string): Promise<void> => {
     throw error;
   }
 };
+
+/**
+ * 모든 캐디 배정 초기화 API
+ */
+export const clearAllCaddieAssignments = async (
+  golfCourseId: string,
+  date: string
+): Promise<void> => {
+  try {
+    const response = await apiClient.post(
+      `${WORK_API_ENDPOINTS.DAILY_SCHEDULES}${golfCourseId}/${date}/clear-assignments/`
+    );
+
+    if (!response.success) {
+      throw new Error(response.message || "캐디 배정 초기화 실패");
+    }
+  } catch (error) {
+    console.error("캐디 배정 초기화 실패:", error);
+    throw error;
+  }
+};

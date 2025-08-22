@@ -378,6 +378,8 @@ export default function WorkDetailPage({
           scheduleId={scheduleData?.schedules[0]?.id}
           onScheduleUpdate={fetchScheduleData}
           availableCaddies={displayCaddies}
+          golfCourseId={golfCourseId}
+          date={currentDate.toISOString().split('T')[0]}
           scheduleParts={detailData?.parts || []}
         />
 
