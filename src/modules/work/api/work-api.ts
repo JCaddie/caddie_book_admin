@@ -580,6 +580,30 @@ export const fetchWorkSlots = async (
 };
 
 /**
+ * 캐디 배정 API (POST 방식)
+ */
+export const assignCaddieToSlotPost = async (
+  slotId: string,
+  caddieId: string
+): Promise<void> => {
+  try {
+    await apiClient.post(
+      `${WORK_API_ENDPOINTS.SLOTS}${slotId}/assign_caddie/`,
+      {
+        caddie_id: caddieId,
+      }
+    );
+
+    // API 응답이 오면 성공으로 처리
+    // 이 API는 성공 시 "강캐디 캐디가 배정되었습니다." 같은 메시지를 포함한 응답을 반환
+    console.log("캐디 배정 API 호출 완료");
+  } catch (error) {
+    console.error("캐디 배정 실패:", error);
+    throw error;
+  }
+};
+
+/**
  * 캐디 배정 API
  */
 export const assignCaddieToSlot = async (

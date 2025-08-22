@@ -6,6 +6,7 @@ import { CaddieData, Field, PersonnelStats, TimeSlots } from "../types";
 import { SAMPLE_CADDIES } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
 import {
+  assignCaddieToSlotPost,
   bulkUpdateSlotStatus,
   removeCaddieFromSlot,
   removeSlotAssignment,
@@ -237,7 +238,7 @@ export default function WorkSchedule({
   };
 
   // 드롭 핸들러 (캐디 특화 로직 포함)
-  const handleDrop = (
+  const handleDrop = async (
     e: React.DragEvent,
     fieldIndex: number,
     timeIndex: number,
@@ -277,45 +278,87 @@ export default function WorkSchedule({
         return;
       }
 
-      // 캐디를 외부 캐디 맵에 저장
-      setExternalCaddies((prev) =>
-        new Map(prev).set(caddie.id.toString(), caddie)
-      );
+      // 슬롯 ID 가져오기
+      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+      const slotId = slotIdMap.get(slotKey);
 
-      // 위치 업데이트
-      setCaddiePositions((prev) => {
-        const newPositions = new Map(prev);
+      if (!slotId) {
+        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
+        alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        if (externalOnDragEnd) {
+          externalOnDragEnd();
+        } else {
+          setInternalDraggedCaddie(null);
+        }
+        return;
+      }
 
-        // 해당 위치에 이미 있는 캐디 제거 (드롭 위치에서만)
-        const existingPositionKey = Array.from(newPositions.entries()).find(
-          ([, position]) =>
-            position.fieldIndex === fieldIndex &&
-            position.timeIndex === timeIndex &&
-            position.part === part
+      // API를 통해 캐디 배정
+      try {
+        await assignCaddieToSlotPost(
+          slotId,
+          caddie.originalId || caddie.id.toString()
         );
 
-        if (existingPositionKey) {
-          newPositions.delete(existingPositionKey[0]);
-        }
+        // API 성공 시에만 로컬 상태 업데이트
+        // 캐디를 외부 캐디 맵에 저장
+        setExternalCaddies((prev) =>
+          new Map(prev).set(caddie.id.toString(), caddie)
+        );
 
-        // 새로운 위치에 캐디 배치 (고유한 키 생성)
-        const positionKey = `${draggedCaddieId}_${fieldIndex}_${timeIndex}_${part}`;
-        newPositions.set(positionKey, {
-          fieldIndex,
-          timeIndex,
-          part,
+        // 위치 업데이트
+        setCaddiePositions((prev) => {
+          const newPositions = new Map(prev);
+
+          // 해당 위치에 이미 있는 캐디 제거 (드롭 위치에서만)
+          const existingPositionKey = Array.from(newPositions.entries()).find(
+            ([, position]) =>
+              position.fieldIndex === fieldIndex &&
+              position.timeIndex === timeIndex &&
+              position.part === part
+          );
+
+          if (existingPositionKey) {
+            newPositions.delete(existingPositionKey[0]);
+          }
+
+          // 새로운 위치에 캐디 배치 (고유한 키 생성)
+          const positionKey = `${draggedCaddieId}_${fieldIndex}_${timeIndex}_${part}`;
+          newPositions.set(positionKey, {
+            fieldIndex,
+            timeIndex,
+            part,
+          });
+
+          return newPositions;
         });
 
-        return newPositions;
-      });
+        // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+        if (onScheduleUpdate) {
+          onScheduleUpdate();
+        }
 
+        if (externalOnDragEnd) {
+          externalOnDragEnd();
+        } else {
+          setInternalDraggedCaddie(null);
+        }
+      } catch (error) {
+        console.error("캐디 배정 실패:", error);
+        alert("캐디 배정에 실패했습니다. 다시 시도해주세요.");
+        if (externalOnDragEnd) {
+          externalOnDragEnd();
+        } else {
+          setInternalDraggedCaddie(null);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to parse caddie data:", error);
       if (externalOnDragEnd) {
         externalOnDragEnd();
       } else {
         setInternalDraggedCaddie(null);
       }
-    } catch (error) {
-      console.error("Failed to parse caddie data:", error);
     }
   };
 
