@@ -19,6 +19,7 @@ export default function CaddieCard({
   onClick,
   onStatusToggle,
   onCaddieRemove,
+  onDoubleClick,
 }: CaddieCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -86,6 +87,14 @@ export default function CaddieCard({
     onDragEnd?.(e);
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onDoubleClick) {
+      onDoubleClick();
+    }
+  };
+
   return (
     <div
       className={`w-[218px] flex items-center justify-between px-2 py-1.5 bg-white rounded-md border border-[#DDDDDD] ${cardStyle} ${
@@ -94,6 +103,7 @@ export default function CaddieCard({
       draggable={draggable}
       onDragStart={draggable ? handleDragStart : undefined}
       onDragEnd={draggable ? handleDragEnd : undefined}
+      onDoubleClick={handleDoubleClick}
     >
       <div className="flex items-center gap-1.5">
         {/* 조 배지 */}
@@ -136,7 +146,11 @@ export default function CaddieCard({
       </div>
 
       {/* 메뉴 아이콘 (클릭 시 팝오버 메뉴 표시) */}
-      <div className="relative flex-shrink-0" ref={menuRef}>
+      <div
+        className="relative flex-shrink-0"
+        ref={menuRef}
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={(e) => {
             e.stopPropagation();

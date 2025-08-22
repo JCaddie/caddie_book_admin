@@ -93,6 +93,9 @@ export default function WorkSchedule({
   const [internalDraggedCaddie, setInternalDraggedCaddie] =
     useState<CaddieData | null>(null);
 
+  // API 호출 중인 슬롯들을 추적 (중복 호출 방지)
+  const [removingSlots, setRemovingSlots] = useState<Set<string>>(new Set());
+
   // 전체 드래그 상태 (외부 + 내부)
   const draggedCaddie = externalDraggedCaddie || internalDraggedCaddie;
 
@@ -492,14 +495,21 @@ export default function WorkSchedule({
     }
   };
 
-  // 특정 슬롯에서 캐디 제거 핸들러
+  // 특정 슬롯에서 캐디 제거 핸들러 (중복 호출 방지)
   const handleSlotCaddieRemove = async (
     fieldIndex: number,
     timeIndex: number,
     part: number
   ) => {
+    const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+    
+    // 이미 제거 중인 슬롯이면 무시
+    if (removingSlots.has(slotKey)) {
+      console.log("이미 제거 중인 슬롯:", slotKey);
+      return;
+    }
+
     try {
-      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
       const slotId = slotIdMap.get(slotKey);
 
       if (!slotId) {
@@ -507,6 +517,9 @@ export default function WorkSchedule({
         alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
         return;
       }
+
+      // 제거 중 상태로 표시
+      setRemovingSlots((prev) => new Set(prev).add(slotKey));
 
       await removeCaddieFromSlot(slotId);
 
@@ -517,6 +530,13 @@ export default function WorkSchedule({
     } catch (error) {
       console.error("캐디 제거 실패:", error);
       alert("캐디 제거에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      // 제거 중 상태 해제
+      setRemovingSlots((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(slotKey);
+        return newSet;
+      });
     }
   };
 
@@ -561,6 +581,9 @@ export default function WorkSchedule({
           onCaddieRemove={() =>
             handleSlotCaddieRemove(fieldIndex, timeIndex, part)
           }
+          onDoubleClick={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
         />
       );
     }
@@ -579,6 +602,9 @@ export default function WorkSchedule({
             handleSlotStatusToggle(fieldIndex, timeIndex, part)
           }
           onCaddieRemove={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
+          onDoubleClick={() =>
             handleSlotCaddieRemove(fieldIndex, timeIndex, part)
           }
         />

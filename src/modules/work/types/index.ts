@@ -114,6 +114,7 @@ export interface CaddieCardProps {
   onClick?: (() => void) | ((caddie: CaddieData) => void);
   onStatusToggle?: () => void; // 상태 변경 핸들러
   onCaddieRemove?: () => void; // 캐디 제거 핸들러
+  onDoubleClick?: () => void; // 더블클릭 시 캐디 제거 핸들러
   draggable?: boolean;
 }
 
