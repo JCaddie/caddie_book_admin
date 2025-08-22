@@ -379,7 +379,7 @@ export default function WorkDetailPage({
           onScheduleUpdate={fetchScheduleData}
           availableCaddies={displayCaddies}
           golfCourseId={golfCourseId}
-          date={currentDate.toISOString().split('T')[0]}
+          date={currentDate.toISOString().split("T")[0]}
           scheduleParts={detailData?.parts || []}
         />
 

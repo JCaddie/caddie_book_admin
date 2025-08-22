@@ -597,9 +597,40 @@ export const assignCaddieToSlotPost = async (
     // API 응답이 오면 성공으로 처리
     // 이 API는 성공 시 "강캐디 캐디가 배정되었습니다." 같은 메시지를 포함한 응답을 반환
     console.log("캐디 배정 API 호출 완료");
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("캐디 배정 실패:", error);
-    throw error;
+
+    // API 에러 응답에서 구체적인 메시지 추출
+    let errorMessage = "캐디 배정에 실패했습니다. 다시 시도해주세요.";
+
+    // 타입 가드를 사용하여 에러 객체 구조 확인
+    if (error && typeof error === "object" && "response" in error) {
+      const apiError = error as { response?: { data?: any } };
+      console.error("error.response:", apiError.response);
+      console.error("error.response?.data:", apiError.response?.data);
+
+      if (apiError.response?.data) {
+        const errorData = apiError.response.data;
+        console.error("errorData:", errorData);
+
+        // API에서 받은 message 필드 사용
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+
+        // 추가적인 에러 정보 로깅
+        if (errorData.errors) {
+          console.error("에러 상세 정보:", errorData.errors);
+        }
+      }
+    } else if (error && typeof error === "object" && "message" in error) {
+      const messageError = error as { message: string };
+      errorMessage = messageError.message;
+    } else if (typeof error === "string") {
+      errorMessage = error;
+    }
+
+    throw new Error(errorMessage);
   }
 };
 

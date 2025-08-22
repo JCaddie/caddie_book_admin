@@ -351,9 +351,14 @@ export default function WorkSchedule({
         } else {
           setInternalDraggedCaddie(null);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("캐디 배정 실패:", error);
-        alert("캐디 배정에 실패했습니다. 다시 시도해주세요.");
+
+        // 에러 메시지 표시 (API에서 받은 구체적인 메시지 사용)
+        const errorMessage =
+          error.message || "캐디 배정에 실패했습니다. 다시 시도해주세요.";
+        alert(errorMessage);
+
         if (externalOnDragEnd) {
           externalOnDragEnd();
         } else {
@@ -479,7 +484,9 @@ export default function WorkSchedule({
       return;
     }
 
-    const confirmed = confirm("모든 캐디 배정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+    const confirmed = confirm(
+      "모든 캐디 배정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    );
     if (!confirmed) {
       return;
     }
@@ -538,7 +545,7 @@ export default function WorkSchedule({
     part: number
   ) => {
     const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
-    
+
     // 이미 제거 중인 슬롯이면 무시
     if (removingSlots.has(slotKey)) {
       console.log("이미 제거 중인 슬롯:", slotKey);
@@ -679,7 +686,11 @@ export default function WorkSchedule({
       fields={fields}
       timeSlots={timeSlots}
       personnelStats={personnelStats}
-      onResetClick={golfCourseId && date ? handleClearAllAssignments : (onResetClick || (() => {}))}
+      onResetClick={
+        golfCourseId && date
+          ? handleClearAllAssignments
+          : onResetClick || (() => {})
+      }
       hideHeader={hideHeader}
       isFullWidth={isFullWidth}
       onRoundingSettingsClick={onRoundingSettingsClick}

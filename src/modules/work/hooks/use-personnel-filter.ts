@@ -8,9 +8,9 @@ import { filterCaddies } from "../utils/work-detail-utils";
 export function usePersonnelFilter() {
   // 필터 상태 관리
   const [filters, setFilters] = useState<PersonnelFilter>({
-    status: "근무",
-    group: "1조",
-    badge: "하우스",
+    status: "전체",
+    group: "전체",
+    badge: "전체",
   });
 
   // 필터링된 캐디 데이터
