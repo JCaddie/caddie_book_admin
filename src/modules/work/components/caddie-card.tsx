@@ -15,10 +15,16 @@ export default function CaddieCard({
   onDragEnd,
   isDragging = false,
   draggable = true,
+  onClick,
 }: CaddieCardProps) {
   if (isEmpty) {
     return (
-      <div className="w-[218px] h-auto flex items-center justify-center px-2 py-1.5 bg-white rounded-md border border-[#DDDDDD]">
+      <div
+        className={`w-[218px] h-auto flex items-center justify-center px-2 py-1.5 bg-white rounded-md border border-[#DDDDDD] ${
+          onClick ? "cursor-pointer hover:bg-gray-50" : ""
+        }`}
+        onClick={onClick && typeof onClick === "function" ? onClick : undefined}
+      >
         <span className="text-sm font-medium text-[#AEAAAA]">{emptyText}</span>
       </div>
     );

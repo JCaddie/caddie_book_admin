@@ -375,6 +375,10 @@ export default function WorkDetailPage({
           onDragEnd={handleDragEnd}
           onFillClick={handleFill}
           onResetClick={openResetModal}
+          scheduleId={scheduleData?.schedules[0]?.id}
+          onScheduleUpdate={fetchScheduleData}
+          availableCaddies={displayCaddies}
+          scheduleParts={detailData?.parts || []}
         />
 
         {/* 오른쪽: 인력 현황 사이드바 */}

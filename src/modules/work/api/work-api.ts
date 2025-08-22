@@ -260,6 +260,7 @@ export const WORK_API_ENDPOINTS = {
   DAILY_SCHEDULES: "/api/v1/work/daily-schedules/",
   TIME_SLOTS: "/api/v1/work/time-slots/",
   SLOTS: "/api/v1/work/slots/",
+  SLOT_BULK_UPDATE: "/api/v1/work/slots/bulk_update_status/",
 } as const;
 
 /**
@@ -930,6 +931,46 @@ export const autoAssignWorkSlots = async (
     }
   } catch (error) {
     console.error("근무표 자동 배정 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 워크 슬롯 상태 토글 API (available ↔ reserved)
+ */
+export const toggleSlotStatus = async (slotId: string): Promise<void> => {
+  try {
+    const response = await apiClient.post(
+      `${WORK_API_ENDPOINTS.SLOTS}${slotId}/toggle_status/`
+    );
+
+    if (!response.success) {
+      throw new Error(response.message || "슬롯 상태 변경 실패");
+    }
+  } catch (error) {
+    console.error("슬롯 상태 토글 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 워크 슬롯 일괄 상태 변경 API
+ */
+export const bulkUpdateSlotStatus = async (
+  slotIds: string[],
+  newStatus: "available" | "reserved"
+): Promise<void> => {
+  try {
+    const response = await apiClient.post(WORK_API_ENDPOINTS.SLOT_BULK_UPDATE, {
+      slot_ids: slotIds,
+      new_status: newStatus,
+    });
+
+    if (!response.success) {
+      throw new Error(response.message || "일괄 상태 변경 실패");
+    }
+  } catch (error) {
+    console.error("일괄 상태 변경 실패:", error);
     throw error;
   }
 };
