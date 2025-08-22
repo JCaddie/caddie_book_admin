@@ -60,7 +60,7 @@ export default function PersonnelStatus({
               </span>
               <div className="flex-1">
                 <div className="flex gap-2 mb-2">
-                  {filterOptions.status.map((status) => (
+                  {filterOptions.status.slice(0, 6).map((status) => (
                     <button
                       key={status.id}
                       onClick={() => onFilterUpdate("status", status.name)}
@@ -74,6 +74,23 @@ export default function PersonnelStatus({
                     </button>
                   ))}
                 </div>
+                {filterOptions.status.length > 6 && (
+                  <div className="flex gap-2">
+                    {filterOptions.status.slice(6).map((status) => (
+                      <button
+                        key={status.id}
+                        onClick={() => onFilterUpdate("status", status.name)}
+                        className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                          filters.status === status.name
+                            ? "bg-[#FEB912] text-white"
+                            : "bg-[#E3E3E3] text-black/80"
+                        }`}
+                      >
+                        {status.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -84,7 +101,7 @@ export default function PersonnelStatus({
               </span>
               <div className="flex-1">
                 <div className="flex gap-2 mb-2">
-                  {filterOptions.groups.map((group) => (
+                  {filterOptions.groups.slice(0, 6).map((group) => (
                     <button
                       key={group.id}
                       onClick={() => onFilterUpdate("group", group.name)}
@@ -98,6 +115,23 @@ export default function PersonnelStatus({
                     </button>
                   ))}
                 </div>
+                {filterOptions.groups.length > 6 && (
+                  <div className="flex gap-2">
+                    {filterOptions.groups.slice(6).map((group) => (
+                      <button
+                        key={group.id}
+                        onClick={() => onFilterUpdate("group", group.name)}
+                        className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                          filters.group === group.name
+                            ? "bg-[#FEB912] text-white"
+                            : "bg-[#E3E3E3] text-black/80"
+                        }`}
+                      >
+                        {group.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -122,6 +156,23 @@ export default function PersonnelStatus({
                     </button>
                   ))}
                 </div>
+                {filterOptions.badges.length > 6 && (
+                  <div className="flex gap-2">
+                    {filterOptions.badges.slice(6).map((badge) => (
+                      <button
+                        key={badge.id}
+                        onClick={() => onFilterUpdate("badge", badge.name)}
+                        className={`w-[50px] h-[26px] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 ${
+                          filters.badge === badge.name
+                            ? "bg-[#FEB912] text-white"
+                            : "bg-[#E3E3E3] text-black/80"
+                        }`}
+                      >
+                        {badge.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
