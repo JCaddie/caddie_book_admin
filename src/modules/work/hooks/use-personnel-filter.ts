@@ -44,23 +44,23 @@ export function usePersonnelFilter(
   // 필터링된 캐디 목록 계산
   const filteredCaddies = useMemo(() => {
     if (!caddies) return [];
-    
+
     return caddies.filter((caddie) => {
       // 상태 필터링
       if (filters.status !== "전체" && caddie.status !== filters.status) {
         return false;
       }
-      
+
       // 그룹 필터링
       if (filters.group !== "전체" && caddie.groupName !== filters.group) {
         return false;
       }
-      
+
       // 특수반 필터링
       if (filters.badge !== "전체" && caddie.badge !== filters.badge) {
         return false;
       }
-      
+
       return true;
     });
   }, [caddies, filters]);

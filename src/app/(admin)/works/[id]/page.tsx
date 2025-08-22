@@ -174,10 +174,8 @@ export default function WorkDetailPage({
   })();
 
   // usePersonnelFilter 훅 사용 (sourceCaddies가 정의된 후에 호출)
-  const { filters, filterOptions, filteredCaddies, updateFilter } = usePersonnelFilter(
-    detailData?.filter_metadata,
-    sourceCaddies
-  );
+  const { filters, filterOptions, filteredCaddies, updateFilter } =
+    usePersonnelFilter(detailData?.filter_metadata, sourceCaddies);
 
   // 필터를 적용한 캐디 리스트
   const displayCaddies = filterCaddies(sourceCaddies, filters);
