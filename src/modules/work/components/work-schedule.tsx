@@ -6,9 +6,10 @@ import { CaddieData, Field, PersonnelStats, TimeSlots } from "../types";
 import { SAMPLE_CADDIES } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
 import {
+  bulkUpdateSlotStatus,
+  removeCaddieFromSlot,
   removeSlotAssignment,
   toggleSlotStatus,
-  bulkUpdateSlotStatus,
 } from "../api/work-api";
 
 interface CaddiePosition {
@@ -46,7 +47,10 @@ interface WorkScheduleProps {
       status: string;
       slot_type: string;
       is_locked: boolean;
-      caddie: string | null; // uuid
+      caddie: {
+        id: string;
+        name: string;
+      } | null;
       special_group: string | null;
       assigned_by: string | null;
       assigned_at: string | null;
@@ -129,18 +133,23 @@ export default function WorkSchedule({
 
         // 배정된 캐디가 있는 경우 위치 초기화
         if (slot.caddie) {
-          // availableCaddies가 변하지 않으면 참조가 유지되도록 상위에서 memo되며,
-          // 이 이펙트는 scheduleParts/timeSlots 변경에만 반응합니다.
-          const found = caddies.find((cd) => cd.originalId === slot.caddie);
-          if (found) {
-            newExternal.set(found.id.toString(), found);
-            const positionKey = `${found.id}_${fieldIndex}_${timeIndex}_${part.part_number}`;
-            newPositions.set(positionKey, {
-              fieldIndex,
-              timeIndex,
-              part: part.part_number,
-            });
-          }
+          // API 데이터의 캐디 정보를 사용하여 CaddieData 객체 생성
+          const apiCaddie: CaddieData = {
+            id: parseInt(slot.caddie.id.slice(-6), 16) || 0,
+            name: slot.caddie.name,
+            group: 1, // 기본값
+            badge: "일반",
+            status: "근무",
+            originalId: slot.caddie.id,
+          };
+
+          newExternal.set(apiCaddie.id.toString(), apiCaddie);
+          const positionKey = `${apiCaddie.id}_${fieldIndex}_${timeIndex}_${part.part_number}`;
+          newPositions.set(positionKey, {
+            fieldIndex,
+            timeIndex,
+            part: part.part_number,
+          });
         }
       });
     });
@@ -370,33 +379,6 @@ export default function WorkSchedule({
     }
   };
 
-  // 슬롯 상태 토글 핸들러 (available ↔ reserved)
-  const handleSlotToggle = async (
-    fieldIndex: number,
-    timeIndex: number,
-    part: number
-  ) => {
-    try {
-      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
-      const slotId = slotIdMap.get(slotKey);
-
-      if (!slotId) {
-        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
-        return;
-      }
-
-      await toggleSlotStatus(slotId);
-
-      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
-      if (onScheduleUpdate) {
-        onScheduleUpdate();
-      }
-    } catch (error) {
-      console.error("슬롯 상태 토글 실패:", error);
-      alert("슬롯 상태 변경에 실패했습니다. 다시 시도해주세요.");
-    }
-  };
-
   // 모든 슬롯을 배치 불가(available)로 변경
   const handleBulkAvailable = async () => {
     try {
@@ -439,25 +421,65 @@ export default function WorkSchedule({
     }
   };
 
+  // 특정 슬롯의 상태 변경 핸들러
+  const handleSlotStatusToggle = async (
+    fieldIndex: number,
+    timeIndex: number,
+    part: number
+  ) => {
+    try {
+      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+      const slotId = slotIdMap.get(slotKey);
+
+      if (!slotId) {
+        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
+        alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        return;
+      }
+
+      await toggleSlotStatus(slotId);
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("슬롯 상태 변경 실패:", error);
+      alert("슬롯 상태 변경에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  // 특정 슬롯에서 캐디 제거 핸들러
+  const handleSlotCaddieRemove = async (
+    fieldIndex: number,
+    timeIndex: number,
+    part: number
+  ) => {
+    try {
+      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+      const slotId = slotIdMap.get(slotKey);
+
+      if (!slotId) {
+        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
+        alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        return;
+      }
+
+      await removeCaddieFromSlot(slotId);
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("캐디 제거 실패:", error);
+      alert("캐디 제거에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
   // 셀 렌더러 (캐디 특화 로직)
   const renderCell = (fieldIndex: number, timeIndex: number, part: number) => {
-    const caddie = getCaddieAtPosition(fieldIndex, timeIndex, part);
-
-    if (caddie) {
-      return (
-        <CaddieCard
-          key={`${caddie.id}-${fieldIndex}-${timeIndex}-${part}`}
-          caddie={caddie}
-          onDragStart={() => handleDragStart(caddie)}
-          onDragEnd={() => handleDragEnd()}
-          isDragging={draggedCaddie?.id === caddie.id}
-        />
-      );
-    }
-
-    // 빈 슬롯일 때 텍스트: API 워크 슬롯 상태에 따라 표기
-    let emptyText = "미배정";
-
+    // API 데이터에서 해당 슬롯의 캐디 정보 확인
     const partTimes =
       part === 1
         ? timeSlots.part1
@@ -471,6 +493,57 @@ export default function WorkSchedule({
         s.field_number === fieldIndex + 1 &&
         (s.start_time || "").slice(0, 5) === targetTime
     );
+
+    // API 데이터에 캐디가 배정된 경우
+    if (slot?.caddie) {
+      const apiCaddie: CaddieData = {
+        id: parseInt(slot.caddie.id.slice(-6), 16) || 0, // UUID의 마지막 6자리를 숫자로 변환
+        name: slot.caddie.name,
+        group: 1, // 기본값
+        badge: "일반",
+        status: "근무",
+        originalId: slot.caddie.id,
+      };
+
+      return (
+        <CaddieCard
+          key={`api-${slot.caddie.id}-${fieldIndex}-${timeIndex}-${part}`}
+          caddie={apiCaddie}
+          onDragStart={() => handleDragStart(apiCaddie)}
+          onDragEnd={() => handleDragEnd()}
+          isDragging={draggedCaddie?.id === apiCaddie.id}
+          onStatusToggle={() =>
+            handleSlotStatusToggle(fieldIndex, timeIndex, part)
+          }
+          onCaddieRemove={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
+        />
+      );
+    }
+
+    // 로컬 상태에서 캐디가 배정된 경우
+    const localCaddie = getCaddieAtPosition(fieldIndex, timeIndex, part);
+    if (localCaddie) {
+      return (
+        <CaddieCard
+          key={`local-${localCaddie.id}-${fieldIndex}-${timeIndex}-${part}`}
+          caddie={localCaddie}
+          onDragStart={() => handleDragStart(localCaddie)}
+          onDragEnd={() => handleDragEnd()}
+          isDragging={draggedCaddie?.id === localCaddie.id}
+          onStatusToggle={() =>
+            handleSlotStatusToggle(fieldIndex, timeIndex, part)
+          }
+          onCaddieRemove={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
+        />
+      );
+    }
+
+    // 빈 슬롯일 때 텍스트: API 워크 슬롯 상태에 따라 표기
+    let emptyText = "미배정";
 
     if (slot) {
       if (slot.status === "available") {
@@ -488,7 +561,9 @@ export default function WorkSchedule({
         isEmpty={true}
         emptyText={emptyText}
         onClick={
-          slot ? () => handleSlotToggle(fieldIndex, timeIndex, part) : undefined
+          slot
+            ? () => handleSlotStatusToggle(fieldIndex, timeIndex, part)
+            : undefined
         }
       />
     );

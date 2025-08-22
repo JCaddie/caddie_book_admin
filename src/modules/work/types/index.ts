@@ -111,7 +111,9 @@ export interface CaddieCardProps {
   onDragEnd?: (e: React.DragEvent) => void;
   isDragging?: boolean;
   isSelected?: boolean;
-  onClick?: ((caddie: CaddieData) => void) | (() => void);
+  onClick?: (() => void) | ((caddie: CaddieData) => void);
+  onStatusToggle?: () => void; // 상태 변경 핸들러
+  onCaddieRemove?: () => void; // 캐디 제거 핸들러
   draggable?: boolean;
 }
 

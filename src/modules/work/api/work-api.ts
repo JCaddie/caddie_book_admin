@@ -974,3 +974,21 @@ export const bulkUpdateSlotStatus = async (
     throw error;
   }
 };
+
+/**
+ * 워크 슬롯에서 캐디 제거 API
+ */
+export const removeCaddieFromSlot = async (slotId: string): Promise<void> => {
+  try {
+    const response = await apiClient.post(
+      `${WORK_API_ENDPOINTS.SLOTS}${slotId}/remove_caddie/`
+    );
+
+    if (!response.success) {
+      throw new Error(response.message || "캐디 제거 실패");
+    }
+  } catch (error) {
+    console.error("캐디 제거 실패:", error);
+    throw error;
+  }
+};
