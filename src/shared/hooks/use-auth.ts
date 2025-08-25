@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { User, UserRole } from "@/shared/types";
 import { cookieUtils } from "@/shared/lib/utils";
 import { AUTH_CONSTANTS } from "@/shared/constants/auth";
+import { apiClient } from "@/shared/lib/api-client";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -12,14 +13,13 @@ interface AuthState {
 }
 
 interface UseAuthReturn extends AuthState {
-  login: (token: string, user: User) => void;
+  login: (token: string, refreshToken: string, user: User) => void;
   logout: () => void;
   switchRole: (targetRole: UserRole) => void;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
+  refreshToken: () => Promise<boolean>;
 }
-
-// 통합된 쿠키 유틸리티 사용
 
 // 토큰에서 사용자 정보 추출 (실제 구현에서는 JWT 디코딩)
 const parseTokenToUser = (token: string): User | null => {
@@ -37,8 +37,7 @@ const parseTokenToUser = (token: string): User | null => {
         name: "마스터 관리자",
         email: "dev@example.com",
         role: "MASTER",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date().toISOString(),
       },
       "2": {
         id: "2",
@@ -46,8 +45,7 @@ const parseTokenToUser = (token: string): User | null => {
         email: "golf@example.com",
         role: "ADMIN",
         golfCourseId: "golf-course-1",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date().toISOString(),
       },
     };
 
@@ -58,12 +56,64 @@ const parseTokenToUser = (token: string): User | null => {
   }
 };
 
+// 토큰 갱신 응답 타입
+interface TokenRefreshResponse {
+  access: string;
+  refresh?: string;
+}
+
 export const useAuth = (): UseAuthReturn => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     isLoading: true,
     user: null,
   });
+
+  // 리프레시 토큰을 사용하여 새로운 액세스 토큰 발급
+  const refreshToken = useCallback(async (): Promise<boolean> => {
+    try {
+      const refreshTokenValue = cookieUtils.get(
+        AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN
+      );
+
+      if (!refreshTokenValue) {
+        console.warn("리프레시 토큰이 없습니다.");
+        return false;
+      }
+
+      const response = await apiClient.post<TokenRefreshResponse>(
+        AUTH_CONSTANTS.API_ENDPOINTS.REFRESH_TOKEN,
+        { refresh: refreshTokenValue },
+        { skipAuth: true } // 인증 토큰 없이 요청
+      );
+
+      if (response.access) {
+        // 새로운 액세스 토큰 저장
+        cookieUtils.set(
+          AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+          response.access,
+          AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+        );
+
+        // 리프레시 토큰도 새로 발급받았다면 저장
+        if (response.refresh) {
+          cookieUtils.set(
+            AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
+            response.refresh,
+            AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+          );
+        }
+
+        console.log("토큰 갱신 성공");
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("토큰 갱신 실패:", error);
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
     // 컴포넌트 마운트 시 쿠키에서 토큰 확인
@@ -100,10 +150,15 @@ export const useAuth = (): UseAuthReturn => {
     }
   }, []);
 
-  const login = (token: string, user: User) => {
+  const login = (token: string, refreshToken: string, user: User) => {
     cookieUtils.set(
       AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
       token,
+      AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+    );
+    cookieUtils.set(
+      AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
+      refreshToken,
       AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
     );
     cookieUtils.set(
@@ -125,6 +180,7 @@ export const useAuth = (): UseAuthReturn => {
   const logout = () => {
     cookieUtils.removeMultiple([
       AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+      AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
       AUTH_CONSTANTS.COOKIES.USER_DATA,
     ]);
 
@@ -153,8 +209,7 @@ export const useAuth = (): UseAuthReturn => {
         name: "마스터 관리자",
         email: "dev@example.com",
         role: "MASTER",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date().toISOString(),
       },
       ADMIN: {
         id: "2",
@@ -162,17 +217,7 @@ export const useAuth = (): UseAuthReturn => {
         email: "golf@example.com",
         role: "ADMIN",
         golfCourseId: "golf-course-1",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      DEV: {
-        id: "3",
-        name: "개발자",
-        email: "dev2@example.com",
-        role: "DEV",
-        golfCourseId: "golf-course-2",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date().toISOString(),
       },
     };
 
@@ -180,11 +225,17 @@ export const useAuth = (): UseAuthReturn => {
     if (targetUser) {
       // 새로운 토큰 생성
       const newToken = `mock-token-${targetUser.id}-${Date.now()}`;
+      const newRefreshToken = `mock-refresh-${targetUser.id}-${Date.now()}`;
 
       // 쿠키 업데이트
       cookieUtils.set(
         AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
         newToken,
+        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+      );
+      cookieUtils.set(
+        AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
+        newRefreshToken,
         AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
       );
       cookieUtils.set(
@@ -209,5 +260,6 @@ export const useAuth = (): UseAuthReturn => {
     switchRole,
     hasRole,
     hasAnyRole,
+    refreshToken,
   };
 };
