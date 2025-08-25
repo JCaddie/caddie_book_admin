@@ -117,7 +117,6 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
       // 상세 데이터 설정 - 새로운 API 구조에 맞게 수정
       const detailData = {
         fields: data.fields,
-        caddies: convertSlotsToCaddieData(data.parts), // slots에서 캐디 정보 추출
         parts: data.parts.map((part) => ({
           ...part,
           // 각 part의 slots에 변환된 캐디 데이터 추가
@@ -141,9 +140,15 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
         filter_metadata: data.filter_metadata,
       };
 
+      // caddies를 별도로 설정
+      const caddies = convertSlotsToCaddieData(data.parts);
+
       setState({
         scheduleData,
-        detailData,
+        detailData: {
+          ...detailData,
+          caddies,
+        },
         isLoading: false,
         error: null,
       });
@@ -155,7 +160,7 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
         error: "근무표 조회에 실패했습니다.",
       }));
     }
-  }, [currentDate, golfCourseId, convertSlotsToCaddieData]);
+  }, [currentDate, golfCourseId]);
 
   // 시간 슬롯 생성 (API 데이터 기반 또는 기본값)
   const generateTimeSlots = useCallback(() => {
