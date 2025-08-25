@@ -1,4 +1,8 @@
-import { CaddieData, PersonnelFilter } from "../types";
+import { CaddieData, Field, PersonnelFilter } from "../types";
+
+// ================================
+// 날짜 관련 유틸리티
+// ================================
 
 // 날짜 포맷팅 함수
 export const formatDate = (date: Date): string => {
@@ -23,6 +27,16 @@ export const getCurrentDate = (): string => {
   return today.toISOString().split("T")[0];
 };
 
+// 날짜 유효성 검사
+export const isValidDate = (dateString: string): boolean => {
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+};
+
+// ================================
+// 캐디 데이터 관련 유틸리티
+// ================================
+
 // 캐디 데이터 필터링 함수
 export const filterCaddies = (
   caddies: CaddieData[],
@@ -30,15 +44,57 @@ export const filterCaddies = (
 ): CaddieData[] => {
   return caddies.filter((caddie) => {
     const statusMatch =
-      filters.status === "전체" || caddie.status === filters.status;
+      !filters.status ||
+      filters.status === "전체" ||
+      caddie.status === filters.status;
     const groupMatch =
-      filters.group === "전체" || `${caddie.group}조` === filters.group;
+      !filters.group ||
+      filters.group === "전체" ||
+      `${caddie.group}조` === filters.group;
     const badgeMatch =
-      filters.badge === "전체" || caddie.badge === filters.badge;
+      !filters.badge ||
+      filters.badge === "전체" ||
+      caddie.badge === filters.badge;
 
     return statusMatch && groupMatch && badgeMatch;
   });
 };
+
+// 캐디 데이터 정렬 함수
+export const sortCaddies = (caddies: CaddieData[]): CaddieData[] => {
+  return [...caddies].sort((a, b) => {
+    // 그룹 순서로 먼저 정렬
+    if (a.group !== b.group) {
+      return a.group - b.group;
+    }
+    // 그룹 내에서는 순서로 정렬
+    if (a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order;
+    }
+    // 마지막으로 이름으로 정렬
+    return a.name.localeCompare(b.name);
+  });
+};
+
+// 캐디 데이터 검색 함수
+export const searchCaddies = (
+  caddies: CaddieData[],
+  searchTerm: string
+): CaddieData[] => {
+  if (!searchTerm.trim()) return caddies;
+
+  const term = searchTerm.toLowerCase();
+  return caddies.filter(
+    (caddie) =>
+      caddie.name.toLowerCase().includes(term) ||
+      caddie.groupName?.toLowerCase().includes(term) ||
+      caddie.badge.toLowerCase().includes(term)
+  );
+};
+
+// ================================
+// 스타일 관련 유틸리티
+// ================================
 
 // 특수 배지 스타일 가져오기
 export const getSpecialBadgeStyle = (specialBadge?: string) => {
@@ -59,7 +115,100 @@ export const getCaddieCardStyle = (status: string): string => {
       return "shadow-[0_0_4px_2px_rgba(255,0,0,0.25)]";
     case "배치완료":
       return "shadow-[0_0_4px_2px_rgba(254,185,18,0.35)]";
+    case "근무":
+      return "shadow-[0_0_4px_2px_rgba(0,255,0,0.25)]";
     default:
       return "";
   }
+};
+
+// 상태별 색상 가져오기
+export const getStatusColor = (status: string): string => {
+  switch (status) {
+    case "근무":
+      return "text-green-600";
+    case "휴무":
+      return "text-red-600";
+    case "배치완료":
+      return "text-yellow-600";
+    default:
+      return "text-gray-600";
+  }
+};
+
+// ================================
+// 필드 관련 유틸리티
+// ================================
+
+// 필드 정렬 함수
+export const sortFields = (fields: Field[]): Field[] => {
+  return [...fields].sort((a, b) => a.id - b.id);
+};
+
+// 활성 필드만 필터링
+export const getActiveFields = (fields: Field[]): Field[] => {
+  return fields.filter((field) => field.id > 0);
+};
+
+// ================================
+// 시간 관련 유틸리티
+// ================================
+
+// 시간 문자열을 분으로 변환
+export const timeStringToMinutes = (timeString: string): number => {
+  const [hours, minutes] = timeString.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+// 분을 시간 문자열로 변환
+export const minutesToTimeString = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, "0")}:${mins
+    .toString()
+    .padStart(2, "0")}`;
+};
+
+// 시간 간격 계산
+export const calculateTimeInterval = (
+  startTime: string,
+  endTime: string
+): number => {
+  const start = timeStringToMinutes(startTime);
+  const end = timeStringToMinutes(endTime);
+  return end - start;
+};
+
+// ================================
+// 검증 관련 유틸리티
+// ================================
+
+// 캐디 데이터 검증
+export const validateCaddieData = (caddie: Partial<CaddieData>): string[] => {
+  const errors: string[] = [];
+
+  if (!caddie.name?.trim()) {
+    errors.push("캐디 이름은 필수입니다.");
+  }
+
+  if (caddie.group === undefined || caddie.group < 0) {
+    errors.push("그룹 번호는 0 이상이어야 합니다.");
+  }
+
+  return errors;
+};
+
+// 필드 데이터 검증
+export const validateFieldData = (field: Partial<Field>): string[] => {
+  const errors: string[] = [];
+
+  if (!field.name?.trim()) {
+    errors.push("필드 이름은 필수입니다.");
+  }
+
+  if (field.id === undefined || field.id < 0) {
+    errors.push("필드 ID는 0 이상이어야 합니다.");
+  }
+
+  return errors;
 };

@@ -1,129 +1,211 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Work } from "@/modules/work/types";
-import { fetchWorkSchedules } from "@/modules/work/api";
-import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
-import { useQueryError } from "@/shared/hooks/use-query-error";
+import { useCallback, useState } from "react";
+import { fetchDailyScheduleDetail } from "@/modules/work/api";
+import {
+  CaddieData,
+  DailyScheduleDetailData,
+  Field,
+  WorkDetailState,
+} from "@/modules/work/types";
+import { FIELDS, PERSONNEL_STATS } from "@/modules/work/constants/work-detail";
+import { filterCaddies } from "@/modules/work/utils/work-detail-utils";
 
-export function useWorkDetail(golfCourseId: string) {
-  // React Query를 사용한 데이터 페칭
-  const {
-    data: allWorks = [],
-    isLoading,
-    error: queryError,
-  } = useQuery({
-    queryKey: [CACHE_KEYS.WORK_SCHEDULES],
-    queryFn: fetchWorkSchedules,
-    ...QUERY_CONFIG.REALTIME_OPTIONS,
+export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
+  const [state, setState] = useState<WorkDetailState>({
+    scheduleData: null,
+    detailData: null,
+    isLoading: false,
+    error: null,
   });
 
-  // golfCourseId로 해당 work 찾기
-  const work = useMemo(() => {
-    if (!allWorks.length) return null;
-
-    const foundWork = allWorks.find(
-      (w: Work) => w.golfCourseId === golfCourseId
-    );
-
-    if (foundWork) {
-      return foundWork;
-    } else {
-      // 임시 해결책: 첫 번째 데이터를 사용하고 golfCourseId 업데이트
-      if (allWorks.length > 0) {
-        return { ...allWorks[0], golfCourseId };
-      }
-    }
-
-    return null;
-  }, [allWorks, golfCourseId]);
-
-  // 표준화된 에러 처리
-  const error = useQueryError(queryError, "데이터를 불러오는데 실패했습니다.");
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  // 편집 모드 토글
-  const handleEdit = useCallback(() => {
-    setIsEditing(true);
-  }, []);
-
-  // 편집 취소
-  const handleCancel = useCallback(() => {
-    setIsEditing(false);
-    // 편집 모드만 종료하고 현재 work 데이터 유지
-  }, []);
-
-  // 업데이트
-  const handleUpdate = useCallback(
-    (updatedData: Partial<Work>) => {
-      if (!work) return;
-      // 실제로는 API 호출하여 업데이트
-      console.log("업데이트할 데이터:", updatedData);
+  // API 응답의 fields를 Field 타입으로 변환하는 함수
+  const convertFieldsToFieldType = useCallback(
+    (
+      apiFields:
+        | Array<{
+            id: string;
+            name: string;
+            order: number;
+            is_active: boolean;
+          }>
+        | undefined
+    ): Field[] => {
+      if (!apiFields) return FIELDS;
+      return apiFields
+        .filter((field) => field.is_active)
+        .sort((a, b) => a.order - b.order)
+        .map((field) => ({
+          id: parseInt(field.id) || 0,
+          name: field.name,
+        }));
     },
-    [work]
+    []
   );
 
-  // 저장
-  const handleSave = useCallback(async () => {
-    if (!work) return;
+  // API caddies -> 화면용 CaddieData 매핑
+  const convertCaddiesToCaddieData = useCallback(
+    (
+      apiCaddies: DailyScheduleDetailData["caddies"] | undefined
+    ): CaddieData[] => {
+      if (!apiCaddies) return [];
+      return apiCaddies.map((c, idx) => ({
+        id: idx + 1, // 내부 표시용 숫자 ID 생성
+        name: c.name,
+        group: c.primary_group?.id ?? 0,
+        badge: c.special_group?.name || "하우스",
+        status: c.today_status || "근무",
+        originalId: c.id, // 원본 UUID 유지
+        order: c.primary_group_order,
+        groupName: c.primary_group?.name,
+      }));
+    },
+    []
+  );
 
+  // 근무표 데이터 조회
+  const fetchScheduleData = useCallback(async () => {
     try {
-      // 실제로는 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      // 성공 후 편집 모드 종료
-      setIsEditing(false);
+      const formattedDate = currentDate.toISOString().split("T")[0];
+      const response = await fetchDailyScheduleDetail(
+        golfCourseId,
+        formattedDate
+      );
+      const data = response.data;
+
+      // 스케줄 데이터 변환
+      const scheduleData = {
+        date: data.date,
+        golfCourseId: data.golf_course.id,
+        schedules: [
+          {
+            id: data.id,
+            golfCourse: data.golf_course.id,
+            golfCourseName: data.golf_course.name,
+            scheduleType: data.schedule_type,
+            date: data.date,
+            totalStaff: data.total_staff,
+            availableStaff: data.available_staff,
+            status: data.status,
+            createdBy: data.created_by,
+            createdByName: data.created_by,
+            partsCount: data.parts.length,
+            timeInterval: data.time_interval,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at,
+          },
+        ],
+        scheduleParts: data.parts.map((part) => ({
+          scheduleId: data.id,
+          partNumber: part.part_number,
+          startTime: part.start_time,
+          endTime: part.end_time,
+        })),
+      };
+
+      // 상세 데이터 설정
+      const detailData = {
+        fields: data.fields,
+        caddies: data.caddies,
+        parts: data.parts,
+        filter_metadata: data.filter_metadata,
+      };
+
+      setState({
+        scheduleData,
+        detailData,
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
-      console.error("저장 중 오류가 발생했습니다:", error);
+      console.error("근무표 조회 실패:", error);
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "근무표 조회에 실패했습니다.",
+      }));
     }
-  }, [work]);
+  }, [currentDate, golfCourseId]);
 
-  // 삭제 모달 표시
-  const handleDelete = useCallback(() => {
-    setShowDeleteModal(true);
-  }, []);
-
-  // 삭제 확인
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!work) return;
-
-    setIsDeleting(true);
-    try {
-      // 실제로는 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // 삭제 후 목록 페이지로 이동 (실제로는 router.push 사용)
-      window.history.back();
-    } catch (error) {
-      console.error("삭제 중 오류가 발생했습니다:", error);
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteModal(false);
+  // 시간 슬롯 생성 (API 데이터 기반 또는 기본값)
+  const generateTimeSlots = useCallback(() => {
+    if (!state.scheduleData?.scheduleParts.length) {
+      return null;
     }
-  }, [work]);
 
-  // 삭제 모달 닫기
-  const handleDeleteCancel = useCallback(() => {
-    setShowDeleteModal(false);
-  }, []);
+    const result: { part1: string[]; part2: string[]; part3: string[] } = {
+      part1: [],
+      part2: [],
+      part3: [],
+    };
+
+    state.scheduleData.scheduleParts.forEach((part) => {
+      const partKey = `part${part.partNumber}` as keyof typeof result;
+      const slots: string[] = [];
+      const currentTime = new Date(`2000-01-01T${part.startTime}`);
+      const endTime = new Date(`2000-01-01T${part.endTime}`);
+      const tempTime = new Date(currentTime);
+
+      while (tempTime < endTime) {
+        slots.push(tempTime.toTimeString().slice(0, 5));
+        tempTime.setMinutes(
+          tempTime.getMinutes() +
+            (state.scheduleData?.schedules[0]?.timeInterval || 10)
+        );
+      }
+      result[partKey] = slots;
+    });
+
+    return result;
+  }, [state.scheduleData]);
+
+  // 인원 통계 계산
+  const getPersonnelStats = useCallback(() => {
+    if (!state.scheduleData?.schedules[0]) {
+      return PERSONNEL_STATS;
+    }
+
+    return {
+      total: state.scheduleData.schedules[0].totalStaff,
+      available: state.scheduleData.schedules[0].availableStaff,
+    };
+  }, [state.scheduleData]);
+
+  // 필터링된 캐디 리스트
+  const getFilteredCaddies = useCallback(
+    (filters: { status: string; group: string; badge: string }) => {
+      const sourceCaddies = convertCaddiesToCaddieData(
+        state.detailData?.caddies
+      );
+      return filterCaddies(sourceCaddies, filters);
+    },
+    [state.detailData?.caddies, convertCaddiesToCaddieData]
+  );
+
+  // 데이터 새로고침
+  const refreshData = useCallback(() => {
+    fetchScheduleData();
+  }, [fetchScheduleData]);
 
   return {
-    work,
-    isLoading,
-    error,
-    isEditing,
-    isDeleting,
-    showDeleteModal,
-    handleEdit,
-    handleCancel,
-    handleUpdate,
-    handleSave,
-    handleDelete,
-    handleDeleteConfirm,
-    handleDeleteCancel,
+    // 상태
+    ...state,
+
+    // 변환된 데이터
+    fields: convertFieldsToFieldType(state.detailData?.fields),
+    timeSlots: generateTimeSlots(),
+    personnelStats: getPersonnelStats(),
+    sourceCaddies: convertCaddiesToCaddieData(state.detailData?.caddies),
+
+    // 액션
+    fetchScheduleData,
+    refreshData,
+    getFilteredCaddies,
+
+    // 유틸리티
+    convertFieldsToFieldType,
+    convertCaddiesToCaddieData,
   };
-}
+};

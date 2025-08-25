@@ -18,6 +18,76 @@ export interface Work extends Record<string, unknown> {
   isEmpty?: boolean;
 }
 
+// API 응답 타입들
+export interface DailyScheduleDetailData {
+  id: string;
+  date: string;
+  schedule_type: string;
+  time_interval: number;
+  total_staff: number;
+  available_staff: number;
+  status: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  golf_course: {
+    id: string;
+    name: string;
+  };
+  fields: Array<{
+    id: string;
+    name: string;
+    order: number;
+    is_active: boolean;
+  }>;
+  caddies: Array<{
+    id: string;
+    name: string;
+    phone: string;
+    primary_group: {
+      id: number;
+      name: string;
+      order: number;
+    };
+    primary_group_order: number;
+    special_group: {
+      id: number;
+      name: string;
+      order: number;
+    };
+    special_group_order: number;
+    today_status: string | null;
+    is_active: boolean;
+  }>;
+  parts: Array<{
+    id: string;
+    part_number: number;
+    name: string;
+    start_time: string;
+    end_time: string;
+    is_active: boolean;
+    slots: Array<{
+      id: string;
+      start_time: string;
+      field_number: number;
+      status: string;
+      slot_type: string;
+      is_locked: boolean;
+      caddie: { id: string; name: string } | null;
+      special_group: string | null;
+      assigned_by: string | null;
+      assigned_at: string | null;
+    }>;
+  }>;
+  filter_metadata?: FilterMetadata;
+}
+
+export interface DailyScheduleDetailResponse {
+  success: boolean;
+  message: string;
+  data: DailyScheduleDetailData;
+}
+
 // 필터 메타데이터 타입
 export interface FilterMetadata {
   status_options: Array<{
@@ -200,4 +270,88 @@ export interface RoundingSettings {
 export interface WorkDetailPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ date?: string }>;
+}
+
+// ================================
+// 상태 관리 타입
+// ================================
+
+// 근무 상세 페이지 상태 타입
+export interface WorkDetailState {
+  scheduleData: {
+    date: string;
+    golfCourseId: string;
+    schedules: Array<{
+      id: string;
+      golfCourse: string;
+      golfCourseName: string;
+      scheduleType: string;
+      date: string;
+      totalStaff: number;
+      availableStaff: number;
+      status: string;
+      createdBy: string;
+      createdByName: string;
+      partsCount: number;
+      timeInterval: number;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+    scheduleParts: Array<{
+      scheduleId: string;
+      partNumber: number;
+      startTime: string;
+      endTime: string;
+    }>;
+  } | null;
+  detailData: {
+    fields: Array<{
+      id: string;
+      name: string;
+      order: number;
+      is_active: boolean;
+    }>;
+    caddies: Array<{
+      id: string;
+      name: string;
+      phone: string;
+      primary_group: {
+        id: number;
+        name: string;
+        order: number;
+      };
+      primary_group_order: number;
+      special_group: {
+        id: number;
+        name: string;
+        order: number;
+      };
+      special_group_order: number;
+      today_status: string | null;
+      is_active: boolean;
+    }>;
+    parts: Array<{
+      id: string;
+      part_number: number;
+      name: string;
+      start_time: string;
+      end_time: string;
+      is_active: boolean;
+      slots: Array<{
+        id: string;
+        start_time: string;
+        field_number: number;
+        status: string;
+        slot_type: string;
+        is_locked: boolean;
+        caddie: { id: string; name: string } | null;
+        special_group: string | null;
+        assigned_by: string | null;
+        assigned_at: string | null;
+      }>;
+    }>;
+    filter_metadata?: FilterMetadata;
+  } | null;
+  isLoading: boolean;
+  error: string | null;
 }

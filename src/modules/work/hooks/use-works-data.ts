@@ -18,7 +18,7 @@ export interface UseWorksDataReturn {
   isLoading: boolean;
   error: string | null;
   handlePageChange: (page: number) => void;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<unknown>;
 }
 
 const useWorksData = (): UseWorksDataReturn => {
@@ -74,5 +74,4 @@ const useWorksData = (): UseWorksDataReturn => {
     refetch,
   };
 };
-
-export default useWorksData;
+export { useWorksData };

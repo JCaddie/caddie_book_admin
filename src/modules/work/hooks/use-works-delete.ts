@@ -72,5 +72,4 @@ const useWorksDelete = (selectedRowKeys: string[]): UseWorksDeleteReturn => {
     handleCloseDeleteModal,
   };
 };
-
-export default useWorksDelete;
+export { useWorksDelete };

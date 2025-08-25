@@ -1,5 +1,14 @@
 import { apiClient } from "@/shared/lib/api-client";
-import { RoundingSettings, Work, WorkSchedule } from "../types";
+import {
+  DailyScheduleDetailResponse,
+  RoundingSettings,
+  Work,
+  WorkSchedule,
+} from "../types";
+
+// ================================
+// API 응답 타입들
+// ================================
 
 interface DailyScheduleListResponse {
   success: boolean;
@@ -19,76 +28,6 @@ interface DailyScheduleListResponse {
     created_by: string;
     created_at: string;
   }>;
-}
-
-interface DailyScheduleDetailResponse {
-  success: boolean;
-  message: string;
-  data: {
-    id: string;
-    golf_course: {
-      id: string;
-      name: string;
-    };
-    schedule_type: string;
-    date: string;
-    status: string;
-    time_interval: number;
-    total_staff: number;
-    available_staff: number;
-    created_by: string;
-    created_at: string;
-    fields: Array<{
-      id: string;
-      name: string;
-      order: number;
-      is_active: boolean;
-    }>;
-    caddies: Array<{
-      id: string;
-      name: string;
-      phone: string;
-      primary_group: {
-        id: number;
-        name: string;
-        order: number;
-      };
-      primary_group_order: number;
-      special_group: {
-        id: number;
-        name: string;
-        order: number;
-      };
-      special_group_order: number;
-      today_status: string | null;
-      is_active: boolean;
-    }>;
-    parts: Array<{
-      id: string;
-      part_number: number;
-      name: string;
-      start_time: string;
-      end_time: string;
-      is_active: boolean;
-      slots: Array<{
-        id: string;
-        start_time: string;
-        field_number: number;
-        status: string;
-        slot_type: string;
-        is_locked: boolean;
-        caddie: string | null;
-        special_group: string | null;
-        assigned_by: string | null;
-        assigned_at: string | null;
-      }>;
-    }>;
-    filter_metadata?: {
-      status_options: Array<{ id: string; name: string }>;
-      primary_groups: Array<{ id: string; name: string; order: number }>;
-      special_groups: Array<{ id: string; name: string; order: number }>;
-    };
-  };
 }
 
 interface AutoAssignRequest {
@@ -187,7 +126,6 @@ export interface WorkSlotResponse {
 }
 
 // 라운딩 설정 일괄 업데이트 API 타입
-
 interface BulkUpdateRoundingSettingsResponse {
   success: boolean;
   message: string;
@@ -258,7 +196,52 @@ interface SpecialScheduleDetailResponse {
   };
 }
 
+// 근무표 생성 API 응답 타입
+interface CreateWorkScheduleResponse {
+  success: boolean;
+  message: string;
+  data: {
+    golf_course_id: string;
+    date: string;
+  };
+}
+
+// 특정 날짜 근무표 조회 API 응답 타입
+interface WorkScheduleByDateResponse {
+  success: boolean;
+  message: string;
+  data: {
+    date: string;
+    golf_course_id: string;
+    schedules: Array<{
+      id: string;
+      golf_course: string;
+      golf_course_name: string;
+      schedule_type: string;
+      date: string;
+      total_staff: number;
+      available_staff: number;
+      status: string;
+      created_by: string;
+      created_by_name: string;
+      parts_count: number;
+      time_interval: number;
+      created_at: string;
+      updated_at: string;
+    }>;
+    schedule_parts: Array<{
+      schedule_id: string;
+      part_number: number;
+      start_time: string;
+      end_time: string;
+    }>;
+  };
+}
+
+// ================================
 // API 엔드포인트 상수
+// ================================
+
 export const WORK_API_ENDPOINTS = {
   ROUNDING_SETTINGS: "/api/v1/work/rounding-settings/",
   SCHEDULES: "/api/v1/work/schedules/",
@@ -267,6 +250,10 @@ export const WORK_API_ENDPOINTS = {
   SLOTS: "/api/v1/work/slots/",
   SLOT_BULK_UPDATE: "/api/v1/work/slots/bulk_update_status/",
 } as const;
+
+// ================================
+// 라운딩 설정 관련 API
+// ================================
 
 /**
  * 라운딩 설정 조회 API
@@ -370,6 +357,10 @@ export const patchRoundingSettings = async (
   );
 };
 
+// ================================
+// 근무표 관련 API
+// ================================
+
 /**
  * 근무표 조회 API
  */
@@ -414,52 +405,6 @@ export const fetchWorkSchedule = async (
 };
 
 /**
- * 근무표 생성 API 응답 타입
- */
-interface CreateWorkScheduleResponse {
-  success: boolean;
-  message: string;
-  data: {
-    golf_course_id: string;
-    date: string;
-  };
-}
-
-/**
- * 특정 날짜 근무표 조회 API 응답 타입
- */
-interface WorkScheduleByDateResponse {
-  success: boolean;
-  message: string;
-  data: {
-    date: string;
-    golf_course_id: string;
-    schedules: Array<{
-      id: string;
-      golf_course: string;
-      golf_course_name: string;
-      schedule_type: string;
-      date: string;
-      total_staff: number;
-      available_staff: number;
-      status: string;
-      created_by: string;
-      created_by_name: string;
-      parts_count: number;
-      time_interval: number;
-      created_at: string;
-      updated_at: string;
-    }>;
-    schedule_parts: Array<{
-      schedule_id: string;
-      part_number: number;
-      start_time: string;
-      end_time: string;
-    }>;
-  };
-}
-
-/**
  * 근무표 생성 API
  */
 export const createWorkSchedule = async (
@@ -485,7 +430,6 @@ export const createWorkSchedule = async (
     requestData
   );
 
-  // 새로운 응답 구조에 맞게 반환
   return {
     golfCourseId: response.data.golf_course_id,
     date: response.data.date,
@@ -556,6 +500,10 @@ export const fetchWorkScheduleByDate = async (
   };
 };
 
+// ================================
+// 시간 슬롯 및 근무 슬롯 관련 API
+// ================================
+
 /**
  * 시간 슬롯 조회 API
  */
@@ -584,6 +532,10 @@ export const fetchWorkSlots = async (
   return response.results;
 };
 
+// ================================
+// 캐디 배정 관련 API
+// ================================
+
 /**
  * 캐디 배정 API (POST 방식)
  */
@@ -599,33 +551,20 @@ export const assignCaddieToSlotPost = async (
       }
     );
 
-    // API 응답이 오면 성공으로 처리
-    // 이 API는 성공 시 "강캐디 캐디가 배정되었습니다." 같은 메시지를 포함한 응답을 반환
     console.log("캐디 배정 API 호출 완료");
   } catch (error: unknown) {
     console.error("캐디 배정 실패:", error);
 
-    // API 에러 응답에서 구체적인 메시지 추출
     let errorMessage = "캐디 배정에 실패했습니다. 다시 시도해주세요.";
 
-    // 타입 가드를 사용하여 에러 객체 구조 확인
     if (error && typeof error === "object" && "response" in error) {
-      const apiError = error as { response?: { data?: any } };
-      console.error("error.response:", apiError.response);
-      console.error("error.response?.data:", apiError.response?.data);
+      const apiError = error as { response?: { data?: { message?: string } } };
 
       if (apiError.response?.data) {
         const errorData = apiError.response.data;
-        console.error("errorData:", errorData);
 
-        // API에서 받은 message 필드 사용
         if (errorData.message) {
           errorMessage = errorData.message;
-        }
-
-        // 추가적인 에러 정보 로깅
-        if (errorData.errors) {
-          console.error("에러 상세 정보:", errorData.errors);
         }
       }
     } else if (error && typeof error === "object" && "message" in error) {
@@ -676,6 +615,10 @@ export const unassignCaddieFromSlot = async (
     requestData
   );
 };
+
+// ================================
+// 특수 스케줄 관련 API
+// ================================
 
 /**
  * 라운딩 설정 일괄 업데이트 API
@@ -873,6 +816,10 @@ export const removeSpecialGroupFromSlot = async (
   }
 };
 
+// ================================
+// 슬롯 관리 관련 API
+// ================================
+
 /**
  * 새로운 슬롯 배정 제거 API
  */
@@ -904,6 +851,73 @@ export const removeSlotAssignment = async (
     throw error;
   }
 };
+
+/**
+ * 워크 슬롯 상태 토글 API (available ↔ reserved)
+ */
+export const toggleSlotStatus = async (slotId: string): Promise<void> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>(`${WORK_API_ENDPOINTS.SLOTS}${slotId}/toggle_status/`);
+
+    if (!response.success) {
+      throw new Error(response.message || "슬롯 상태 변경 실패");
+    }
+  } catch (error) {
+    console.error("슬롯 상태 토글 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 워크 슬롯 일괄 상태 변경 API
+ */
+export const bulkUpdateSlotStatus = async (
+  slotIds: string[],
+  newStatus: "available" | "reserved"
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>(WORK_API_ENDPOINTS.SLOT_BULK_UPDATE, {
+      slot_ids: slotIds,
+      new_status: newStatus,
+    });
+
+    if (!response.success) {
+      throw new Error(response.message || "일괄 상태 변경 실패");
+    }
+  } catch (error) {
+    console.error("일괄 상태 변경 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 워크 슬롯에서 캐디 제거 API
+ */
+export const removeCaddieFromSlot = async (slotId: string): Promise<void> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>(`${WORK_API_ENDPOINTS.SLOTS}${slotId}/remove_caddie/`);
+
+    if (!response.success) {
+      throw new Error(response.message || "캐디 제거 실패");
+    }
+  } catch (error) {
+    console.error("캐디 제거 실패:", error);
+    throw error;
+  }
+};
+
+// ================================
+// 근무 스케줄 목록 관련 API
+// ================================
 
 /**
  * 근무 스케줄 목록 조회 API
@@ -953,17 +967,13 @@ export const fetchWorkSchedules = async (): Promise<Work[]> => {
 export const fetchDailyScheduleDetail = async (
   golfCourseId: string,
   date: string
-): Promise<DailyScheduleDetailResponse["data"]> => {
+): Promise<DailyScheduleDetailResponse> => {
   try {
     const response = await apiClient.get<DailyScheduleDetailResponse>(
       `${WORK_API_ENDPOINTS.DAILY_SCHEDULES}${golfCourseId}/${date}/`
     );
 
-    if (response.success) {
-      return response.data;
-    } else {
-      throw new Error(response.message || "근무표 상세 조회 실패");
-    }
+    return response;
   } catch (error) {
     console.error("근무표 상세 조회 실패:", error);
     throw error;
@@ -996,64 +1006,6 @@ export const autoAssignWorkSlots = async (
 };
 
 /**
- * 워크 슬롯 상태 토글 API (available ↔ reserved)
- */
-export const toggleSlotStatus = async (slotId: string): Promise<void> => {
-  try {
-    const response = await apiClient.post(
-      `${WORK_API_ENDPOINTS.SLOTS}${slotId}/toggle_status/`
-    );
-
-    if (!response.success) {
-      throw new Error(response.message || "슬롯 상태 변경 실패");
-    }
-  } catch (error) {
-    console.error("슬롯 상태 토글 실패:", error);
-    throw error;
-  }
-};
-
-/**
- * 워크 슬롯 일괄 상태 변경 API
- */
-export const bulkUpdateSlotStatus = async (
-  slotIds: string[],
-  newStatus: "available" | "reserved"
-): Promise<void> => {
-  try {
-    const response = await apiClient.post(WORK_API_ENDPOINTS.SLOT_BULK_UPDATE, {
-      slot_ids: slotIds,
-      new_status: newStatus,
-    });
-
-    if (!response.success) {
-      throw new Error(response.message || "일괄 상태 변경 실패");
-    }
-  } catch (error) {
-    console.error("일괄 상태 변경 실패:", error);
-    throw error;
-  }
-};
-
-/**
- * 워크 슬롯에서 캐디 제거 API
- */
-export const removeCaddieFromSlot = async (slotId: string): Promise<void> => {
-  try {
-    const response = await apiClient.post(
-      `${WORK_API_ENDPOINTS.SLOTS}${slotId}/remove_caddie/`
-    );
-
-    if (!response.success) {
-      throw new Error(response.message || "캐디 제거 실패");
-    }
-  } catch (error) {
-    console.error("캐디 제거 실패:", error);
-    throw error;
-  }
-};
-
-/**
  * 모든 캐디 배정 초기화 API
  */
 export const clearAllCaddieAssignments = async (
@@ -1061,7 +1013,10 @@ export const clearAllCaddieAssignments = async (
   date: string
 ): Promise<void> => {
   try {
-    const response = await apiClient.post(
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>(
       `${WORK_API_ENDPOINTS.DAILY_SCHEDULES}${golfCourseId}/${date}/clear-assignments/`
     );
 
