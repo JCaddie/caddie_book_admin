@@ -73,7 +73,20 @@ export interface DailyScheduleDetailData {
       status: string;
       slot_type: string;
       is_locked: boolean;
-      caddie: { id: string; name: string } | null;
+      caddie: {
+        id: string;
+        name: string;
+        primary_group: {
+          id: number;
+          name: string;
+          order: number;
+        };
+        special_group: {
+          id: number;
+          name: string;
+          order: number;
+        } | null;
+      } | null;
       special_group: string | null;
       assigned_by: string | null;
       assigned_at: string | null;
@@ -311,25 +324,7 @@ export interface WorkDetailState {
       order: number;
       is_active: boolean;
     }>;
-    caddies: Array<{
-      id: string;
-      name: string;
-      phone: string;
-      primary_group: {
-        id: number;
-        name: string;
-        order: number;
-      };
-      primary_group_order: number;
-      special_group: {
-        id: number;
-        name: string;
-        order: number;
-      };
-      special_group_order: number;
-      today_status: string | null;
-      is_active: boolean;
-    }>;
+    caddies: CaddieData[];
     parts: Array<{
       id: string;
       part_number: number;
@@ -344,7 +339,20 @@ export interface WorkDetailState {
         status: string;
         slot_type: string;
         is_locked: boolean;
-        caddie: { id: string; name: string } | null;
+        caddie: {
+          id: string;
+          name: string;
+          primary_group: {
+            id: number;
+            name: string;
+            order: number;
+          };
+          special_group: {
+            id: number;
+            name: string;
+            order: number;
+          } | null;
+        } | null;
         special_group: string | null;
         assigned_by: string | null;
         assigned_at: string | null;

@@ -43,22 +43,31 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
     []
   );
 
-  // API caddies -> 화면용 CaddieData 매핑
-  const convertCaddiesToCaddieData = useCallback(
-    (
-      apiCaddies: DailyScheduleDetailData["caddies"] | undefined
-    ): CaddieData[] => {
-      if (!apiCaddies) return [];
-      return apiCaddies.map((c, idx) => ({
-        id: idx + 1, // 내부 표시용 숫자 ID 생성
-        name: c.name,
-        group: c.primary_group?.id ?? 0,
-        badge: c.special_group?.name || "하우스",
-        status: c.today_status || "근무",
-        originalId: c.id, // 원본 UUID 유지
-        order: c.primary_group_order,
-        groupName: c.primary_group?.name,
-      }));
+  // API slots에서 캐디 정보 추출하여 CaddieData로 매핑
+  const convertSlotsToCaddieData = useCallback(
+    (parts: DailyScheduleDetailData["parts"] | undefined): CaddieData[] => {
+      if (!parts) return [];
+
+      const caddieMap = new Map<string, CaddieData>();
+
+      parts.forEach((part) => {
+        part.slots.forEach((slot) => {
+          if (slot.caddie && !caddieMap.has(slot.caddie.id)) {
+            caddieMap.set(slot.caddie.id, {
+              id: caddieMap.size + 1, // 내부 표시용 숫자 ID 생성
+              name: slot.caddie.name,
+              group: slot.caddie.primary_group?.id ?? 0,
+              badge: slot.caddie.special_group?.name || "",
+              status: slot.status || "근무", // slot.status를 사용하거나 기본값
+              originalId: slot.caddie.id, // 원본 UUID 유지
+              order: slot.caddie.primary_group?.order ?? 0,
+              groupName: slot.caddie.primary_group?.name,
+            });
+          }
+        });
+      });
+
+      return Array.from(caddieMap.values());
     },
     []
   );
@@ -105,11 +114,30 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
         })),
       };
 
-      // 상세 데이터 설정
+      // 상세 데이터 설정 - 새로운 API 구조에 맞게 수정
       const detailData = {
         fields: data.fields,
-        caddies: data.caddies,
-        parts: data.parts,
+        caddies: convertSlotsToCaddieData(data.parts), // slots에서 캐디 정보 추출
+        parts: data.parts.map((part) => ({
+          ...part,
+          // 각 part의 slots에 변환된 캐디 데이터 추가
+          slots: part.slots.map((slot) => ({
+            ...slot,
+            // slot.caddie가 있으면 변환된 CaddieData로 매핑
+            convertedCaddie: slot.caddie
+              ? {
+                  id: parseInt(slot.caddie.id.slice(-6), 16) || 0,
+                  name: slot.caddie.name,
+                  group: slot.caddie.primary_group?.id ?? 0,
+                  badge: slot.caddie.special_group?.name || "",
+                  status: slot.status || "근무",
+                  originalId: slot.caddie.id,
+                  order: slot.caddie.primary_group?.order ?? 0,
+                  groupName: slot.caddie.primary_group?.name,
+                }
+              : null,
+          })),
+        })),
         filter_metadata: data.filter_metadata,
       };
 
@@ -127,7 +155,7 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
         error: "근무표 조회에 실패했습니다.",
       }));
     }
-  }, [currentDate, golfCourseId]);
+  }, [currentDate, golfCourseId, convertSlotsToCaddieData]);
 
   // 시간 슬롯 생성 (API 데이터 기반 또는 기본값)
   const generateTimeSlots = useCallback(() => {
@@ -176,12 +204,10 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
   // 필터링된 캐디 리스트
   const getFilteredCaddies = useCallback(
     (filters: { status: string; group: string; badge: string }) => {
-      const sourceCaddies = convertCaddiesToCaddieData(
-        state.detailData?.caddies
-      );
+      const sourceCaddies = convertSlotsToCaddieData(state.detailData?.parts);
       return filterCaddies(sourceCaddies, filters);
     },
-    [state.detailData?.caddies, convertCaddiesToCaddieData]
+    [state.detailData?.parts, convertSlotsToCaddieData]
   );
 
   // 데이터 새로고침
@@ -197,7 +223,7 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
     fields: convertFieldsToFieldType(state.detailData?.fields),
     timeSlots: generateTimeSlots(),
     personnelStats: getPersonnelStats(),
-    sourceCaddies: convertCaddiesToCaddieData(state.detailData?.caddies),
+    sourceCaddies: convertSlotsToCaddieData(state.detailData?.parts),
 
     // 액션
     fetchScheduleData,
@@ -206,6 +232,6 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
 
     // 유틸리티
     convertFieldsToFieldType,
-    convertCaddiesToCaddieData,
+    convertSlotsToCaddieData,
   };
 };

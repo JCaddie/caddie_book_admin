@@ -108,7 +108,8 @@ export default function CaddieCard({
       <div className="flex items-center gap-1.5">
         {/* 조 배지 */}
         <div className="w-9 h-5 bg-[#DDE9FF] text-[#1061F9] text-xs font-bold rounded-xl flex items-center justify-center flex-shrink-0">
-          {caddie.groupName || `${caddie.group}조`}
+          {caddie.groupName ||
+            (caddie.group > 0 ? `${caddie.group}조` : "미배정")}
         </div>
 
         {/* 이름 */}
@@ -116,10 +117,12 @@ export default function CaddieCard({
           {caddie.name}
         </span>
 
-        {/* 특수반 배지 - 고정 너비 */}
-        <div className="w-12 h-5 bg-[#FFF5E6] text-black/30 text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
-          {caddie.badge}
-        </div>
+        {/* 특수반 배지 - 있을 때만 표시 */}
+        {caddie.badge && (
+          <div className="w-12 h-5 bg-[#FFF5E6] text-black/30 text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
+            {caddie.badge}
+          </div>
+        )}
 
         {/* 상태 구분선 및 배지 */}
         {(caddie.status === "휴무" || caddie.specialBadge) && (

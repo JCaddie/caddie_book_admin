@@ -1,5 +1,3 @@
-import { FilterOption } from "@/shared/types/caddie";
-
 // 페이지네이션 상수
 export const ITEMS_PER_PAGE = 20;
 
@@ -86,21 +84,6 @@ export const CADDIE_COLUMNS = [
       return score.toString();
     },
   },
-];
-
-// 필터 옵션들
-export const GROUP_OPTIONS: FilterOption[] = [
-  { value: "그룹", label: "그룹" },
-  { value: "1조", label: "1조" },
-  { value: "2조", label: "2조" },
-  { value: "3조", label: "3조" },
-  { value: "4조", label: "4조" },
-];
-
-export const SPECIAL_TEAM_OPTIONS: FilterOption[] = [
-  { value: "특수반", label: "특수반" },
-  { value: "하우스", label: "하우스" },
-  { value: "3부반", label: "3부반" },
 ];
 
 // 기본 필터 값들

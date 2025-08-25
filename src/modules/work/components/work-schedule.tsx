@@ -53,6 +53,16 @@ interface WorkScheduleProps {
       caddie: {
         id: string;
         name: string;
+        primary_group: {
+          id: number;
+          name: string;
+          order: number;
+        };
+        special_group: {
+          id: number;
+          name: string;
+          order: number;
+        } | null;
       } | null;
       special_group: string | null;
       assigned_by: string | null;
@@ -138,20 +148,29 @@ export default function WorkSchedule({
 
         // 배정된 캐디가 있는 경우 위치 초기화
         if (slot.caddie) {
-          // slot.caddie.id가 문자열인지 확인하고 안전하게 처리
-          const caddieId =
-            typeof slot.caddie.id === "string"
-              ? slot.caddie.id
-              : String(slot.caddie.id);
-          // API 데이터의 캐디 정보를 사용하여 CaddieData 객체 생성
-          const apiCaddie: CaddieData = {
-            id: parseInt(caddieId.slice(-6), 16) || 0,
-            name: slot.caddie.name,
-            group: 1, // 기본값
-            badge: "일반",
-            status: "근무",
-            originalId: slot.caddie.id,
-          };
+          // convertedCaddie가 있으면 사용, 없으면 기존 방식으로 생성
+          let apiCaddie: CaddieData;
+
+          if ("convertedCaddie" in slot && slot.convertedCaddie) {
+            // @ts-expect-error - convertedCaddie는 런타임에 추가된 속성
+            apiCaddie = slot.convertedCaddie;
+          } else {
+            // 기존 방식으로 CaddieData 객체 생성
+            const caddieId =
+              typeof slot.caddie.id === "string"
+                ? slot.caddie.id
+                : String(slot.caddie.id);
+            apiCaddie = {
+              id: parseInt(caddieId.slice(-6), 16) || 0,
+              name: slot.caddie.name,
+              group: slot.caddie.primary_group?.id ?? 0,
+              badge: slot.caddie.special_group?.name || "",
+              status: slot.status || "근무",
+              originalId: slot.caddie.id,
+              order: slot.caddie.primary_group?.order ?? 0,
+              groupName: slot.caddie.primary_group?.name,
+            };
+          }
 
           newExternal.set(apiCaddie.id.toString(), apiCaddie);
           const positionKey = `${apiCaddie.id}_${fieldIndex}_${timeIndex}_${part.part_number}`;
@@ -605,19 +624,29 @@ export default function WorkSchedule({
 
     // API 데이터에 캐디가 배정된 경우
     if (slot?.caddie) {
-      // slot.caddie.id가 문자열인지 확인하고 안전하게 처리
-      const caddieId =
-        typeof slot.caddie.id === "string"
-          ? slot.caddie.id
-          : String(slot.caddie.id);
-      const apiCaddie: CaddieData = {
-        id: parseInt(caddieId.slice(-6), 16) || 0, // UUID의 마지막 6자리를 숫자로 변환
-        name: slot.caddie.name || "알 수 없음",
-        group: 1, // 기본값
-        badge: "일반",
-        status: "근무",
-        originalId: caddieId,
-      };
+      // convertedCaddie가 있으면 사용, 없으면 기존 방식으로 생성
+      let apiCaddie: CaddieData;
+
+      if ("convertedCaddie" in slot && slot.convertedCaddie) {
+        // @ts-expect-error - convertedCaddie는 런타임에 추가된 속성
+        apiCaddie = slot.convertedCaddie;
+      } else {
+        // 기존 방식으로 CaddieData 객체 생성
+        const caddieId =
+          typeof slot.caddie.id === "string"
+            ? slot.caddie.id
+            : String(slot.caddie.id);
+        apiCaddie = {
+          id: parseInt(caddieId.slice(-6), 16) || 0,
+          name: slot.caddie.name || "알 수 없음",
+          group: slot.caddie.primary_group?.id ?? 0,
+          badge: slot.caddie.special_group?.name || "",
+          status: slot.status || "근무",
+          originalId: caddieId,
+          order: slot.caddie.primary_group?.order ?? 0,
+          groupName: slot.caddie.primary_group?.name,
+        };
+      }
 
       return (
         <CaddieCard
