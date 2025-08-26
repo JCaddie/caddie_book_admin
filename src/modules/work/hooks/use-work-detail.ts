@@ -156,7 +156,8 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
       const endTime = new Date(`2000-01-01T${part.endTime}`);
       const tempTime = new Date(currentTime);
 
-      while (tempTime < endTime) {
+      // endTime까지 포함하여 시간 슬롯 생성
+      while (tempTime <= endTime) {
         slots.push(tempTime.toTimeString().slice(0, 5));
         tempTime.setMinutes(
           tempTime.getMinutes() +
