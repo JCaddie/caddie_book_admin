@@ -616,6 +616,22 @@ export default function WorkSchedule({
         : timeSlots.part3;
     const targetTime = partTimes?.[timeIndex];
     const currentPart = scheduleParts.find((p) => p.part_number === part);
+
+    // 디버깅: 08:00 슬롯 문제 파악
+    if (targetTime === "08:00") {
+      console.log("08:00 슬롯 디버깅:", {
+        part,
+        timeIndex,
+        targetTime,
+        partTimes: partTimes?.slice(-5), // 마지막 5개 시간 확인
+        currentPart: currentPart?.part_number,
+        slotsCount: currentPart?.slots.length,
+        matchingSlots: currentPart?.slots.filter(
+          (s) => (s.start_time || "").slice(0, 5) === "08:00"
+        ),
+      });
+    }
+
     const slot = currentPart?.slots.find(
       (s) =>
         s.field_number === fieldIndex + 1 &&

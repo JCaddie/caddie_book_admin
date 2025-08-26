@@ -68,7 +68,7 @@ export const generateTimeSlotsForPart = (
   const end = new Date(`2000-01-01T${endTime}`);
   const tempTime = new Date(currentTime);
 
-  while (tempTime < end) {
+  while (tempTime <= end) {
     slots.push(tempTime.toTimeString().slice(0, 5));
     tempTime.setMinutes(tempTime.getMinutes() + DEFAULT_TIME_INTERVAL);
   }

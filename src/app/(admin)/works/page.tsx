@@ -164,8 +164,8 @@ const WorksPage: React.FC = () => {
       // 성공 메시지 표시
       alert("근무표가 성공적으로 생성되었습니다.");
 
-      // 상세 페이지로 이동
-      router.push(`/works/${result.golfCourseId}?date=${result.date}`);
+      // 화면 이동 대신 데이터 새로고침
+      refetch();
     } catch (error) {
       console.error("근무표 생성 실패:", error);
       alert("근무표 생성에 실패했습니다.");

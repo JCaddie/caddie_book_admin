@@ -1028,3 +1028,25 @@ export const clearAllCaddieAssignments = async (
     throw error;
   }
 };
+
+/**
+ * 일반 근무표 삭제 API
+ */
+export const deleteDailySchedule = async (
+  golfCourseId: string,
+  date: string
+): Promise<void> => {
+  try {
+    const response = await apiClient.delete<{
+      success: boolean;
+      message: string;
+    }>(`${WORK_API_ENDPOINTS.DAILY_SCHEDULES}${golfCourseId}/${date}/`);
+
+    if (!response.success) {
+      throw new Error(response.message || "일반 근무표 삭제 실패");
+    }
+  } catch (error) {
+    console.error("일반 근무표 삭제 실패:", error);
+    throw error;
+  }
+};
