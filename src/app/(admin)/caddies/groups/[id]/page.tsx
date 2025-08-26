@@ -50,7 +50,7 @@ const transformGroupToGroupSection = (group: Group) => ({
     badge: member.is_team_leader ? "팀장" : "캐디",
     status: "active",
     specialBadge: member.is_team_leader ? "팀장" : undefined,
-    order: member.order,
+    order: member.group_order, // group_order 필드 사용
     groupName: group.name,
   })),
 });

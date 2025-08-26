@@ -189,6 +189,11 @@ export interface GroupMember {
   employment_type: "FULL_TIME" | "PART_TIME";
   order?: number;
   is_team_leader?: boolean;
+  group_order: number;
+  membership_id: number;
+  joined_date: string;
+  membership_type: "PRIMARY" | "SPECIAL";
+  is_primary: boolean;
 }
 
 export interface PrimaryGroup extends Record<string, unknown> {
