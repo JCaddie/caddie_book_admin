@@ -324,6 +324,10 @@ export interface WorkDetailState {
       order: number;
       is_active: boolean;
     }>;
+    golf_course: {
+      id: string;
+      name: string;
+    };
     caddies: CaddieData[];
     parts: Array<{
       id: string;

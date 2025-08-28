@@ -113,7 +113,9 @@ export default function WorkDetailPage({
     <div className="bg-white rounded-xl p-8 space-y-6">
       {/* 최상단 헤더 */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-black">제이캐디아카데미</h1>
+        <h1 className="text-2xl font-bold text-black">
+          {detailData?.golf_course?.name || "골프장"}
+        </h1>
       </div>
 
       {/* 날짜 네비게이션 및 검색 섹션 */}

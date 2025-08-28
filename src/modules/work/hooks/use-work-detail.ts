@@ -83,6 +83,7 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
       // 상세 데이터 설정 - 새로운 API 구조에 맞게 수정
       const detailData = {
         fields: data.fields,
+        golf_course: data.golf_course,
         parts: data.parts.map((part) => ({
           ...part,
           // 각 part의 slots에 변환된 캐디 데이터 추가
