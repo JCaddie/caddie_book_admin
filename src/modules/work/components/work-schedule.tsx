@@ -3,9 +3,15 @@
 import React, { useState } from "react";
 import BaseSchedule from "@/shared/components/schedule/base-schedule";
 import { CaddieData, Field, PersonnelStats, TimeSlots } from "../types";
-import { SAMPLE_CADDIES } from "../constants/work-detail";
 import CaddieCard from "./caddie-card";
-import { removeSlotAssignment } from "../api/work-api";
+import {
+  assignCaddieToSlotPost,
+  bulkUpdateSlotStatus,
+  clearAllCaddieAssignments,
+  removeCaddieFromSlot,
+  removeSlotAssignment,
+  toggleSlotStatus,
+} from "../api/work-api";
 
 interface CaddiePosition {
   fieldIndex: number;
@@ -27,6 +33,42 @@ interface WorkScheduleProps {
   onResetClick?: () => void;
   scheduleId?: string; // API 호출을 위한 스케줄 ID
   onScheduleUpdate?: () => void; // 스케줄 업데이트 콜백
+  availableCaddies?: CaddieData[]; // API에서 받은 캐디 리스트
+  golfCourseId?: string; // 골프장 ID (초기화 API용)
+  date?: string; // 날짜 (초기화 API용)
+  scheduleParts?: Array<{
+    id: string;
+    part_number: number;
+    name: string;
+    start_time: string;
+    end_time: string;
+    is_active: boolean;
+    slots: Array<{
+      id: string;
+      start_time: string;
+      field_number: number; // 1-based
+      status: string;
+      slot_type: string;
+      is_locked: boolean;
+      caddie: {
+        id: string;
+        name: string;
+        primary_group: {
+          id: number;
+          name: string;
+          order: number;
+        };
+        special_group: {
+          id: number;
+          name: string;
+          order: number;
+        } | null;
+      } | null;
+      special_group: string | null;
+      assigned_by: string | null;
+      assigned_at: string | null;
+    }>;
+  }>;
 }
 
 export default function WorkSchedule({
@@ -43,6 +85,10 @@ export default function WorkSchedule({
   onResetClick,
   scheduleId,
   onScheduleUpdate,
+  availableCaddies,
+  golfCourseId,
+  date,
+  scheduleParts = [],
 }: WorkScheduleProps) {
   // 캐디 위치 상태 관리
   const [caddiePositions, setCaddiePositions] = useState<
@@ -54,15 +100,106 @@ export default function WorkSchedule({
     Map<string, CaddieData>
   >(new Map());
 
+  // 슬롯 ID 매핑 (fieldIndex_timeIndex_part -> slotId)
+  const [slotIdMap, setSlotIdMap] = useState<Map<string, string>>(new Map());
+
   // 드래그 상태 관리 (내부 드래그용)
   const [internalDraggedCaddie, setInternalDraggedCaddie] =
     useState<CaddieData | null>(null);
 
+  // API 호출 중인 슬롯들을 추적 (중복 호출 방지)
+  const [removingSlots, setRemovingSlots] = useState<Set<string>>(new Set());
+
   // 전체 드래그 상태 (외부 + 내부)
   const draggedCaddie = externalDraggedCaddie || internalDraggedCaddie;
 
-  // 스케줄용 캐디 데이터 (첫 6명만 사용)
-  const caddies = SAMPLE_CADDIES.slice(0, 6);
+  // 스케줄용 캐디 데이터 (API에서 전달되면 사용)
+  const caddies = availableCaddies || [];
+
+  // API 데이터에서 기존 배치된 캐디를 초기화
+  React.useEffect(() => {
+    if (!scheduleParts || scheduleParts.length === 0) return;
+
+    const newPositions = new Map<string, CaddiePosition>();
+    const newExternal = new Map<string, CaddieData>();
+    const newSlotMap = new Map<string, string>();
+
+    const allPartTimes = [
+      timeSlots.part1 || [],
+      timeSlots.part2 || [],
+      timeSlots.part3 || [],
+    ];
+
+    scheduleParts.forEach((part) => {
+      const partIdx = part.part_number - 1;
+      const partTimes = allPartTimes[partIdx] || [];
+
+      part.slots.forEach((slot) => {
+        const hhmm = (slot.start_time || "").slice(0, 5);
+        const timeIndex = partTimes.findIndex((t) => t === hhmm);
+        if (timeIndex === -1) return;
+
+        const fieldIndex = slot.field_number - 1;
+        if (fieldIndex < 0) return;
+
+        // 슬롯 ID 매핑 저장
+        const slotKey = `${fieldIndex}_${timeIndex}_${part.part_number}`;
+        newSlotMap.set(slotKey, slot.id);
+
+        // 배정된 캐디가 있는 경우 위치 초기화
+        if (slot.caddie) {
+          // convertedCaddie가 있으면 사용, 없으면 기존 방식으로 생성
+          let apiCaddie: CaddieData;
+
+          if ("convertedCaddie" in slot && slot.convertedCaddie) {
+            // @ts-expect-error - convertedCaddie는 런타임에 추가된 속성
+            apiCaddie = slot.convertedCaddie;
+          } else {
+            // 기존 방식으로 CaddieData 객체 생성
+            const caddieId =
+              typeof slot.caddie.id === "string"
+                ? slot.caddie.id
+                : String(slot.caddie.id);
+            apiCaddie = {
+              id: parseInt(caddieId.slice(-6), 16) || 0,
+              name: slot.caddie.name,
+              group: slot.caddie.primary_group?.id ?? 0,
+              badge: slot.caddie.special_group?.name || "",
+              status: slot.status || "근무",
+              originalId: slot.caddie.id,
+              order: slot.caddie.primary_group?.order ?? 0,
+              groupName: slot.caddie.primary_group?.name,
+            };
+          }
+
+          newExternal.set(apiCaddie.id.toString(), apiCaddie);
+          const positionKey = `${apiCaddie.id}_${fieldIndex}_${timeIndex}_${part.part_number}`;
+          newPositions.set(positionKey, {
+            fieldIndex,
+            timeIndex,
+            part: part.part_number,
+          });
+        }
+      });
+    });
+
+    // 변경 여부 비교 후 필요한 경우에만 업데이트하여 재렌더 루프 방지
+    const mapsEqual = (a: Map<string, unknown>, b: Map<string, unknown>) => {
+      if (a.size !== b.size) return false;
+      for (const [k, v] of a) {
+        if (b.get(k) !== v) return false;
+      }
+      return true;
+    };
+
+    setExternalCaddies((prev) =>
+      mapsEqual(prev, newExternal) ? prev : newExternal
+    );
+    setCaddiePositions((prev) =>
+      mapsEqual(prev, newPositions) ? prev : newPositions
+    );
+    setSlotIdMap((prev) => (mapsEqual(prev, newSlotMap) ? prev : newSlotMap));
+  }, [scheduleParts, timeSlots]);
 
   // 특정 위치에 배정된 캐디 찾기
   const getCaddieAtPosition = (
@@ -129,7 +266,7 @@ export default function WorkSchedule({
   };
 
   // 드롭 핸들러 (캐디 특화 로직 포함)
-  const handleDrop = (
+  const handleDrop = async (
     e: React.DragEvent,
     fieldIndex: number,
     timeIndex: number,
@@ -169,45 +306,94 @@ export default function WorkSchedule({
         return;
       }
 
-      // 캐디를 외부 캐디 맵에 저장
-      setExternalCaddies((prev) =>
-        new Map(prev).set(caddie.id.toString(), caddie)
-      );
+      // 슬롯 ID 가져오기
+      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+      const slotId = slotIdMap.get(slotKey);
 
-      // 위치 업데이트
-      setCaddiePositions((prev) => {
-        const newPositions = new Map(prev);
+      if (!slotId) {
+        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
+        alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        if (externalOnDragEnd) {
+          externalOnDragEnd();
+        } else {
+          setInternalDraggedCaddie(null);
+        }
+        return;
+      }
 
-        // 해당 위치에 이미 있는 캐디 제거 (드롭 위치에서만)
-        const existingPositionKey = Array.from(newPositions.entries()).find(
-          ([, position]) =>
-            position.fieldIndex === fieldIndex &&
-            position.timeIndex === timeIndex &&
-            position.part === part
+      // API를 통해 캐디 배정
+      try {
+        await assignCaddieToSlotPost(
+          slotId,
+          caddie.originalId || caddie.id.toString()
         );
 
-        if (existingPositionKey) {
-          newPositions.delete(existingPositionKey[0]);
-        }
+        // API 성공 시에만 로컬 상태 업데이트
+        // 캐디를 외부 캐디 맵에 저장
+        setExternalCaddies((prev) =>
+          new Map(prev).set(caddie.id.toString(), caddie)
+        );
 
-        // 새로운 위치에 캐디 배치 (고유한 키 생성)
-        const positionKey = `${draggedCaddieId}_${fieldIndex}_${timeIndex}_${part}`;
-        newPositions.set(positionKey, {
-          fieldIndex,
-          timeIndex,
-          part,
+        // 위치 업데이트
+        setCaddiePositions((prev) => {
+          const newPositions = new Map(prev);
+
+          // 해당 위치에 이미 있는 캐디 제거 (드롭 위치에서만)
+          const existingPositionKey = Array.from(newPositions.entries()).find(
+            ([, position]) =>
+              position.fieldIndex === fieldIndex &&
+              position.timeIndex === timeIndex &&
+              position.part === part
+          );
+
+          if (existingPositionKey) {
+            newPositions.delete(existingPositionKey[0]);
+          }
+
+          // 새로운 위치에 캐디 배치 (고유한 키 생성)
+          const positionKey = `${draggedCaddieId}_${fieldIndex}_${timeIndex}_${part}`;
+          newPositions.set(positionKey, {
+            fieldIndex,
+            timeIndex,
+            part,
+          });
+
+          return newPositions;
         });
 
-        return newPositions;
-      });
+        // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+        if (onScheduleUpdate) {
+          onScheduleUpdate();
+        }
 
+        if (externalOnDragEnd) {
+          externalOnDragEnd();
+        } else {
+          setInternalDraggedCaddie(null);
+        }
+      } catch (error: unknown) {
+        console.error("캐디 배정 실패:", error);
+
+        // 에러 메시지 표시 (API에서 받은 구체적인 메시지 사용)
+        let errorMessage = "캐디 배정에 실패했습니다. 다시 시도해주세요.";
+        if (error && typeof error === "object" && "message" in error) {
+          errorMessage = (error as { message: string }).message;
+        }
+        alert(errorMessage);
+
+        if (externalOnDragEnd) {
+          externalOnDragEnd();
+        } else {
+          setInternalDraggedCaddie(null);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to parse caddie data:", error);
       if (externalOnDragEnd) {
         externalOnDragEnd();
       } else {
         setInternalDraggedCaddie(null);
       }
-    } catch (error) {
-      console.error("Failed to parse caddie data:", error);
     }
   };
 
@@ -233,13 +419,14 @@ export default function WorkSchedule({
     part: number
   ) => {
     try {
-      // TODO: 실제 슬롯 ID 매핑이 구현되면 API 호출 활성화
-      // if (scheduleId && slotId) {
-      //   await removeSlotAssignment(scheduleId, {
-      //     slot_id: slotId,
-      //     assignment_type: "caddie",
-      //   });
-      // }
+      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+      const slotId = slotIdMap.get(slotKey);
+      if (scheduleId && slotId) {
+        await removeSlotAssignment(scheduleId, {
+          slot_id: slotId,
+          assignment_type: "caddie",
+        });
+      }
 
       // 로컬 상태 업데이트
       setCaddiePositions((prev) => {
@@ -270,25 +457,253 @@ export default function WorkSchedule({
     }
   };
 
+  // 모든 슬롯을 배치 불가(available)로 변경
+  const handleBulkAvailable = async () => {
+    try {
+      const allSlotIds = Array.from(slotIdMap.values());
+      if (allSlotIds.length === 0) {
+        alert("변경할 슬롯이 없습니다.");
+        return;
+      }
+
+      await bulkUpdateSlotStatus(allSlotIds, "available");
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("일괄 상태 변경 실패:", error);
+      alert("일괄 상태 변경에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  // 모든 슬롯을 배치 가능(reserved)으로 변경
+  const handleBulkReserved = async () => {
+    try {
+      const allSlotIds = Array.from(slotIdMap.values());
+      if (allSlotIds.length === 0) {
+        alert("변경할 슬롯이 없습니다.");
+        return;
+      }
+
+      await bulkUpdateSlotStatus(allSlotIds, "reserved");
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("일괄 상태 변경 실패:", error);
+      alert("일괄 상태 변경에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  // 모든 캐디 배정 초기화
+  const handleClearAllAssignments = async () => {
+    if (!golfCourseId || !date) {
+      alert("골프장 ID 또는 날짜 정보가 없습니다.");
+      return;
+    }
+
+    const confirmed = confirm(
+      "모든 캐디 배정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await clearAllCaddieAssignments(golfCourseId, date);
+
+      // 로컬 상태도 초기화
+      setCaddiePositions(new Map());
+      setExternalCaddies(new Map());
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+
+      alert("모든 캐디 배정이 초기화되었습니다.");
+    } catch (error) {
+      console.error("캐디 배정 초기화 실패:", error);
+      alert("캐디 배정 초기화에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  // 특정 슬롯의 상태 변경 핸들러
+  const handleSlotStatusToggle = async (
+    fieldIndex: number,
+    timeIndex: number,
+    part: number
+  ) => {
+    try {
+      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+      const slotId = slotIdMap.get(slotKey);
+
+      if (!slotId) {
+        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
+        alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        return;
+      }
+
+      await toggleSlotStatus(slotId);
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("슬롯 상태 변경 실패:", error);
+      alert("슬롯 상태 변경에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  // 특정 슬롯에서 캐디 제거 핸들러 (중복 호출 방지)
+  const handleSlotCaddieRemove = async (
+    fieldIndex: number,
+    timeIndex: number,
+    part: number
+  ) => {
+    const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+
+    // 이미 제거 중인 슬롯이면 무시
+    if (removingSlots.has(slotKey)) {
+      console.log("이미 제거 중인 슬롯:", slotKey);
+      return;
+    }
+
+    try {
+      const slotId = slotIdMap.get(slotKey);
+
+      if (!slotId) {
+        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
+        alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        return;
+      }
+
+      // 제거 중 상태로 표시
+      setRemovingSlots((prev) => new Set(prev).add(slotKey));
+
+      await removeCaddieFromSlot(slotId);
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("캐디 제거 실패:", error);
+      alert("캐디 제거에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      // 제거 중 상태 해제
+      setRemovingSlots((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(slotKey);
+        return newSet;
+      });
+    }
+  };
+
   // 셀 렌더러 (캐디 특화 로직)
   const renderCell = (fieldIndex: number, timeIndex: number, part: number) => {
-    const caddie = getCaddieAtPosition(fieldIndex, timeIndex, part);
+    // API 데이터에서 해당 슬롯의 캐디 정보 확인
+    const partTimes =
+      part === 1
+        ? timeSlots.part1
+        : part === 2
+        ? timeSlots.part2
+        : timeSlots.part3;
+    const targetTime = partTimes?.[timeIndex];
+    const currentPart = scheduleParts.find((p) => p.part_number === part);
 
-    if (caddie) {
+
+
+    const slot = currentPart?.slots.find(
+      (s) =>
+        s.field_number === fieldIndex + 1 &&
+        (s.start_time || "").slice(0, 5) === targetTime
+    );
+
+    // API 데이터에 캐디가 배정된 경우
+    if (slot?.caddie) {
+      // convertedCaddie가 있으면 사용, 없으면 기존 방식으로 생성
+      let apiCaddie: CaddieData;
+
+      if ("convertedCaddie" in slot && slot.convertedCaddie) {
+        // @ts-expect-error - convertedCaddie는 런타임에 추가된 속성
+        apiCaddie = slot.convertedCaddie;
+      } else {
+        // 기존 방식으로 CaddieData 객체 생성
+        const caddieId =
+          typeof slot.caddie.id === "string"
+            ? slot.caddie.id
+            : String(slot.caddie.id);
+        apiCaddie = {
+          id: parseInt(caddieId.slice(-6), 16) || 0,
+          name: slot.caddie.name || "알 수 없음",
+          group: slot.caddie.primary_group?.id ?? 0,
+          badge: slot.caddie.special_group?.name || "",
+          status: slot.status || "근무",
+          originalId: caddieId,
+          order: slot.caddie.primary_group?.order ?? 0,
+          groupName: slot.caddie.primary_group?.name,
+        };
+      }
+
       return (
         <CaddieCard
-          key={`${caddie.id}-${fieldIndex}-${timeIndex}-${part}`}
-          caddie={caddie}
-          onDragStart={() => handleDragStart(caddie)}
+          key={`api-${slot.caddie.id}-${fieldIndex}-${timeIndex}-${part}`}
+          caddie={apiCaddie}
+          onDragStart={() => handleDragStart(apiCaddie)}
           onDragEnd={() => handleDragEnd()}
-          isDragging={draggedCaddie?.id === caddie.id}
+          isDragging={draggedCaddie?.id === apiCaddie.id}
+          onStatusToggle={() =>
+            handleSlotStatusToggle(fieldIndex, timeIndex, part)
+          }
+          onCaddieRemove={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
+          onDoubleClick={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
         />
       );
     }
 
-    // 빈 슬롯일 때 캐디 특화 텍스트
+    // 로컬 상태에서 캐디가 배정된 경우
+    const localCaddie = getCaddieAtPosition(fieldIndex, timeIndex, part);
+    if (localCaddie) {
+      return (
+        <CaddieCard
+          key={`local-${localCaddie.id}-${fieldIndex}-${timeIndex}-${part}`}
+          caddie={localCaddie}
+          onDragStart={() => handleDragStart(localCaddie)}
+          onDragEnd={() => handleDragEnd()}
+          isDragging={draggedCaddie?.id === localCaddie.id}
+          onStatusToggle={() =>
+            handleSlotStatusToggle(fieldIndex, timeIndex, part)
+          }
+          onCaddieRemove={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
+          onDoubleClick={() =>
+            handleSlotCaddieRemove(fieldIndex, timeIndex, part)
+          }
+        />
+      );
+    }
+
+    // 빈 슬롯일 때 텍스트: API 워크 슬롯 상태에 따라 표기
     let emptyText = "미배정";
-    if (part === 2 && timeIndex >= 2) {
+
+    if (slot) {
+      if (slot.status === "available") {
+        emptyText = "배치 불가";
+      } else if (slot.status === "reserved") {
+        emptyText = "배치 가능";
+      }
+    } else if (part === 2 && timeIndex >= 2) {
       emptyText = "예약없음";
     }
 
@@ -297,6 +712,11 @@ export default function WorkSchedule({
         key={`empty-${fieldIndex}-${timeIndex}-${part}`}
         isEmpty={true}
         emptyText={emptyText}
+        onClick={
+          slot
+            ? () => handleSlotStatusToggle(fieldIndex, timeIndex, part)
+            : undefined
+        }
       />
     );
   };
@@ -306,11 +726,17 @@ export default function WorkSchedule({
       fields={fields}
       timeSlots={timeSlots}
       personnelStats={personnelStats}
-      onResetClick={onResetClick || (() => {})}
+      onResetClick={
+        golfCourseId && date
+          ? handleClearAllAssignments
+          : onResetClick || (() => {})
+      }
       hideHeader={hideHeader}
       isFullWidth={isFullWidth}
       onRoundingSettingsClick={onRoundingSettingsClick}
       onFillClick={onFillClick}
+      onBulkAvailableClick={handleBulkAvailable}
+      onBulkReservedClick={handleBulkReserved}
       renderCell={renderCell}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
@@ -319,6 +745,10 @@ export default function WorkSchedule({
       draggedItem={draggedCaddie}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      activeParts={scheduleParts.map((p) => ({
+        part_number: p.part_number,
+        name: p.name,
+      }))}
     />
   );
 }

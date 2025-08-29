@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from "@/shared/lib/api-client";
+import { WORK_API_ENDPOINTS } from "@/modules/work/api/work-api";
 import {
   BaseGroup,
   CreateGroupRequest,
@@ -214,7 +215,7 @@ class SpecialGroupAPI implements GroupManagementAPI<SpecialGroupResponse> {
   ): Promise<SpecialScheduleDetailResponse["data"]> {
     try {
       const response = await apiClient.get<SpecialScheduleDetailResponse>(
-        `/api/v1/work/schedules/${scheduleId}/special-groups-status/`
+        `${WORK_API_ENDPOINTS.SCHEDULES}${scheduleId}/special-groups-status/`
       );
 
       if (response.success) {
@@ -266,7 +267,10 @@ export const assignSpecialGroupToSlot = async (
     const response = await apiClient.post<{
       success: boolean;
       message: string;
-    }>(`/api/v1/work/schedules/${scheduleId}/assign-special-group/`, data);
+    }>(
+      `${WORK_API_ENDPOINTS.SCHEDULES}${scheduleId}/assign-special-group/`,
+      data
+    );
 
     if (response.success) {
       return response;

@@ -44,5 +44,4 @@ const useWorksSelection = (): UseWorksSelectionReturn => {
     clearSelection,
   };
 };
-
-export default useWorksSelection;
+export { useWorksSelection };

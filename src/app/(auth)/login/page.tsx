@@ -98,6 +98,7 @@ export default function LoginPage() {
 
       // API 응답에서 토큰과 사용자 정보 추출
       const accessToken = data.access_token;
+      const refreshToken = data.refresh_token;
 
       // 실제 API 응답 구조에 맞게 사용자 정보 생성
       const user: User = {
@@ -110,7 +111,7 @@ export default function LoginPage() {
       };
 
       // 로그인 함수 호출
-      login(accessToken, user);
+      login(accessToken, refreshToken, user);
     } catch (error) {
       console.error("🚨 로그인 에러:", error);
       const errorMessage =
@@ -146,6 +147,7 @@ export default function LoginPage() {
 
       // API 응답에서 토큰과 사용자 정보 추출
       const accessToken = data.access_token;
+      const refreshToken = data.refresh_token;
 
       // 실제 API 응답 구조에 맞게 사용자 정보 생성
       const user: User = {
@@ -158,7 +160,7 @@ export default function LoginPage() {
       };
 
       // 로그인 함수 호출
-      login(accessToken, user);
+      login(accessToken, refreshToken, user);
     } catch (error) {
       console.error("🚨 테스트 계정 로그인 에러:", error);
       const errorMessage =

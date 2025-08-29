@@ -6,6 +6,7 @@ import { cookieUtils, tokenUtils } from "./utils";
  */
 interface ApiRequestOptions extends RequestInit {
   skipAuth?: boolean; // 인증 토큰을 포함하지 않을 경우
+  skipTokenRefresh?: boolean; // 토큰 갱신을 건너뛸 경우
 }
 
 /**
@@ -13,6 +14,8 @@ interface ApiRequestOptions extends RequestInit {
  */
 class ApiClient {
   private baseURL: string;
+  private isRefreshing = false;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor() {
     this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -24,6 +27,87 @@ class ApiClient {
   private getAuthToken(): string | null {
     if (typeof window === "undefined") return null;
     return cookieUtils.get(AUTH_CONSTANTS.COOKIES.AUTH_TOKEN);
+  }
+
+  /**
+   * 리프레시 토큰을 사용하여 새로운 액세스 토큰 발급
+   */
+  private async refreshAccessToken(): Promise<boolean> {
+    try {
+      const refreshToken = cookieUtils.get(
+        AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN
+      );
+
+      if (!refreshToken) {
+        console.warn("리프레시 토큰이 없습니다.");
+        return false;
+      }
+
+      const response = await fetch(
+        `${this.baseURL}${AUTH_CONSTANTS.API_ENDPOINTS.REFRESH_TOKEN}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ refresh: refreshToken }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("토큰 갱신 실패:", response.status);
+        return false;
+      }
+
+      const data = await response.json();
+
+      if (data.access) {
+        // 새로운 액세스 토큰 저장
+        cookieUtils.set(
+          AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+          data.access,
+          AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+        );
+
+        // 리프레시 토큰도 새로 발급받았다면 저장
+        if (data.refresh) {
+          cookieUtils.set(
+            AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
+            data.refresh,
+            AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+          );
+        }
+
+        console.log("토큰 갱신 성공");
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("토큰 갱신 중 오류:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 토큰 갱신 처리 (중복 요청 방지)
+   */
+  private async handleTokenRefresh(): Promise<boolean> {
+    if (this.isRefreshing) {
+      // 이미 갱신 중이면 기존 Promise 반환
+      return this.refreshPromise!;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.refreshAccessToken();
+
+    try {
+      const result = await this.refreshPromise;
+      return result;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
   }
 
   /**
@@ -52,7 +136,7 @@ class ApiClient {
     endpoint: string,
     options: ApiRequestOptions = {}
   ): Promise<T> {
-    const { skipAuth, headers, ...restOptions } = options;
+    const { skipAuth, skipTokenRefresh, headers, ...restOptions } = options;
 
     const url = endpoint.startsWith("http")
       ? endpoint
@@ -87,10 +171,33 @@ class ApiClient {
       }
     }
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       ...restOptions,
       headers: mergedHeaders,
     });
+
+    // 401 에러이고 토큰 갱신을 건너뛰지 않는 경우 토큰 갱신 시도
+    if (response.status === 401 && !skipAuth && !skipTokenRefresh) {
+      console.log("🔄 토큰 만료 - 갱신 시도");
+
+      const refreshSuccess = await this.handleTokenRefresh();
+
+      if (refreshSuccess) {
+        // 토큰 갱신 성공 시 새로운 토큰으로 재요청
+        const newToken = this.getAuthToken();
+        if (newToken) {
+          (mergedHeaders as Record<string, string>)[
+            "Authorization"
+          ] = `Bearer ${newToken}`;
+
+          console.log("🔄 토큰 갱신 후 재요청");
+          response = await fetch(url, {
+            ...restOptions,
+            headers: mergedHeaders,
+          });
+        }
+      }
+    }
 
     // 에러 응답 처리
     if (!response.ok) {
@@ -115,6 +222,7 @@ class ApiClient {
             console.warn("🚨 인증 토큰 만료 - 로그아웃 처리");
             cookieUtils.removeMultiple([
               AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+              AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
               AUTH_CONSTANTS.COOKIES.USER_DATA,
             ]);
             window.location.href = "/login";
@@ -317,6 +425,7 @@ class ApiClient {
           console.warn("🚨 인증 토큰 만료 - 로그아웃 처리");
           cookieUtils.removeMultiple([
             AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+            AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
             AUTH_CONSTANTS.COOKIES.USER_DATA,
           ]);
           window.location.href = "/login";

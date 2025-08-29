@@ -18,6 +18,107 @@ export interface Work extends Record<string, unknown> {
   isEmpty?: boolean;
 }
 
+// API 응답 타입들
+export interface DailyScheduleDetailData {
+  id: string;
+  date: string;
+  schedule_type: string;
+  time_interval: number;
+  total_staff: number;
+  available_staff: number;
+  status: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  golf_course: {
+    id: string;
+    name: string;
+  };
+  fields: Array<{
+    id: string;
+    name: string;
+    order: number;
+    is_active: boolean;
+  }>;
+  caddies: Array<{
+    id: string;
+    name: string;
+    phone: string;
+    primary_group: {
+      id: number;
+      name: string;
+      order: number;
+    };
+    primary_group_order: number;
+    special_group: {
+      id: number;
+      name: string;
+      order: number;
+    };
+    special_group_order: number;
+    today_status: string | null;
+    is_active: boolean;
+  }>;
+  parts: Array<{
+    id: string;
+    part_number: number;
+    name: string;
+    start_time: string;
+    end_time: string;
+    is_active: boolean;
+    slots: Array<{
+      id: string;
+      start_time: string;
+      field_number: number;
+      status: string;
+      slot_type: string;
+      is_locked: boolean;
+      caddie: {
+        id: string;
+        name: string;
+        primary_group: {
+          id: number;
+          name: string;
+          order: number;
+        };
+        special_group: {
+          id: number;
+          name: string;
+          order: number;
+        } | null;
+      } | null;
+      special_group: string | null;
+      assigned_by: string | null;
+      assigned_at: string | null;
+    }>;
+  }>;
+  filter_metadata?: FilterMetadata;
+}
+
+export interface DailyScheduleDetailResponse {
+  success: boolean;
+  message: string;
+  data: DailyScheduleDetailData;
+}
+
+// 필터 메타데이터 타입
+export interface FilterMetadata {
+  status_options: Array<{
+    id: string;
+    name: string;
+  }>;
+  primary_groups: Array<{
+    id: string;
+    name: string;
+    order: number;
+  }>;
+  special_groups: Array<{
+    id: string;
+    name: string;
+    order: number;
+  }>;
+}
+
 // 근무표 상세 타입
 export interface WorkSchedule {
   id: string;
@@ -34,6 +135,7 @@ export interface WorkSchedule {
   createdByName: string;
   partsCount: number;
   parts: WorkPart[];
+  filter_metadata?: FilterMetadata;
   createdAt: string;
   updatedAt: string;
 }
@@ -111,7 +213,10 @@ export interface CaddieCardProps {
   onDragEnd?: (e: React.DragEvent) => void;
   isDragging?: boolean;
   isSelected?: boolean;
-  onClick?: (caddie: CaddieData) => void;
+  onClick?: (() => void) | ((caddie: CaddieData) => void);
+  onStatusToggle?: () => void; // 상태 변경 핸들러
+  onCaddieRemove?: () => void; // 캐디 제거 핸들러
+  onDoubleClick?: () => void; // 더블클릭 시 캐디 제거 핸들러
   draggable?: boolean;
 }
 
@@ -148,6 +253,13 @@ export interface PersonnelFilter {
   badge: string;
 }
 
+// 필터 옵션 타입
+export interface FilterOptions {
+  status: Array<{ id: string; name: string }>;
+  groups: Array<{ id: string; name: string; order: number }>;
+  badges: Array<{ id: string; name: string; order: number }>;
+}
+
 // ================================
 // 라운딩 설정 타입
 // ================================
@@ -171,4 +283,87 @@ export interface RoundingSettings {
 export interface WorkDetailPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ date?: string }>;
+}
+
+// ================================
+// 상태 관리 타입
+// ================================
+
+// 근무 상세 페이지 상태 타입
+export interface WorkDetailState {
+  scheduleData: {
+    date: string;
+    golfCourseId: string;
+    schedules: Array<{
+      id: string;
+      golfCourse: string;
+      golfCourseName: string;
+      scheduleType: string;
+      date: string;
+      totalStaff: number;
+      availableStaff: number;
+      status: string;
+      createdBy: string;
+      createdByName: string;
+      partsCount: number;
+      timeInterval: number;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+    scheduleParts: Array<{
+      scheduleId: string;
+      partNumber: number;
+      startTime: string;
+      endTime: string;
+    }>;
+  } | null;
+  detailData: {
+    fields: Array<{
+      id: string;
+      name: string;
+      order: number;
+      is_active: boolean;
+    }>;
+    golf_course: {
+      id: string;
+      name: string;
+    };
+    caddies: CaddieData[];
+    parts: Array<{
+      id: string;
+      part_number: number;
+      name: string;
+      start_time: string;
+      end_time: string;
+      is_active: boolean;
+      slots: Array<{
+        id: string;
+        start_time: string;
+        field_number: number;
+        status: string;
+        slot_type: string;
+        is_locked: boolean;
+        caddie: {
+          id: string;
+          name: string;
+          primary_group: {
+            id: number;
+            name: string;
+            order: number;
+          };
+          special_group: {
+            id: number;
+            name: string;
+            order: number;
+          } | null;
+        } | null;
+        special_group: string | null;
+        assigned_by: string | null;
+        assigned_at: string | null;
+      }>;
+    }>;
+    filter_metadata?: FilterMetadata;
+  } | null;
+  isLoading: boolean;
+  error: string | null;
 }

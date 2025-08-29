@@ -18,7 +18,7 @@ export interface UseWorksDataReturn {
   isLoading: boolean;
   error: string | null;
   handlePageChange: (page: number) => void;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<unknown>;
 }
 
 const useWorksData = (): UseWorksDataReturn => {
@@ -34,7 +34,7 @@ const useWorksData = (): UseWorksDataReturn => {
     ...QUERY_CONFIG.REALTIME_OPTIONS,
   });
 
-  // 기존 인터페이스 호환성을 위한 setWorksList 함수 (사용되지 않지만 유지)
+  // 기존 인터페이스 호환성을 위한 setWorksList 함수
   const setWorksList = () => {
     console.warn(
       "setWorksList는 React Query 버전에서는 사용되지 않습니다. refetch를 사용하세요."
@@ -74,5 +74,4 @@ const useWorksData = (): UseWorksDataReturn => {
     refetch,
   };
 };
-
-export default useWorksData;
+export { useWorksData };

@@ -17,6 +17,8 @@ interface BaseScheduleProps<T> {
   // 추가 액션 버튼들
   onRoundingSettingsClick?: () => void;
   onFillClick?: () => void;
+  onBulkAvailableClick?: () => void; // 모두 배치 불가로 변경
+  onBulkReservedClick?: () => void; // 모두 배치 가능으로 변경
 
   // 드래그 앤 드롭 관련
   draggedItem?: T | null;
@@ -72,6 +74,8 @@ export default function BaseSchedule<T>({
   ], // 기본값으로 3개 부 제공
   onRoundingSettingsClick,
   onFillClick,
+  onBulkAvailableClick,
+  onBulkReservedClick,
   draggedItem,
   onDragStart: _onDragStart,
   onDragEnd: _onDragEnd,
@@ -173,6 +177,24 @@ export default function BaseSchedule<T>({
                   className="border-blue-400 text-blue-600 hover:bg-blue-50"
                 >
                   채우기
+                </Button>
+              )}
+              {onBulkReservedClick && (
+                <Button
+                  variant="outline"
+                  onClick={onBulkReservedClick}
+                  className="border-green-400 text-green-600 hover:bg-green-50"
+                >
+                  모두 배치 가능
+                </Button>
+              )}
+              {onBulkAvailableClick && (
+                <Button
+                  variant="outline"
+                  onClick={onBulkAvailableClick}
+                  className="border-red-400 text-red-600 hover:bg-red-50"
+                >
+                  모두 배치 불가
                 </Button>
               )}
               <Button

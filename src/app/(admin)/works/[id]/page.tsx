@@ -1,25 +1,19 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { use, useCallback, useEffect, useState } from "react";
-import { fetchWorkScheduleByDate } from "@/modules/work/api";
+import { use, useEffect } from "react";
 import { useDateNavigation } from "@/modules/work/hooks/use-date-navigation";
 import { usePersonnelFilter } from "@/modules/work/hooks/use-personnel-filter";
 import { useResetModal } from "@/modules/work/hooks/use-reset-modal";
-import {
-  CaddieData,
-  TimeSlots,
-  WorkDetailPageProps,
-} from "@/modules/work/types";
-import {
-  FIELDS,
-  generateTimeSlots,
-  PERSONNEL_STATS,
-} from "@/modules/work/constants/work-detail";
+import { useWorkDetail } from "@/modules/work/hooks/use-work-detail";
+import { useAutoAssign } from "@/modules/work/hooks/use-auto-assign";
+import { useDragAndDrop } from "@/modules/work/hooks/use-drag-and-drop";
+import { WorkDetailPageProps } from "@/modules/work/types";
 import DateNavigation from "@/modules/work/components/date-navigation";
 import WorkSchedule from "@/modules/work/components/work-schedule";
 import PersonnelStatus from "@/modules/work/components/personnel-status";
 import ConfirmationModal from "@/shared/components/ui/confirmation-modal";
+import { generateTimeSlots } from "@/modules/work/constants/work-detail";
 
 export default function WorkDetailPage({
   params,
@@ -28,74 +22,37 @@ export default function WorkDetailPage({
   const { id: golfCourseId } = use(params);
   const { date } = use(searchParams);
 
-  // 드래그 상태 관리
-  const [draggedCaddie, setDraggedCaddie] = useState<CaddieData | null>(null);
-
   // 커스텀 훅들 사용
   const { currentDate, handleDateChange } = useDateNavigation(
     golfCourseId,
     date
   );
-  const { filters, filteredCaddies, updateFilter } = usePersonnelFilter();
   const { isResetModalOpen, openResetModal, closeResetModal, handleReset } =
     useResetModal();
 
-  // 골프장 정보 (임시로 하드코딩, 실제로는 API에서 가져와야 함)
-  const work = {
-    id: golfCourseId,
-    golfCourse: "골든베이 골프장",
-    golfCourseId: golfCourseId,
-  };
-  const isLoading = false;
-  const error = null;
+  // 근무 상세 데이터 관리
+  const {
+    scheduleData,
+    detailData,
+    isLoading,
+    error,
+    fields,
+    timeSlots,
+    personnelStats,
+    sourceCaddies,
+    fetchScheduleData,
+    refreshData,
+  } = useWorkDetail(golfCourseId, currentDate);
 
-  // 근무표 데이터 상태
-  const [scheduleData, setScheduleData] = useState<{
-    date: string;
-    golfCourseId: string;
-    schedules: Array<{
-      id: string;
-      golfCourse: string;
-      golfCourseName: string;
-      scheduleType: string;
-      date: string;
-      totalStaff: number;
-      availableStaff: number;
-      status: string;
-      createdBy: string;
-      createdByName: string;
-      partsCount: number;
-      timeInterval: number;
-      createdAt: string;
-      updatedAt: string;
-    }>;
-    scheduleParts: Array<{
-      scheduleId: string;
-      partNumber: number;
-      startTime: string;
-      endTime: string;
-    }>;
-  } | null>(null);
-  const [, setIsScheduleLoading] = useState(false);
-  const [, setScheduleError] = useState<string | null>(null);
+  // 자동 배정 관리
+  const { handleFill } = useAutoAssign(refreshData);
 
-  // 근무표 데이터 조회
-  const fetchScheduleData = useCallback(async () => {
-    try {
-      setIsScheduleLoading(true);
-      setScheduleError(null);
-      const data = await fetchWorkScheduleByDate(
-        currentDate.toISOString().split("T")[0],
-        golfCourseId
-      );
-      setScheduleData(data);
-    } catch (error) {
-      console.error("근무표 조회 실패:", error);
-      setScheduleError("근무표 조회에 실패했습니다.");
-    } finally {
-      setIsScheduleLoading(false);
-    }
-  }, [currentDate, golfCourseId]);
+  // 드래그 앤 드롭 관리
+  const { draggedCaddie, handleDragStart, handleDragEnd } = useDragAndDrop();
+
+  // 인원 필터 관리
+  const { filters, filterOptions, filteredCaddies, updateFilter } =
+    usePersonnelFilter(detailData?.filter_metadata, sourceCaddies);
 
   // 날짜 변경 시 근무표 데이터 조회
   useEffect(() => {
@@ -129,54 +86,36 @@ export default function WorkDetailPage({
     );
   }
 
-  // 존재하지 않는 근무 정보인 경우
-  if (!work) {
+  // 골프장 정보가 없는 경우
+  if (!golfCourseId) {
     notFound();
   }
 
   // 시간 슬롯 생성 (API 데이터 기반 또는 기본값)
-  const timeSlots = scheduleData?.scheduleParts.length
-    ? (() => {
-        const result: TimeSlots = { part1: [], part2: [], part3: [] };
-        scheduleData.scheduleParts.forEach((part) => {
-          const partKey = `part${part.partNumber}` as keyof TimeSlots;
-          const slots: string[] = [];
-          const currentTime = new Date(`2000-01-01T${part.startTime}`);
-          const endTime = new Date(`2000-01-01T${part.endTime}`);
-          const tempTime = new Date(currentTime);
+  const displayTimeSlots = timeSlots || generateTimeSlots();
 
-          while (tempTime < endTime) {
-            slots.push(tempTime.toTimeString().slice(0, 5));
-            tempTime.setMinutes(
-              tempTime.getMinutes() +
-                (scheduleData.schedules[0]?.timeInterval || 10)
-            );
-          }
-          result[partKey] = slots;
-        });
-        return result;
-      })()
-    : generateTimeSlots();
+  // 자동 배정 핸들러
+  const handleAutoAssign = async () => {
+    if (!scheduleData?.schedules[0]?.id) {
+      alert("스케줄 정보를 찾을 수 없습니다.");
+      return;
+    }
 
-  // 공통 드래그 이벤트 핸들러
-  const handleDragStart = (caddie: CaddieData) => {
-    setDraggedCaddie(caddie);
-  };
+    const formattedDate = currentDate.toISOString().split("T")[0];
+    const success = await handleFill(golfCourseId, formattedDate);
 
-  const handleDragEnd = () => {
-    setDraggedCaddie(null);
-  };
-
-  // 채우기 핸들러
-  const handleFill = () => {
-    // TODO: 자동 채우기 로직 구현
+    if (!success) {
+      alert("자동 배정에 실패했습니다.");
+    }
   };
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
       {/* 최상단 헤더 */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-black">제이캐디아카데미</h1>
+        <h1 className="text-2xl font-bold text-black">
+          {detailData?.golf_course?.name || "골프장"}
+        </h1>
       </div>
 
       {/* 날짜 네비게이션 및 검색 섹션 */}
@@ -206,27 +145,27 @@ export default function WorkDetailPage({
       <div className="flex gap-8">
         {/* 왼쪽: 라운딩 관리 */}
         <WorkSchedule
-          fields={FIELDS}
-          timeSlots={timeSlots}
-          personnelStats={
-            scheduleData?.schedules[0]
-              ? {
-                  total: scheduleData.schedules[0].totalStaff,
-                  available: scheduleData.schedules[0].availableStaff,
-                }
-              : PERSONNEL_STATS
-          }
+          fields={fields}
+          timeSlots={displayTimeSlots}
+          personnelStats={personnelStats}
           draggedCaddie={draggedCaddie}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          onFillClick={handleFill}
+          onFillClick={handleAutoAssign}
           onResetClick={openResetModal}
+          scheduleId={scheduleData?.schedules[0]?.id}
+          onScheduleUpdate={refreshData}
+          availableCaddies={filteredCaddies}
+          golfCourseId={golfCourseId}
+          date={currentDate.toISOString().split("T")[0]}
+          scheduleParts={detailData?.parts || []}
         />
 
         {/* 오른쪽: 인력 현황 사이드바 */}
         <PersonnelStatus
           filters={filters}
           filteredCaddies={filteredCaddies}
+          filterOptions={filterOptions}
           onFilterUpdate={updateFilter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}

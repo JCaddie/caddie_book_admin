@@ -7,11 +7,13 @@ export const AUTH_CONSTANTS = {
     EXPIRES_DAYS: 7, // 7일
     HEADER_NAME: "Authorization",
     PREFIX: "Bearer ",
+    REFRESH_THRESHOLD: 5 * 60 * 1000, // 5분 전에 갱신 시도
   },
 
   // 쿠키 설정
   COOKIES: {
     AUTH_TOKEN: "caddie_auth_token",
+    REFRESH_TOKEN: "caddie_refresh_token",
     USER_DATA: "caddie_user_data",
     REMEMBER_ME: "caddie_remember_me",
   },
@@ -41,6 +43,11 @@ export const AUTH_CONSTANTS = {
 
     // 로그인 필요한 라우트 (모든 권한)
     AUTH_REQUIRED: ["/dashboard", "/caddies", "/fields", "/works", "/users"],
+  },
+
+  // API 엔드포인트
+  API_ENDPOINTS: {
+    REFRESH_TOKEN: "/api/v1/users/auth/token/refresh/",
   },
 } as const;
 
