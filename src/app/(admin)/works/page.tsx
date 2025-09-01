@@ -146,7 +146,7 @@ const WorksPage: React.FC = () => {
       setIsCreating(true);
 
       // 근무표 생성 API 호출
-      const result = await createWorkSchedule(
+      await createWorkSchedule(
         selectedGolfCourseId,
         date,
         settings.timeUnit,
@@ -212,7 +212,7 @@ const WorksPage: React.FC = () => {
             <p>데이터 로딩에 실패했습니다.</p>
             <p className="text-sm mt-2">{error}</p>
             <button
-              onClick={refetch}
+              onClick={() => refetch()}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               다시 시도

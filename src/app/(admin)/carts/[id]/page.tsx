@@ -5,8 +5,8 @@ import { AdminPageHeader } from "@/shared/components/layout";
 import { DataTable, Pagination } from "@/shared/components/ui";
 import { useCartDetail, useCartEdit } from "@/modules/cart/hooks";
 import {
-  cartHistoryColumns,
   EditableCartField,
+  useCartHistoryColumns,
 } from "@/modules/cart/components";
 
 interface CartDetailPageProps {
@@ -69,7 +69,7 @@ const CartDetailPage: React.FC<CartDetailPageProps> = ({ params }) => {
 
   // 테이블 컬럼 생성
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const historyColumns = cartHistoryColumns() as any;
+  const historyColumns = useCartHistoryColumns() as any;
 
   // 로딩 상태
   if (isLoading) {

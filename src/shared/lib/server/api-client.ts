@@ -91,7 +91,7 @@ class ServerApiClient {
    */
   async post<T>(
     endpoint: string,
-    data: any,
+    data: Record<string, unknown>,
     options?: { skipAuth?: boolean }
   ): Promise<T> {
     const url = endpoint.startsWith("http")

@@ -15,13 +15,12 @@ import { generateTimeSlots } from "@/modules/work/constants/work-detail";
 
 interface WorkDetailClientProps {
   golfCourseId: string;
-  initialData: any; // 실제 타입으로 교체 필요
+  initialData: unknown; // 실제 타입으로 교체 필요
   initialDate?: string;
 }
 
 export function WorkDetailClient({
   golfCourseId,
-  initialData,
   initialDate,
 }: WorkDetailClientProps) {
   // 커스텀 훅들 사용

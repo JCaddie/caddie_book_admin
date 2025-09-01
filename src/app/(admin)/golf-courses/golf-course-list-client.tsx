@@ -17,9 +17,8 @@ import { GOLF_COURSE_TABLE_COLUMNS } from "@/shared/constants/golf-course";
 import { bulkDeleteGolfCourses } from "@/modules/golf-course/api/golf-course-api";
 import { useConstantValue, usePermissionError } from "@/shared/hooks";
 import Pagination from "@/shared/components/ui/pagination";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type {
-  GolfCourseFilters,
   GolfCourseListData,
   GolfCourseListResponse,
 } from "@/modules/golf-course/types/golf-course";
@@ -78,8 +77,6 @@ export function GolfCourseListClient({
 
   // URL 검색 파라미터 처리
   const router = useRouter();
-  const currentPage = Number(searchParams.page || 1);
-  const searchTerm = searchParams.search || "";
 
   // 드롭다운 value는 URL에서 읽음
   const contractValue = searchParams.contract || "";
