@@ -27,6 +27,9 @@ export function useTableSelection<T extends Record<string, unknown>>({
 
   // 빈 행이 아닌 실제 데이터만 필터링
   const realData = useMemo(() => {
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
     return data.filter((record) => !isEmptyRow(record));
   }, [data]);
 

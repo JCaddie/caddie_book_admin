@@ -9,9 +9,9 @@ export interface ApiStatusChoice {
   label: string;
 }
 
-// API 배터리 레벨 선택지 타입
+// API 배터리 레벨 선택지 타입 (0-5 단계)
 export interface ApiBatteryLevelChoice {
-  value: number;
+  value: number; // 0, 1, 2, 3, 4, 5
   label: string;
 }
 
@@ -40,7 +40,7 @@ export interface ApiCartData {
   name: string;
   status: ApiCartStatus;
   status_display: string;
-  battery_level: number; // 0, 20, 40, 60, 80, 100
+  battery_level: number; // 0, 1, 2, 3, 4, 5 (단계별)
   battery_status: string;
   golf_course: ApiGolfCourse;
   current_caddie: ApiCurrentCaddie | null;
