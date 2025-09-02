@@ -1,4 +1,4 @@
-export function GolfCourseListSkeleton() {
+export default function GolfCourseListSkeleton() {
   return (
     <div className="space-y-6">
       {/* 제목 스켈레톤 */}

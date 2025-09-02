@@ -35,7 +35,7 @@ interface GolfCourseListClientProps {
   };
 }
 
-export function GolfCourseListClient({
+export default function GolfCourseListClient({
   initialData,
   initialConstants,
   searchParams,

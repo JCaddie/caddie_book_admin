@@ -13,14 +13,25 @@ export const useQueryError = (error: unknown, fallbackMessage?: string) => {
 
     // Error 객체인 경우
     if (error instanceof Error) {
-      // 특정 에러 타입에 따른 메시지 매핑
+      // 401 인증 실패 에러 처리
+      if (
+        error.message.includes("401") ||
+        error.message.includes("인증 실패") ||
+        error.message.includes("토큰이 만료")
+      ) {
+        return "인증이 만료되었습니다. 다시 로그인해주세요.";
+      }
+
+      // 403 권한 부족 에러 처리
       if (
         error.message.includes("403") ||
-        error.message.includes("Forbidden")
+        error.message.includes("Forbidden") ||
+        error.message.includes("권한")
       ) {
         return QUERY_ERROR_MESSAGES.PERMISSION_ERROR;
       }
 
+      // 네트워크 에러 처리
       if (
         error.message.includes("Network") ||
         error.message.includes("fetch")
@@ -34,6 +45,10 @@ export const useQueryError = (error: unknown, fallbackMessage?: string) => {
     // HTTP 상태 코드 기반 에러 처리
     if (typeof error === "object" && error !== null) {
       const err = error as any;
+
+      if (err.status === 401) {
+        return "인증이 만료되었습니다. 다시 로그인해주세요.";
+      }
 
       if (err.status === 403) {
         return QUERY_ERROR_MESSAGES.PERMISSION_ERROR;

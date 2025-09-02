@@ -1,6 +1,9 @@
 import { serverApiClient } from "@/shared/lib/server/api-client";
 import { buildUrl, GOLF_COURSE_ENDPOINTS } from "./endpoints";
-import type { GolfCourseListResponse } from "../types/golf-course";
+import type {
+  GolfCourseListResponse,
+  GolfCourseDetailResponse,
+} from "../types/api";
 
 interface GetGolfCourseListParams {
   page: number;
@@ -48,10 +51,12 @@ export async function getGolfCourseList(
 /**
  * 서버에서 골프장 상세 정보를 가져오는 함수
  */
-export async function getGolfCourseDetail(id: string) {
+export async function getGolfCourseDetail(
+  id: string
+): Promise<GolfCourseDetailResponse | null> {
   try {
     const url = GOLF_COURSE_ENDPOINTS.DETAIL(id);
-    const response = await serverApiClient.get(url);
+    const response = await serverApiClient.get<GolfCourseDetailResponse>(url);
     return response;
   } catch (error) {
     console.error("골프장 상세 조회 실패:", error);
