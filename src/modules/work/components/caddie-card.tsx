@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { MoreVertical, Settings, UserMinus } from "lucide-react";
+import { MoreVertical, Settings, Shield, UserMinus } from "lucide-react";
 import { CaddieCardProps, CaddieData } from "../types";
 import {
   getCaddieCardStyle,
@@ -19,6 +19,7 @@ export default function CaddieCard({
   onClick,
   onStatusToggle,
   onCaddieRemove,
+  onSpareToggle,
   onDoubleClick,
 }: CaddieCardProps) {
   const [showMenu, setShowMenu] = useState(false);
@@ -69,7 +70,7 @@ export default function CaddieCard({
 
   if (!caddie) return null;
 
-  const cardStyle = getCaddieCardStyle(caddie.status);
+  const cardStyle = getCaddieCardStyle(caddie);
   const specialBadgeStyle = getSpecialBadgeStyle(caddie.specialBadge);
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -125,12 +126,19 @@ export default function CaddieCard({
         )}
 
         {/* 상태 구분선 및 배지 */}
-        {(caddie.status === "휴무" || caddie.specialBadge) && (
+        {(caddie.status === "휴무" ||
+          caddie.specialBadge ||
+          caddie.isSpare) && (
           <>
             <div className="w-0.5 h-4 bg-[#E3E3E3] flex-shrink-0"></div>
             {caddie.status === "휴무" && (
               <div className="w-10 h-5 bg-[#FFF5E6] text-[#FEB912] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
                 휴무
+              </div>
+            )}
+            {caddie.isSpare && (
+              <div className="w-10 h-5 bg-[#E8F5E8] text-[#22C55E] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
+                스페어
               </div>
             )}
             {specialBadgeStyle && (
@@ -183,6 +191,23 @@ export default function CaddieCard({
               ) : (
                 <div className="px-3 py-2 text-sm text-gray-400">
                   상태 변경 불가
+                </div>
+              )}
+              {onSpareToggle ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSpareToggle();
+                    setShowMenu(false);
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  {caddie?.isSpare ? "스페어 해제" : "스페어 설정"}
+                </button>
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-400">
+                  스페어 설정 불가
                 </div>
               )}
               {onCaddieRemove ? (

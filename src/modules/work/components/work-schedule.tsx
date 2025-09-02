@@ -11,6 +11,7 @@ import {
   removeCaddieFromSlot,
   removeSlotAssignment,
   toggleSlotStatus,
+  toggleSpareStatus,
 } from "../api/work-api";
 
 interface CaddiePosition {
@@ -50,6 +51,7 @@ interface WorkScheduleProps {
       status: string;
       slot_type: string;
       is_locked: boolean;
+      is_spare: boolean;
       caddie: {
         id: string;
         name: string;
@@ -166,6 +168,7 @@ export default function WorkSchedule({
               group: slot.caddie.primary_group?.id ?? 0,
               badge: slot.caddie.special_group?.name || "",
               status: slot.status || "근무",
+              isSpare: slot.is_spare || false,
               originalId: slot.caddie.id,
               order: slot.caddie.primary_group?.order ?? 0,
               groupName: slot.caddie.primary_group?.name,
@@ -560,6 +563,34 @@ export default function WorkSchedule({
     }
   };
 
+  // 특정 슬롯의 스페어 상태 토글 핸들러
+  const handleSlotSpareToggle = async (
+    fieldIndex: number,
+    timeIndex: number,
+    part: number
+  ) => {
+    try {
+      const slotKey = `${fieldIndex}_${timeIndex}_${part}`;
+      const slotId = slotIdMap.get(slotKey);
+
+      if (!slotId) {
+        console.warn("슬롯 ID를 찾을 수 없습니다:", slotKey);
+        alert("슬롯을 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        return;
+      }
+
+      await toggleSpareStatus(slotId);
+
+      // 스케줄 업데이트 콜백 호출하여 최신 데이터 다시 불러오기
+      if (onScheduleUpdate) {
+        onScheduleUpdate();
+      }
+    } catch (error) {
+      console.error("스페어 상태 변경 실패:", error);
+      alert("스페어 상태 변경에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
   // 특정 슬롯에서 캐디 제거 핸들러 (중복 호출 방지)
   const handleSlotCaddieRemove = async (
     fieldIndex: number,
@@ -617,8 +648,6 @@ export default function WorkSchedule({
     const targetTime = partTimes?.[timeIndex];
     const currentPart = scheduleParts.find((p) => p.part_number === part);
 
-
-
     const slot = currentPart?.slots.find(
       (s) =>
         s.field_number === fieldIndex + 1 &&
@@ -661,6 +690,9 @@ export default function WorkSchedule({
           onStatusToggle={() =>
             handleSlotStatusToggle(fieldIndex, timeIndex, part)
           }
+          onSpareToggle={() =>
+            handleSlotSpareToggle(fieldIndex, timeIndex, part)
+          }
           onCaddieRemove={() =>
             handleSlotCaddieRemove(fieldIndex, timeIndex, part)
           }
@@ -683,6 +715,9 @@ export default function WorkSchedule({
           isDragging={draggedCaddie?.id === localCaddie.id}
           onStatusToggle={() =>
             handleSlotStatusToggle(fieldIndex, timeIndex, part)
+          }
+          onSpareToggle={() =>
+            handleSlotSpareToggle(fieldIndex, timeIndex, part)
           }
           onCaddieRemove={() =>
             handleSlotCaddieRemove(fieldIndex, timeIndex, part)

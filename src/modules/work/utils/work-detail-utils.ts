@@ -109,8 +109,14 @@ export const getSpecialBadgeStyle = (specialBadge?: string) => {
 };
 
 // 캐디 카드 스타일 가져오기
-export const getCaddieCardStyle = (status: string): string => {
-  switch (status) {
+export const getCaddieCardStyle = (caddie: CaddieData): string => {
+  // 스페어 상태일 때 우선 적용
+  if (caddie.isSpare) {
+    return "shadow-[0_0_4px_2px_rgba(34,197,94,0.35)] border-[#22C55E]";
+  }
+
+  // 일반 상태별 스타일
+  switch (caddie.status) {
     case "휴무":
       return "shadow-[0_0_4px_2px_rgba(255,0,0,0.25)]";
     case "배치완료":

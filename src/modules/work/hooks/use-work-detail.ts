@@ -97,6 +97,7 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
                   group: slot.caddie.primary_group?.id ?? 0,
                   badge: slot.caddie.special_group?.name || "",
                   status: slot.status || "근무",
+                  isSpare: slot.is_spare || false,
                   originalId: slot.caddie.id,
                   order: slot.caddie.primary_group?.order ?? 0,
                   groupName: slot.caddie.primary_group?.name,

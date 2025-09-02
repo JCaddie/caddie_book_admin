@@ -915,6 +915,27 @@ export const removeCaddieFromSlot = async (slotId: string): Promise<void> => {
   }
 };
 
+/**
+ * 워크 슬롯 스페어 상태 토글 API
+ */
+export const toggleSpareStatus = async (slotId: string): Promise<void> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+    }>("/api/v1/work/slots/toggle_spare_status/", {
+      slot_id: slotId,
+    });
+
+    if (!response.success) {
+      throw new Error(response.message || "스페어 상태 변경 실패");
+    }
+  } catch (error) {
+    console.error("스페어 상태 토글 실패:", error);
+    throw error;
+  }
+};
+
 // ================================
 // 근무 스케줄 목록 관련 API
 // ================================
