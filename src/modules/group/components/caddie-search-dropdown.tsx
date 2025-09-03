@@ -112,7 +112,7 @@ export const CaddieSearchDropdown: React.FC<CaddieSearchDropdownProps> = ({
             placeholder="캐디 이름으로 검색..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 text-sm border-none outline-none placeholder-gray-400"
+            className="flex-1 text-sm text-gray-900 border-none outline-none placeholder-gray-400"
           />
           {searchTerm && (
             <button
