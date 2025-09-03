@@ -48,6 +48,13 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
               : "hover:bg-gray-50"
           }
         `}
+        onClick={(e) => {
+          if (hasSubItems) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleToggleExpand();
+          }
+        }}
       >
         {/* 아이콘 */}
         <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
@@ -57,15 +64,13 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
         {/* 메뉴 링크 또는 텍스트 */}
         {hasSubItems ? (
           <div className="flex-1 flex items-center justify-between">
-            <Link
-              href={item.href}
-              className="flex-1"
-              onClick={() => {
-                // 메인 메뉴 클릭 시 서브메뉴도 확장
-                if (!isExpanded) {
-                  handleToggleExpand();
-                }
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleToggleExpand();
               }}
+              className="flex-1 text-left"
             >
               <span
                 className={`
@@ -75,7 +80,7 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
               >
                 {item.label}
               </span>
-            </Link>
+            </button>
             <button
               onClick={(e) => {
                 e.preventDefault();
