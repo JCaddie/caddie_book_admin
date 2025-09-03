@@ -401,6 +401,38 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     }
   };
 
+  // 캐디를 그룹에 추가하는 핸들러
+  const handleAddCaddieToGroup = async (groupId: string, caddieId: string) => {
+    try {
+      console.log("캐디 그룹 추가 요청:", { groupId, caddieId });
+
+      // 현재 그룹의 멤버 수를 기반으로 order 계산 (마지막 위치에 추가)
+      const currentGroups =
+        selectedGroupType === "SPECIAL"
+          ? assignmentData?.data?.special_groups || []
+          : assignmentData?.data?.primary_groups || [];
+
+      const targetGroup = currentGroups.find(
+        (g) => g.id.toString() === groupId
+      );
+      const newOrder = (targetGroup?.member_count || 0) + 1;
+
+      await addGroupMember(groupId, {
+        user_id: caddieId,
+        order: newOrder,
+        membership_type: selectedGroupType,
+      });
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("캐디 그룹 추가 실패:", error);
+      alert("캐디 추가에 실패했습니다.");
+      throw error; // 에러를 다시 throw하여 UI에서 처리할 수 있도록 함
+    }
+  };
+
   // 로딩 상태
   if (authLoading || loading) {
     return (
@@ -499,6 +531,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             transformGroupToGroupSection={transformGroupToGroupSection}
             onEditGroup={handleEditGroup}
             onDeleteGroup={handleDeleteGroup}
+            unassignedCaddies={assignmentData?.data?.ungrouped_caddies || []}
+            onAddCaddieToGroup={handleAddCaddieToGroup}
           />
         </div>
 
