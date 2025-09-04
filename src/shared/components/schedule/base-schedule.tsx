@@ -4,6 +4,7 @@ import React from "react";
 import { RotateCcw } from "lucide-react";
 import { Field, PersonnelStats, TimeSlots } from "@/modules/work/types";
 import { Button } from "@/shared/components/ui";
+import { isSparePart } from "@/modules/work/utils/time-slot-utils";
 
 interface BaseScheduleProps<T> {
   fields: Field[];
@@ -13,6 +14,32 @@ interface BaseScheduleProps<T> {
   hideHeader?: boolean;
   isFullWidth?: boolean;
   activeParts?: Array<{ part_number: number; name: string }>; // 실제 활성화된 부 정보
+  spareSlots?: Array<{
+    id: string;
+    start_time: string;
+    field_number: number;
+    status: string;
+    slot_type: string;
+    is_locked: boolean;
+    is_spare: boolean;
+    caddie: {
+      id: string;
+      name: string;
+      primary_group: {
+        id: number;
+        name: string;
+        order: number;
+      };
+      special_group: {
+        id: number;
+        name: string;
+        order: number;
+      } | null;
+    } | null;
+    special_group: string | null;
+    assigned_by: string | null;
+    assigned_at: string | null;
+  }>; // 스페어 부의 실제 슬롯 데이터
 
   // 추가 액션 버튼들
   onRoundingSettingsClick?: () => void;
@@ -72,6 +99,7 @@ export default function BaseSchedule<T>({
     { part_number: 2, name: "2부" },
     { part_number: 3, name: "3부" },
   ], // 기본값으로 3개 부 제공
+  spareSlots = [], // 스페어 부 슬롯 데이터
   onRoundingSettingsClick,
   onFillClick,
   onBulkAvailableClick,
@@ -242,8 +270,8 @@ export default function BaseSchedule<T>({
               const partTimes =
                 timeSlots[`part${partNumber}` as keyof TimeSlots] || [];
 
-              // 해당 부에 시간이 없으면 렌더링하지 않음
-              if (partTimes.length === 0) return null;
+              // 스페어 부인지 확인
+              const isSpare = isSparePart(part.name);
 
               return (
                 <React.Fragment key={`part-${partNumber}`}>
@@ -259,39 +287,86 @@ export default function BaseSchedule<T>({
                     </td>
                   </tr>
 
-                  {/* 부별 시간 슬롯 */}
-                  {partTimes.map((time, timeIndex) => (
-                    <tr
-                      key={`part${partNumber}-${timeIndex}`}
-                      className="hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4 text-sm font-medium text-black/80 bg-gray-50 sticky left-0 z-10">
-                        {time}
-                      </td>
-                      {fields.map((field, fieldIndex) => (
-                        <td
-                          key={field.id}
-                          className={getDefaultCellClassName(
-                            fieldIndex,
-                            timeIndex,
-                            partNumber
-                          )}
-                          onDragOver={(e) =>
-                            handleDragOver(e, fieldIndex, timeIndex, partNumber)
-                          }
-                          onDrop={(e) =>
-                            handleDrop(e, fieldIndex, timeIndex, partNumber)
-                          }
-                          onDoubleClick={() =>
-                            onRemove?.(fieldIndex, timeIndex, partNumber)
-                          }
-                          title="더블클릭하여 제거"
+                  {/* 스페어 부의 경우 실제 슬롯만 표시 */}
+                  {isSpare
+                    ? (() => {
+                        // 스페어 부는 하나의 행으로 모든 필드를 표시
+                        return (
+                          <tr key="spare-row" className="hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm font-medium text-black/80 bg-gray-50 sticky left-0 z-10">
+                              스페어
+                            </td>
+                            {fields.map((field, fieldIndex) => {
+                              // 해당 필드의 슬롯 찾기
+                              const fieldSlot = spareSlots.find(
+                                (slot) => slot.field_number === fieldIndex + 1
+                              );
+                              return (
+                                <td
+                                  key={field.id}
+                                  className={getDefaultCellClassName(
+                                    fieldIndex,
+                                    0, // 스페어는 시간 인덱스 0 사용
+                                    partNumber
+                                  )}
+                                  onDragOver={(e) =>
+                                    handleDragOver(e, fieldIndex, 0, partNumber)
+                                  }
+                                  onDrop={(e) =>
+                                    handleDrop(e, fieldIndex, 0, partNumber)
+                                  }
+                                  onDoubleClick={() =>
+                                    onRemove?.(fieldIndex, 0, partNumber)
+                                  }
+                                  title="더블클릭하여 제거"
+                                >
+                                  {fieldSlot
+                                    ? renderCell(fieldIndex, 0, partNumber)
+                                    : null}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })()
+                    : /* 일반 부의 경우 시간대별로 분할하여 표시 */
+                      partTimes.map((time, timeIndex) => (
+                        <tr
+                          key={`part${partNumber}-${timeIndex}`}
+                          className="hover:bg-gray-50"
                         >
-                          {renderCell(fieldIndex, timeIndex, partNumber)}
-                        </td>
+                          <td className="py-3 px-4 text-sm font-medium text-black/80 bg-gray-50 sticky left-0 z-10">
+                            {time}
+                          </td>
+                          {fields.map((field, fieldIndex) => (
+                            <td
+                              key={field.id}
+                              className={getDefaultCellClassName(
+                                fieldIndex,
+                                timeIndex,
+                                partNumber
+                              )}
+                              onDragOver={(e) =>
+                                handleDragOver(
+                                  e,
+                                  fieldIndex,
+                                  timeIndex,
+                                  partNumber
+                                )
+                              }
+                              onDrop={(e) =>
+                                handleDrop(e, fieldIndex, timeIndex, partNumber)
+                              }
+                              onDoubleClick={() =>
+                                onRemove?.(fieldIndex, timeIndex, partNumber)
+                              }
+                              title="더블클릭하여 제거"
+                            >
+                              {renderCell(fieldIndex, timeIndex, partNumber)}
+                            </td>
+                          ))}
+                        </tr>
                       ))}
-                    </tr>
-                  ))}
                 </React.Fragment>
               );
             })}

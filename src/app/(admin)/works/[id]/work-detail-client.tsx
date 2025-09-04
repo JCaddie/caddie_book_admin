@@ -41,6 +41,7 @@ export function WorkDetailClient({
     timeSlots,
     personnelStats,
     sourceCaddies,
+    timeInterval,
     fetchScheduleData,
     refreshData,
   } = useWorkDetail(golfCourseId, currentDate);
@@ -151,6 +152,7 @@ export function WorkDetailClient({
           golfCourseId={golfCourseId}
           date={currentDate.toISOString().split("T")[0]}
           scheduleParts={detailData?.parts || []}
+          timeInterval={timeInterval}
         />
 
         {/* 오른쪽: 인력 현황 사이드바 */}

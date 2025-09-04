@@ -21,6 +21,7 @@ export default function CaddieCard({
   onCaddieRemove,
   onSpareToggle,
   onDoubleClick,
+  isSpare = false,
 }: CaddieCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -128,7 +129,8 @@ export default function CaddieCard({
         {/* 상태 구분선 및 배지 */}
         {(caddie.status === "휴무" ||
           caddie.specialBadge ||
-          caddie.isSpare) && (
+          caddie.isSpare ||
+          isSpare) && (
           <>
             <div className="w-0.5 h-4 bg-[#E3E3E3] flex-shrink-0"></div>
             {caddie.status === "휴무" && (
@@ -136,7 +138,7 @@ export default function CaddieCard({
                 휴무
               </div>
             )}
-            {caddie.isSpare && (
+            {(caddie.isSpare || isSpare) && (
               <div className="w-10 h-5 bg-[#E8F5E8] text-[#22C55E] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
                 스페어
               </div>
@@ -203,7 +205,7 @@ export default function CaddieCard({
                   className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                 >
                   <Shield className="w-4 h-4" />
-                  {caddie?.isSpare ? "스페어 해제" : "스페어 설정"}
+                  {caddie?.isSpare || isSpare ? "스페어 해제" : "스페어 설정"}
                 </button>
               ) : (
                 <div className="px-3 py-2 text-sm text-gray-400">

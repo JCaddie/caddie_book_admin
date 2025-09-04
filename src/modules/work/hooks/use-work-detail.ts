@@ -84,6 +84,7 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
       const detailData = {
         fields: data.fields,
         golf_course: data.golf_course,
+        time_interval: data.time_interval,
         parts: data.parts.map((part) => ({
           ...part,
           // 각 part의 slots에 변환된 캐디 데이터 추가
@@ -207,6 +208,7 @@ export const useWorkDetail = (golfCourseId: string, currentDate: Date) => {
     timeSlots: generateTimeSlots(),
     personnelStats: getPersonnelStats(),
     sourceCaddies: state.detailData?.caddies || [],
+    timeInterval: state.detailData?.time_interval,
 
     // 액션
     fetchScheduleData,

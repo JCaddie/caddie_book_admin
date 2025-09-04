@@ -13,6 +13,7 @@ import {
   toggleSlotStatus,
   toggleSpareStatus,
 } from "../api/work-api";
+import { generateTimeSlots, isSparePart } from "../utils/time-slot-utils";
 
 interface CaddiePosition {
   fieldIndex: number;
@@ -44,6 +45,7 @@ interface WorkScheduleProps {
     start_time: string;
     end_time: string;
     is_active: boolean;
+    spare_count: number;
     slots: Array<{
       id: string;
       start_time: string;
@@ -71,6 +73,7 @@ interface WorkScheduleProps {
       assigned_at: string | null;
     }>;
   }>;
+  timeInterval?: number; // 시간 간격 (분 단위) - API에서 받은 time_interval 값
 }
 
 export default function WorkSchedule({
@@ -91,6 +94,7 @@ export default function WorkSchedule({
   golfCourseId,
   date,
   scheduleParts = [],
+  timeInterval = 10, // 기본값 10분 (API에서 받은 값이 없을 때)
 }: WorkScheduleProps) {
   // 캐디 위치 상태 관리
   const [caddiePositions, setCaddiePositions] = useState<
@@ -118,6 +122,87 @@ export default function WorkSchedule({
   // 스케줄용 캐디 데이터 (API에서 전달되면 사용)
   const caddies = availableCaddies || [];
 
+  // 동적 시간 슬롯 생성 및 스페어 부 데이터 처리
+  const processedScheduleData = React.useMemo(() => {
+    console.log("WorkSchedule - timeInterval:", timeInterval);
+    console.log("WorkSchedule - scheduleParts:", scheduleParts);
+
+    if (!scheduleParts || scheduleParts.length === 0) {
+      return {
+        dynamicTimeSlots: timeSlots,
+        spareSlots: [],
+        activeParts: [],
+      };
+    }
+
+    const dynamicTimeSlots: TimeSlots = {
+      part1: [],
+      part2: [],
+      part3: [],
+    };
+
+    const activeParts: Array<{ part_number: number; name: string }> = [];
+    let spareSlots: Array<{
+      id: string;
+      start_time: string;
+      field_number: number;
+      status: string;
+      slot_type: string;
+      is_locked: boolean;
+      is_spare: boolean;
+      caddie: {
+        id: string;
+        name: string;
+        primary_group: {
+          id: number;
+          name: string;
+          order: number;
+        };
+        special_group: {
+          id: number;
+          name: string;
+          order: number;
+        } | null;
+      } | null;
+      special_group: string | null;
+      assigned_by: string | null;
+      assigned_at: string | null;
+    }> = [];
+
+    scheduleParts.forEach((part) => {
+      activeParts.push({
+        part_number: part.part_number,
+        name: part.name,
+      });
+
+      if (isSparePart(part.name)) {
+        // 스페어 부의 경우 실제 슬롯 데이터만 저장
+        spareSlots = part.slots;
+      } else {
+        // 일반 부의 경우 시간 슬롯 생성
+        const partKey = `part${part.part_number}` as keyof TimeSlots;
+        const generatedSlots = generateTimeSlots(
+          part.start_time,
+          part.end_time,
+          timeInterval // 실제 time_interval 사용
+        );
+        console.log(`Part ${part.part_number} (${part.name}):`, {
+          start_time: part.start_time,
+          end_time: part.end_time,
+          timeInterval,
+          generatedSlots,
+        });
+        dynamicTimeSlots[partKey] = generatedSlots;
+      }
+    });
+
+    return {
+      dynamicTimeSlots,
+      spareSlots,
+      activeParts,
+    };
+  }, [scheduleParts, timeSlots, timeInterval]);
+
   // API 데이터에서 기존 배치된 캐디를 초기화
   React.useEffect(() => {
     if (!scheduleParts || scheduleParts.length === 0) return;
@@ -127,9 +212,9 @@ export default function WorkSchedule({
     const newSlotMap = new Map<string, string>();
 
     const allPartTimes = [
-      timeSlots.part1 || [],
-      timeSlots.part2 || [],
-      timeSlots.part3 || [],
+      processedScheduleData.dynamicTimeSlots.part1 || [],
+      processedScheduleData.dynamicTimeSlots.part2 || [],
+      processedScheduleData.dynamicTimeSlots.part3 || [],
     ];
 
     scheduleParts.forEach((part) => {
@@ -137,12 +222,19 @@ export default function WorkSchedule({
       const partTimes = allPartTimes[partIdx] || [];
 
       part.slots.forEach((slot) => {
-        const hhmm = (slot.start_time || "").slice(0, 5);
-        const timeIndex = partTimes.findIndex((t) => t === hhmm);
-        if (timeIndex === -1) return;
-
         const fieldIndex = slot.field_number - 1;
         if (fieldIndex < 0) return;
+
+        let timeIndex: number;
+        if (isSparePart(part.name)) {
+          // 스페어 부의 경우 시간 인덱스 0 사용
+          timeIndex = 0;
+        } else {
+          // 일반 부의 경우 시간 매칭
+          const hhmm = (slot.start_time || "").slice(0, 5);
+          timeIndex = partTimes.findIndex((t) => t === hhmm);
+          if (timeIndex === -1) return;
+        }
 
         // 슬롯 ID 매핑 저장
         const slotKey = `${fieldIndex}_${timeIndex}_${part.part_number}`;
@@ -202,7 +294,7 @@ export default function WorkSchedule({
       mapsEqual(prev, newPositions) ? prev : newPositions
     );
     setSlotIdMap((prev) => (mapsEqual(prev, newSlotMap) ? prev : newSlotMap));
-  }, [scheduleParts, timeSlots]);
+  }, [scheduleParts, processedScheduleData]);
 
   // 특정 위치에 배정된 캐디 찾기
   const getCaddieAtPosition = (
@@ -641,18 +733,25 @@ export default function WorkSchedule({
     // API 데이터에서 해당 슬롯의 캐디 정보 확인
     const partTimes =
       part === 1
-        ? timeSlots.part1
+        ? processedScheduleData.dynamicTimeSlots.part1
         : part === 2
-        ? timeSlots.part2
-        : timeSlots.part3;
+        ? processedScheduleData.dynamicTimeSlots.part2
+        : processedScheduleData.dynamicTimeSlots.part3;
     const targetTime = partTimes?.[timeIndex];
     const currentPart = scheduleParts.find((p) => p.part_number === part);
 
-    const slot = currentPart?.slots.find(
-      (s) =>
-        s.field_number === fieldIndex + 1 &&
-        (s.start_time || "").slice(0, 5) === targetTime
-    );
+    let slot;
+    if (isSparePart(currentPart?.name || "")) {
+      // 스페어 부의 경우 필드 번호만으로 슬롯 찾기
+      slot = currentPart?.slots.find((s) => s.field_number === fieldIndex + 1);
+    } else {
+      // 일반 부의 경우 필드 번호와 시간으로 슬롯 찾기
+      slot = currentPart?.slots.find(
+        (s) =>
+          s.field_number === fieldIndex + 1 &&
+          (s.start_time || "").slice(0, 5) === targetTime
+      );
+    }
 
     // API 데이터에 캐디가 배정된 경우
     if (slot?.caddie) {
@@ -699,6 +798,7 @@ export default function WorkSchedule({
           onDoubleClick={() =>
             handleSlotCaddieRemove(fieldIndex, timeIndex, part)
           }
+          {...(slot.is_spare && { isSpare: slot.is_spare })}
         />
       );
     }
@@ -733,7 +833,10 @@ export default function WorkSchedule({
     let emptyText = "미배정";
 
     if (slot) {
-      if (slot.status === "available") {
+      // 스페어 슬롯인 경우
+      if (slot.is_spare) {
+        emptyText = "스페어";
+      } else if (slot.status === "available") {
         emptyText = "배치 불가";
       } else if (slot.status === "reserved") {
         emptyText = "배치 가능";
@@ -759,7 +862,7 @@ export default function WorkSchedule({
   return (
     <BaseSchedule<CaddieData>
       fields={fields}
-      timeSlots={timeSlots}
+      timeSlots={processedScheduleData.dynamicTimeSlots}
       personnelStats={personnelStats}
       onResetClick={
         golfCourseId && date
@@ -780,10 +883,8 @@ export default function WorkSchedule({
       draggedItem={draggedCaddie}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      activeParts={scheduleParts.map((p) => ({
-        part_number: p.part_number,
-        name: p.name,
-      }))}
+      activeParts={processedScheduleData.activeParts}
+      spareSlots={processedScheduleData.spareSlots}
     />
   );
 }

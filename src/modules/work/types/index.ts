@@ -220,6 +220,7 @@ export interface CaddieCardProps {
   onSpareToggle?: () => void; // 스페어 설정 핸들러
   onDoubleClick?: () => void; // 더블클릭 시 캐디 제거 핸들러
   draggable?: boolean;
+  isSpare?: boolean; // 슬롯의 스페어 상태
 }
 
 // 필드 타입
@@ -330,6 +331,7 @@ export interface WorkDetailState {
       id: string;
       name: string;
     };
+    time_interval: number;
     caddies: CaddieData[];
     parts: Array<{
       id: string;
@@ -338,6 +340,7 @@ export interface WorkDetailState {
       start_time: string;
       end_time: string;
       is_active: boolean;
+      spare_count: number;
       slots: Array<{
         id: string;
         start_time: string;
