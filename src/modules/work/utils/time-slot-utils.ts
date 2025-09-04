@@ -43,7 +43,7 @@ export function generateTimeSlots(
 
   for (
     let minutes = startMinutes;
-    minutes < endMinutes;
+    minutes <= endMinutes;
     minutes += intervalMinutes
   ) {
     slots.push(minutesToTime(minutes));
