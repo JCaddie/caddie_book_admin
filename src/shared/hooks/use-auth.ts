@@ -15,7 +15,8 @@ interface LoginResponse {
     email: string;
     name: string;
     role: string;
-    golf_course_id: string | null;
+    golf_course: string;
+    golf_course_id: string;
   };
 }
 
@@ -127,6 +128,15 @@ export const useAuth = (): UseAuthReturn => {
       AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
     );
 
+    // golf_course_id를 별도 쿠키로 저장
+    if (user.golfCourseId) {
+      cookieUtils.set(
+        AUTH_CONSTANTS.COOKIES.GOLF_COURSE_ID,
+        user.golfCourseId,
+        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+      );
+    }
+
     // 상태 업데이트를 더 확실하게 하기 위해 약간의 지연 추가
     setTimeout(() => {
       setAuthState({
@@ -142,6 +152,7 @@ export const useAuth = (): UseAuthReturn => {
       AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
       AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
       AUTH_CONSTANTS.COOKIES.USER_DATA,
+      AUTH_CONSTANTS.COOKIES.GOLF_COURSE_ID,
     ]);
 
     setAuthState({
@@ -217,6 +228,7 @@ export const useAuth = (): UseAuthReturn => {
             email: response.user.email,
             role: response.user.role as "MASTER" | "ADMIN",
             golfCourseId: response.user.golf_course_id || undefined,
+            golfCourse: response.user.golf_course || undefined,
             created_at: new Date().toISOString(),
           };
 

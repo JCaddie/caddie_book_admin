@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useAuth, useDocumentTitle } from "@/shared/hooks";
+import { useAuth, useDocumentTitle, useGolfCourseId } from "@/shared/hooks";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GroupCreateModal, GroupTypeToggle } from "@/modules/group";
@@ -79,6 +79,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 }) => {
   const { id } = React.use(params);
   const { user, isLoading: authLoading } = useAuth();
+  const { golfCourseId: cookieGolfCourseId, isLoading: golfCourseIdLoading } =
+    useGolfCourseId();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -136,10 +138,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
     try {
       if (isOwnGolfCourse) {
-        // 현재 사용자의 골프장 ID를 사용
-        if (user?.golfCourseId) {
-          console.log("현재 사용자의 골프장 정보 로드:", user.golfCourseId);
-          const response = await fetchGolfCourseGroupDetail(user.golfCourseId);
+        // 쿠키에서 golf_course_id를 가져와서 사용
+        if (cookieGolfCourseId) {
+          console.log("쿠키에서 골프장 정보 로드:", cookieGolfCourseId);
+          const response = await fetchGolfCourseGroupDetail(cookieGolfCourseId);
           setData(response);
         } else {
           setError("현재 사용자에게 할당된 골프장이 없습니다.");
@@ -155,7 +157,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [id, isOwnGolfCourse, user?.golfCourseId]);
+  }, [id, isOwnGolfCourse, cookieGolfCourseId]);
 
   // 캐디 배정 데이터 로드 함수
   const loadCaddieAssignments = useCallback(async () => {
@@ -166,8 +168,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       let golfCourseId: string | undefined;
 
       if (isOwnGolfCourse) {
-        // 현재 사용자의 골프장 ID를 사용
-        golfCourseId = user?.golfCourseId;
+        // 쿠키에서 golf_course_id를 가져와서 사용
+        golfCourseId = cookieGolfCourseId;
 
         // golfCourseId가 없으면 에러 처리
         if (!golfCourseId) {
@@ -177,7 +179,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             success: false,
             message: "골프장 정보 없음",
             data: {
-              id: user?.golfCourseId || "unknown",
+              id: cookieGolfCourseId || "unknown",
               name: "데이터 로딩 중...",
               contract_status: "",
               primary_group_count: 0,
@@ -222,16 +224,16 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     } finally {
       setCaddieLoading(false);
     }
-  }, [id, isOwnGolfCourse, user?.golfCourseId, selectedGroupType]);
+  }, [id, isOwnGolfCourse, cookieGolfCourseId, selectedGroupType]);
 
   // 초기 데이터 로드
   useEffect(() => {
-    // 인증 로딩 중이면 대기
-    if (authLoading) return;
+    // 인증 로딩 중이거나 golf_course_id 로딩 중이면 대기
+    if (authLoading || golfCourseIdLoading) return;
 
-    // me 파라미터일 때는 사용자 정보가 로드된 후에 데이터 로드
+    // me 파라미터일 때는 golf_course_id가 로드된 후에 데이터 로드
     if (isOwnGolfCourse) {
-      if (user) {
+      if (cookieGolfCourseId) {
         loadData();
         loadCaddieAssignments();
       }
@@ -240,7 +242,15 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       loadData();
       loadCaddieAssignments();
     }
-  }, [id, loadData, loadCaddieAssignments, isOwnGolfCourse, user, authLoading]);
+  }, [
+    id,
+    loadData,
+    loadCaddieAssignments,
+    isOwnGolfCourse,
+    cookieGolfCourseId,
+    authLoading,
+    golfCourseIdLoading,
+  ]);
 
   // 모달 제어 함수들
   const openGroupCreateModal = () => setIsGroupCreateModalOpen(true);
@@ -434,7 +444,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   };
 
   // 로딩 상태
-  if (authLoading || loading) {
+  if (authLoading || golfCourseIdLoading || loading) {
     return (
       <div className="bg-white rounded-xl p-8 space-y-6">
         <AdminPageHeader title={pageTitle} />
@@ -442,6 +452,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           <div className="text-gray-500">
             {authLoading
               ? "사용자 정보를 불러오는 중..."
+              : golfCourseIdLoading
+              ? "골프장 정보를 불러오는 중..."
               : "데이터를 불러오는 중..."}
           </div>
         </div>

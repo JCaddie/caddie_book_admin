@@ -17,7 +17,8 @@ interface LoginResponse {
     email: string;
     name: string;
     role: string;
-    golf_course_id: string | null;
+    golf_course: string;
+    golf_course_id: string;
   };
 }
 
@@ -107,6 +108,7 @@ export default function LoginPage() {
         email: data.user.email,
         role: data.user.role as "MASTER" | "ADMIN",
         golfCourseId: data.user.golf_course_id || undefined,
+        golfCourse: data.user.golf_course || undefined,
         created_at: new Date().toISOString(),
       };
 
@@ -156,6 +158,7 @@ export default function LoginPage() {
         email: data.user.email,
         role: data.user.role as "MASTER" | "ADMIN",
         golfCourseId: data.user.golf_course_id || undefined,
+        golfCourse: data.user.golf_course || undefined,
         created_at: new Date().toISOString(),
       };
 

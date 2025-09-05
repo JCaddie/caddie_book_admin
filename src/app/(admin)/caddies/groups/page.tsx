@@ -10,7 +10,7 @@ import {
   SelectableDataTable,
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useDocumentTitle } from "@/shared/hooks";
+import { useDocumentTitle, useAuth, useGolfCourseId } from "@/shared/hooks";
 import { getGroupAssignmentOverview } from "@/modules/group/api/group-api";
 import { GolfCourseGroupStatus } from "@/modules/golf-course/types/api";
 
@@ -96,6 +96,8 @@ const columns = [
 const GolfCourseStatsPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, isLoading: authLoading } = useAuth();
+  const { golfCourseId, isLoading: golfCourseIdLoading } = useGolfCourseId();
 
   // 페이지 타이틀 설정
   useDocumentTitle({ title: "골프장별 그룹현황" });
@@ -141,10 +143,25 @@ const GolfCourseStatsPage: React.FC = () => {
     }
   }, [currentPage, currentSearch]);
 
+  // ADMIN 사용자는 자신의 골프장 그룹 페이지로 리다이렉트
+  useEffect(() => {
+    if (
+      !authLoading &&
+      !golfCourseIdLoading &&
+      user?.role === "ADMIN" &&
+      golfCourseId
+    ) {
+      router.replace(`/caddies/groups/${golfCourseId}`);
+    }
+  }, [user?.role, golfCourseId, authLoading, golfCourseIdLoading, router]);
+
   // URL 파라미터 변경 시 데이터 로드
   useEffect(() => {
-    loadData();
-  }, [currentPage, currentSearch, loadData]);
+    // ADMIN이 아닌 경우에만 전체 골프장 목록을 로드
+    if (user?.role !== "ADMIN") {
+      loadData();
+    }
+  }, [currentPage, currentSearch, loadData, user?.role]);
 
   // 행 클릭 핸들러 (해당 골프장의 그룹 상세 페이지로 이동)
   const handleRowClick = (record: GolfCourseGroupStatus) => {
@@ -184,6 +201,28 @@ const GolfCourseStatsPage: React.FC = () => {
   const handleDeleteCancel = () => {
     setIsDeleteModalOpen(false);
   };
+
+  // ADMIN 사용자가 리다이렉트 중이면 로딩 표시
+  if (
+    authLoading ||
+    golfCourseIdLoading ||
+    (user?.role === "ADMIN" && !golfCourseId)
+  ) {
+    return (
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader title="골프장별 그룹현황" />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">
+            {authLoading
+              ? "사용자 정보를 불러오는 중..."
+              : golfCourseIdLoading
+              ? "골프장 정보를 불러오는 중..."
+              : "페이지를 이동하는 중..."}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl p-8 space-y-6">
