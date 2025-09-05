@@ -6,6 +6,9 @@ import {
   CaddieAssignmentOverviewResponse,
   CreateAdminRequest,
   CreateAdminResponse,
+  CreateTemporaryCaddieRequest,
+  CreateTemporaryCaddieResponse,
+  DeleteTemporaryCaddieResponse,
   UpdateAdminRequest,
   UpdateAdminResponse,
   UserDetailApiResponse,
@@ -116,4 +119,20 @@ export const getUserAssignments = async (
     "getUserAssignments is deprecated. Use getCaddieAssignmentOverview instead."
   );
   return getCaddieAssignmentOverview(golfCourseId);
+};
+
+// 임시 캐디 생성
+export const createTemporaryCaddie = async (
+  data: CreateTemporaryCaddieRequest
+): Promise<CreateTemporaryCaddieResponse> => {
+  return apiClient.post("/api/v1/users/temporary-caddies/", data);
+};
+
+// 임시 캐디 삭제
+export const deleteTemporaryCaddie = async (
+  caddieId: string
+): Promise<DeleteTemporaryCaddieResponse> => {
+  return apiClient.delete(
+    `/api/v1/users/temporary-caddies/${caddieId}/delete/`
+  );
 };

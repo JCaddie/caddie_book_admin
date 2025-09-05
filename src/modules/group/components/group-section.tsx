@@ -19,6 +19,7 @@ interface GroupSectionProps {
   onDeleteGroup?: (groupId: string) => void;
   unassignedCaddies?: UnassignedCaddie[];
   onAddCaddieToGroup?: (groupId: string, caddieId: string) => Promise<void>;
+  onTemporaryCaddieDelete?: (caddieId: string) => void;
 }
 
 const GroupSection: React.FC<GroupSectionProps> = ({
@@ -31,6 +32,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   onDeleteGroup,
   unassignedCaddies = [],
   onAddCaddieToGroup,
+  onTemporaryCaddieDelete,
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -204,7 +206,18 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                   draggedCaddie?.id === caddie.id ? "opacity-50" : ""
                 }`}
               >
-                <CaddieCard caddie={caddie} draggable={true} />
+                <CaddieCard
+                  caddie={caddie}
+                  draggable={true}
+                  onTemporaryCaddieDelete={
+                    caddie.isTemporary && onTemporaryCaddieDelete
+                      ? () =>
+                          onTemporaryCaddieDelete(
+                            caddie.originalId || caddie.id.toString()
+                          )
+                      : undefined
+                  }
+                />
               </div>
             </div>
           ))}

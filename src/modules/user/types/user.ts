@@ -187,6 +187,7 @@ export interface GroupMember {
   email: string;
   is_active: boolean;
   employment_type: "FULL_TIME" | "PART_TIME";
+  is_temporary: boolean;
   order?: number;
   is_team_leader?: boolean;
   group_order: number;
@@ -214,6 +215,7 @@ export interface UnassignedCaddie {
   email: string;
   is_active: boolean;
   employment_type: "FULL_TIME" | "PART_TIME";
+  is_temporary: boolean;
 }
 
 export interface GolfCourseGroupStatus {
@@ -287,3 +289,71 @@ export interface UserAssignmentResponse {
   previous: string | null;
   results: LegacyUserAssignment[];
 }
+
+// 임시 캐디 생성 요청 타입
+export interface CreateTemporaryCaddieRequest {
+  name: string;
+  golf_course: string;
+  primary_group?: string;
+  special_group?: string;
+  gender: "M" | "F";
+  employment_type: "FULL_TIME" | "PART_TIME";
+  address: string;
+  temporary_notes: string;
+}
+
+// 임시 캐디 생성 성공 응답 타입
+export interface CreateTemporaryCaddieSuccessResponse {
+  success: true;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    golf_course: {
+      id: string;
+      name: string;
+    };
+    is_temporary: true;
+    temporary_created_by: string;
+    temporary_notes: string;
+    primary_group?: {
+      id: string;
+      name: string;
+    };
+    special_group?: {
+      id: string;
+      name: string;
+    };
+  };
+}
+
+// 임시 캐디 생성 실패 응답 타입
+export interface CreateTemporaryCaddieErrorResponse {
+  success: false;
+  message: string;
+  error_code?: string;
+  non_field_errors?: string[];
+}
+
+// 임시 캐디 생성 응답 타입 (성공/실패 모두 포함)
+export type CreateTemporaryCaddieResponse =
+  | CreateTemporaryCaddieSuccessResponse
+  | CreateTemporaryCaddieErrorResponse;
+
+// 임시 캐디 삭제 성공 응답 타입
+export interface DeleteTemporaryCaddieSuccessResponse {
+  success: true;
+  message: string;
+}
+
+// 임시 캐디 삭제 실패 응답 타입
+export interface DeleteTemporaryCaddieErrorResponse {
+  success: false;
+  message: string;
+  error_code?: string;
+}
+
+// 임시 캐디 삭제 응답 타입 (성공/실패 모두 포함)
+export type DeleteTemporaryCaddieResponse =
+  | DeleteTemporaryCaddieSuccessResponse
+  | DeleteTemporaryCaddieErrorResponse;

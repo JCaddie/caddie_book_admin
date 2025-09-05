@@ -19,6 +19,7 @@ interface GroupManagementAreaProps {
   onDeleteGroup?: (groupId: string) => void;
   unassignedCaddies?: UnassignedCaddie[];
   onAddCaddieToGroup?: (groupId: string, caddieId: string) => Promise<void>;
+  onTemporaryCaddieDelete?: (caddieId: string) => void;
 }
 
 export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
@@ -33,6 +34,7 @@ export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
   onDeleteGroup,
   unassignedCaddies = [],
   onAddCaddieToGroup,
+  onTemporaryCaddieDelete,
 }) => {
   if (groups.length === 0) {
     return <EmptyGroupsState onCreateGroup={onCreateGroup} />;
@@ -71,6 +73,7 @@ export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
                   onDeleteGroup={onDeleteGroup}
                   unassignedCaddies={unassignedCaddies}
                   onAddCaddieToGroup={onAddCaddieToGroup}
+                  onTemporaryCaddieDelete={onTemporaryCaddieDelete}
                 />
               </div>
             ))}
