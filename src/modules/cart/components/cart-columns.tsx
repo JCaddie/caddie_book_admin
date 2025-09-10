@@ -50,7 +50,7 @@ export const useCartColumns = (): Column<Cart>[] => {
         key: "batteryLevel",
         title: "배터리 레벨",
         width: CART_COLUMN_WIDTHS.batteryLevel || 100,
-        render: (value: unknown) => `${value}%`,
+        render: (value: unknown) => `${value}단계`,
       },
       {
         key: "batteryStatus",

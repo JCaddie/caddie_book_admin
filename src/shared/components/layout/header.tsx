@@ -10,6 +10,7 @@ const Header: React.FC = () => {
   const { user, logout, switchRole } = useAuth();
   const router = useRouter();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
 
   const handleMyInfo = () => {
     // 내 정보 페이지로 이동
@@ -31,12 +32,26 @@ const Header: React.FC = () => {
     setIsLogoutModalOpen(false);
   };
 
-  const handleRoleSwitch = (targetRole: UserRole) => {
-    switchRole(targetRole);
-    // 권한 전환 시 페이지 전체 리프레시
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+  const handleRoleSwitch = async (targetRole: UserRole) => {
+    console.log("🔄 권한 전환 버튼 클릭:", targetRole);
+
+    setIsRoleSwitching(true);
+
+    try {
+      const success = await switchRole(targetRole);
+
+      if (success) {
+        console.log("✅ 권한 전환 성공 - 자동 로그인 처리 중");
+        // 자동 로그인이 완료되면 페이지가 자동으로 업데이트됨
+        // 로딩 상태는 자동 로그인 완료 후 해제됨
+      } else {
+        console.log("❌ 권한 전환 실패");
+        setIsRoleSwitching(false);
+      }
+    } catch (error) {
+      console.error("❌ 권한 전환 중 예외 발생:", error);
+      setIsRoleSwitching(false);
+    }
   };
 
   return (
@@ -68,25 +83,29 @@ const Header: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleRoleSwitch("MASTER")}
-              disabled={user?.role === "MASTER"}
+              disabled={user?.role === "MASTER" || isRoleSwitching}
               className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                 user?.role === "MASTER"
                   ? "bg-[#FEB912] text-white cursor-default"
+                  : isRoleSwitching
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              개발사
+              {isRoleSwitching ? "전환 중..." : "개발사"}
             </button>
             <button
               onClick={() => handleRoleSwitch("ADMIN")}
-              disabled={user?.role === "ADMIN"}
+              disabled={user?.role === "ADMIN" || isRoleSwitching}
               className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                 user?.role === "ADMIN"
                   ? "bg-[#FEB912] text-white cursor-default"
+                  : isRoleSwitching
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              관리자
+              {isRoleSwitching ? "전환 중..." : "관리자"}
             </button>
           </div>
 

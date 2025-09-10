@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { Plus } from "lucide-react";
 import { CaddieCard } from "@/modules/work/components";
 import { CaddieData } from "@/modules/work/types";
 import { CaddieGroupManagement } from "../types/group-status";
 import { GroupMenu } from "./group-menu";
+import { CaddieSearchDropdown } from "./caddie-search-dropdown";
+import { UnassignedCaddie } from "@/modules/user/types/user";
 
 interface GroupSectionProps {
   group: CaddieGroupManagement;
@@ -14,6 +17,9 @@ interface GroupSectionProps {
   draggedCaddie: CaddieData | null;
   onEditGroup?: (groupId: string, newName: string) => void;
   onDeleteGroup?: (groupId: string) => void;
+  unassignedCaddies?: UnassignedCaddie[];
+  onAddCaddieToGroup?: (groupId: string, caddieId: string) => Promise<void>;
+  onTemporaryCaddieDelete?: (caddieId: string) => void;
 }
 
 const GroupSection: React.FC<GroupSectionProps> = ({
@@ -24,9 +30,26 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   draggedCaddie,
   onEditGroup,
   onDeleteGroup,
+  unassignedCaddies = [],
+  onAddCaddieToGroup,
+  onTemporaryCaddieDelete,
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+
+  // 캐디 추가 핸들러
+  const handleAddCaddie = async (caddieId: string) => {
+    if (onAddCaddieToGroup) {
+      await onAddCaddieToGroup(group.id, caddieId);
+      setIsSearchDropdownOpen(false);
+    }
+  };
+
+  // 검색 드롭다운 토글
+  const toggleSearchDropdown = () => {
+    setIsSearchDropdownOpen(!isSearchDropdownOpen);
+  };
 
   // 그룹 영역에 드래그 오버
   const handleDragOver = (e: React.DragEvent) => {
@@ -107,22 +130,45 @@ const GroupSection: React.FC<GroupSectionProps> = ({
       onDrop={handleDrop}
     >
       {/* 그룹 헤더 */}
-      <div className="bg-yellow-400 text-white px-4 py-2 flex justify-between items-center h-12 rounded-t-md">
+      <div className="bg-yellow-400 text-white px-4 py-2 flex justify-between items-center h-12 rounded-t-md relative">
         <div className="flex items-center gap-2">
           <span className="text-white font-bold text-xl">{group.name}</span>
           <div className="bg-yellow-100 text-black px-1 rounded text-sm font-bold">
             {group.memberCount}
           </div>
         </div>
-        {onEditGroup && onDeleteGroup ? (
-          <GroupMenu
-            groupId={group.id}
-            groupName={group.name}
-            onEditGroup={onEditGroup}
-            onDeleteGroup={onDeleteGroup}
+        <div className="flex items-center gap-2">
+          {/* 캐디 추가 버튼 */}
+          {onAddCaddieToGroup && unassignedCaddies.length > 0 && (
+            <button
+              onClick={toggleSearchDropdown}
+              className="p-1 hover:bg-yellow-500 rounded transition-colors"
+              title="캐디 추가"
+            >
+              <Plus className="w-4 h-4 text-white" />
+            </button>
+          )}
+          {/* 그룹 메뉴 */}
+          {onEditGroup && onDeleteGroup ? (
+            <GroupMenu
+              groupId={group.id}
+              groupName={group.name}
+              onEditGroup={onEditGroup}
+              onDeleteGroup={onDeleteGroup}
+            />
+          ) : (
+            <div className="w-6 h-6" />
+          )}
+        </div>
+
+        {/* 검색 드롭다운 */}
+        {isSearchDropdownOpen && (
+          <CaddieSearchDropdown
+            isOpen={isSearchDropdownOpen}
+            onClose={() => setIsSearchDropdownOpen(false)}
+            unassignedCaddies={unassignedCaddies}
+            onAddCaddie={handleAddCaddie}
           />
-        ) : (
-          <div className="w-6 h-6" />
         )}
       </div>
 
@@ -160,7 +206,18 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                   draggedCaddie?.id === caddie.id ? "opacity-50" : ""
                 }`}
               >
-                <CaddieCard caddie={caddie} draggable={true} />
+                <CaddieCard
+                  caddie={caddie}
+                  draggable={true}
+                  onTemporaryCaddieDelete={
+                    caddie.isTemporary && onTemporaryCaddieDelete
+                      ? () =>
+                          onTemporaryCaddieDelete(
+                            caddie.originalId || caddie.id.toString()
+                          )
+                      : undefined
+                  }
+                />
               </div>
             </div>
           ))}

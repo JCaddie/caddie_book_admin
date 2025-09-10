@@ -34,14 +34,26 @@ class ApiClient {
    */
   private async refreshAccessToken(): Promise<boolean> {
     try {
+      console.log("🔄 ===== 토큰 갱신 프로세스 시작 =====");
+
       const refreshToken = cookieUtils.get(
         AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN
       );
 
       if (!refreshToken) {
-        console.warn("리프레시 토큰이 없습니다.");
+        console.warn("❌ 리프레시 토큰이 없습니다.");
+        console.log(
+          "🔄 ===== 토큰 갱신 프로세스 실패 (리프레시 토큰 없음) ====="
+        );
         return false;
       }
+
+      console.log("📋 리프레시 토큰 존재 확인됨");
+      console.log(
+        "🌐 토큰 갱신 요청 URL:",
+        `${this.baseURL}${AUTH_CONSTANTS.API_ENDPOINTS.REFRESH_TOKEN}`
+      );
+      console.log("📤 요청 데이터:", { refresh_token: "***" }); // 토큰 마스킹
 
       const response = await fetch(
         `${this.baseURL}${AUTH_CONSTANTS.API_ENDPOINTS.REFRESH_TOKEN}`,
@@ -50,41 +62,59 @@ class ApiClient {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ refresh: refreshToken }),
+          body: JSON.stringify({ refresh_token: refreshToken }),
         }
       );
 
+      console.log(
+        "📡 토큰 갱신 응답 상태:",
+        response.status,
+        response.statusText
+      );
+
       if (!response.ok) {
-        console.error("토큰 갱신 실패:", response.status);
+        console.error("❌ 토큰 갱신 API 호출 실패:", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ 에러 상세:", errorData);
+        console.log("🔄 ===== 토큰 갱신 프로세스 실패 (API 오류) =====");
         return false;
       }
 
       const data = await response.json();
+      console.log("📥 토큰 갱신 응답 데이터:", {
+        ...data,
+        access_token: data.access_token ? "***" : undefined,
+        refresh_token: data.refresh_token ? "***" : undefined,
+      });
 
-      if (data.access) {
+      if (data.access_token) {
         // 새로운 액세스 토큰 저장
         cookieUtils.set(
           AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
-          data.access,
+          data.access_token,
           AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
         );
 
         // 리프레시 토큰도 새로 발급받았다면 저장
-        if (data.refresh) {
+        if (data.refresh_token) {
           cookieUtils.set(
             AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
-            data.refresh,
+            data.refresh_token,
             AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
           );
         }
 
-        console.log("토큰 갱신 성공");
+        console.log("✅ 토큰 갱신 성공 - 새로운 액세스 토큰 저장됨");
+        console.log("🔄 ===== 토큰 갱신 프로세스 성공 =====");
         return true;
       }
 
+      console.log("❌ 응답에 access_token이 없음");
+      console.log("🔄 ===== 토큰 갱신 프로세스 실패 (응답 데이터 오류) =====");
       return false;
     } catch (error) {
-      console.error("토큰 갱신 중 오류:", error);
+      console.error("❌ 토큰 갱신 중 예외 발생:", error);
+      console.log("🔄 ===== 토큰 갱신 프로세스 실패 (예외) =====");
       return false;
     }
   }
@@ -95,18 +125,25 @@ class ApiClient {
   private async handleTokenRefresh(): Promise<boolean> {
     if (this.isRefreshing) {
       // 이미 갱신 중이면 기존 Promise 반환
+      console.log("🔄 이미 토큰 갱신 중 - 기존 프로세스 재사용");
       return this.refreshPromise!;
     }
 
+    console.log("🔄 새로운 토큰 갱신 프로세스 시작");
     this.isRefreshing = true;
     this.refreshPromise = this.refreshAccessToken();
 
     try {
       const result = await this.refreshPromise;
+      console.log(
+        "🔄 토큰 갱신 프로세스 완료 - 결과:",
+        result ? "성공" : "실패"
+      );
       return result;
     } finally {
       this.isRefreshing = false;
       this.refreshPromise = null;
+      console.log("🔄 토큰 갱신 상태 초기화 완료");
     }
   }
 
@@ -178,7 +215,10 @@ class ApiClient {
 
     // 401 에러이고 토큰 갱신을 건너뛰지 않는 경우 토큰 갱신 시도
     if (response.status === 401 && !skipAuth && !skipTokenRefresh) {
-      console.log("🔄 토큰 만료 - 갱신 시도");
+      console.log("🔄 ===== 401 에러 발생 - 자동 토큰 갱신 시작 =====");
+      console.log("📋 원본 요청 URL:", url);
+      console.log("📋 원본 요청 메서드:", restOptions.method || "GET");
+      console.log("📋 원본 요청 상태:", response.status, response.statusText);
 
       const refreshSuccess = await this.handleTokenRefresh();
 
@@ -190,13 +230,42 @@ class ApiClient {
             "Authorization"
           ] = `Bearer ${newToken}`;
 
-          console.log("🔄 토큰 갱신 후 재요청");
+          console.log("✅ 토큰 갱신 성공 - 새로운 토큰으로 원본 요청 재시도");
+          console.log("🔄 재요청 URL:", url);
+          console.log("🔄 재요청 헤더:", {
+            ...mergedHeaders,
+            Authorization: "Bearer ***", // 토큰 마스킹
+          });
+
           response = await fetch(url, {
             ...restOptions,
             headers: mergedHeaders,
           });
+
+          console.log("🔄 재요청 결과:", response.status, response.statusText);
+
+          if (response.ok) {
+            console.log("✅ 토큰 갱신 후 원본 요청 성공!");
+          } else {
+            console.log("❌ 토큰 갱신 후에도 원본 요청 실패:", response.status);
+          }
+        }
+      } else {
+        console.log("❌ 토큰 갱신 실패 - 갱신할 수 없음");
+        console.log("💡 사용자는 수동으로 다시 로그인해야 합니다");
+
+        // 토큰 갱신 실패 시 로그인 페이지로 이동
+        if (typeof window !== "undefined") {
+          console.log("🚨 토큰 갱신 실패 - 로그인 페이지로 이동");
+          cookieUtils.removeMultiple([
+            AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
+            AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
+            AUTH_CONSTANTS.COOKIES.USER_DATA,
+          ]);
+          window.location.href = "/login";
         }
       }
+      console.log("🔄 ===== 토큰 갱신 프로세스 완료 =====");
     }
 
     // 에러 응답 처리

@@ -198,6 +198,8 @@ export interface CaddieData {
   badge: string;
   status: string;
   specialBadge?: string;
+  isSpare?: boolean; // 스페어 상태
+  isTemporary?: boolean; // 임시 캐디 여부
   originalId?: string; // 원본 UUID string (API 연동용)
   order?: number; // 그룹 내 순서
   groupName?: string; // 그룹명
@@ -216,8 +218,11 @@ export interface CaddieCardProps {
   onClick?: (() => void) | ((caddie: CaddieData) => void);
   onStatusToggle?: () => void; // 상태 변경 핸들러
   onCaddieRemove?: () => void; // 캐디 제거 핸들러
+  onSpareToggle?: () => void; // 스페어 설정 핸들러
+  onTemporaryCaddieDelete?: () => void; // 임시 캐디 삭제 핸들러
   onDoubleClick?: () => void; // 더블클릭 시 캐디 제거 핸들러
   draggable?: boolean;
+  isSpare?: boolean; // 슬롯의 스페어 상태
 }
 
 // 필드 타입
@@ -328,6 +333,7 @@ export interface WorkDetailState {
       id: string;
       name: string;
     };
+    time_interval: number;
     caddies: CaddieData[];
     parts: Array<{
       id: string;
@@ -336,6 +342,7 @@ export interface WorkDetailState {
       start_time: string;
       end_time: string;
       is_active: boolean;
+      spare_count: number;
       slots: Array<{
         id: string;
         start_time: string;
@@ -343,6 +350,7 @@ export interface WorkDetailState {
         status: string;
         slot_type: string;
         is_locked: boolean;
+        is_spare: boolean;
         caddie: {
           id: string;
           name: string;

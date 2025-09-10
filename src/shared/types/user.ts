@@ -8,6 +8,7 @@ export interface User {
   email: string;
   role: UserRole;
   golfCourseId?: string; // 지점 권한인 경우 골프장 ID
+  golfCourse?: string; // 골프장명
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,4 +20,5 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   golfCourseId?: string;
+  golfCourse?: string; // 골프장명
 }

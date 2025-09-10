@@ -1,39 +1,32 @@
-"use client";
-
 import React from "react";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import RoleGuard from "@/shared/components/auth/role-guard";
 import {
   EditableGolfCourseInfo,
   OperationCards,
 } from "@/shared/components/golf-course";
-import { useGolfCourseDetail } from "@/modules/golf-course/hooks/use-golf-course-detail";
+import { getGolfCourseDetail } from "@/modules/golf-course/api/server";
+import type { GolfCourseDetail } from "@/modules/golf-course/types/api";
 
-const GolfCourseDetailPage: React.FC = () => {
-  const params = useParams();
-  const golfCourseId = params.id as string;
+interface GolfCourseDetailPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
 
-  // API 데이터 fetch
-  const {
-    data: golfCourse,
-    isLoading,
-    isError,
-  } = useGolfCourseDetail(golfCourseId);
+const GolfCourseDetailPage: React.FC<GolfCourseDetailPageProps> = async ({
+  params,
+}) => {
+  const { id: golfCourseId } = await params;
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-96 text-lg">
-        로딩 중...
-      </div>
-    );
+  // 서버에서 골프장 데이터 fetch
+  const response = await getGolfCourseDetail(golfCourseId);
+
+  if (!response?.data) {
+    notFound();
   }
-  if (isError || !golfCourse) {
-    return (
-      <div className="flex justify-center items-center h-96 text-lg text-red-500">
-        상세 정보를 불러오는 중 오류가 발생했습니다.
-      </div>
-    );
-  }
+
+  const golfCourse: GolfCourseDetail = response.data;
 
   // 운영현황 카드 데이터 (API 필드에 맞게 매핑)
   const operationCards = [
@@ -44,8 +37,8 @@ const GolfCourseDetailPage: React.FC = () => {
       searchParam: golfCourse.name,
     },
     {
-      title: "필드 수",
-      value: String(golfCourse.field_count),
+      title: "홀 수",
+      value: String(golfCourse.total_holes),
       route: "/fields",
       searchParam: golfCourse.name,
     },

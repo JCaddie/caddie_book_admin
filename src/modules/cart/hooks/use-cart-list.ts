@@ -21,15 +21,13 @@ export const useCartList = () => {
 
   // 카트 데이터 관리
   const {
-    data: paginatedData,
+    data: cartData,
     totalCount,
     totalPages,
     currentPage,
-    filters,
     isLoading,
     error,
-    loadCarts,
-    setFilters,
+    refetch: loadCarts,
   } = useCartData({ selectedGolfCourseId, isMaster });
 
   // 선택 상태 관리
@@ -84,24 +82,18 @@ export const useCartList = () => {
 
   const updateGolfCourseFilter = useCallback(
     (golfCourseId: string | undefined) => {
-      setFilters((prev) => ({
-        ...prev,
-        golfCourseId,
-      }));
+      // 골프장 필터 업데이트 로직 (필요시 구현)
       goToFirstPage();
     },
-    [setFilters, goToFirstPage]
+    [goToFirstPage]
   );
 
   const updateFieldFilter = useCallback(
     (fieldId: string | undefined) => {
-      setFilters((prev) => ({
-        ...prev,
-        fieldId,
-      }));
+      // 필드 필터 업데이트 로직 (필요시 구현)
       goToFirstPage();
     },
-    [setFilters, goToFirstPage]
+    [goToFirstPage]
   );
 
   // 선택된 카트 삭제 래퍼
@@ -109,13 +101,16 @@ export const useCartList = () => {
     await deleteSelectedCarts(selection.selectedRows);
   }, [deleteSelectedCarts, selection.selectedRows]);
 
+  // 실제 데이터 개수 계산 (빈 행 제외)
+  const realDataCount = cartData?.filter((item) => !item.isEmpty).length || 0;
+
   return {
     // 데이터
-    data: paginatedData,
+    data: cartData,
     totalCount,
+    realDataCount,
     totalPages,
     currentPage,
-    filters,
 
     // 선택 상태
     selection,

@@ -1,6 +1,6 @@
 import { EmptyGroupsState, GroupSection } from "@/modules/group";
 import { CaddieData } from "@/modules/work/types";
-import { Group } from "@/modules/user/types/user";
+import { Group, UnassignedCaddie } from "@/modules/user/types/user";
 
 interface GroupManagementAreaProps {
   groups: Group[];
@@ -17,6 +17,9 @@ interface GroupManagementAreaProps {
   };
   onEditGroup?: (groupId: string, newName: string) => void;
   onDeleteGroup?: (groupId: string) => void;
+  unassignedCaddies?: UnassignedCaddie[];
+  onAddCaddieToGroup?: (groupId: string, caddieId: string) => Promise<void>;
+  onTemporaryCaddieDelete?: (caddieId: string) => void;
 }
 
 export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
@@ -29,6 +32,9 @@ export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
   transformGroupToGroupSection,
   onEditGroup,
   onDeleteGroup,
+  unassignedCaddies = [],
+  onAddCaddieToGroup,
+  onTemporaryCaddieDelete,
 }) => {
   if (groups.length === 0) {
     return <EmptyGroupsState onCreateGroup={onCreateGroup} />;
@@ -65,6 +71,9 @@ export const GroupManagementArea: React.FC<GroupManagementAreaProps> = ({
                   draggedCaddie={draggedCaddie}
                   onEditGroup={onEditGroup}
                   onDeleteGroup={onDeleteGroup}
+                  unassignedCaddies={unassignedCaddies}
+                  onAddCaddieToGroup={onAddCaddieToGroup}
+                  onTemporaryCaddieDelete={onTemporaryCaddieDelete}
                 />
               </div>
             ))}

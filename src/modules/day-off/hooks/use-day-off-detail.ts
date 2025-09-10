@@ -1,8 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { DayOffRequest } from "../types";
 import { getDayOffRequestDetail } from "../api/day-off-api";
 import { DAY_OFF_ERROR_MESSAGES } from "../constants";
 import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";

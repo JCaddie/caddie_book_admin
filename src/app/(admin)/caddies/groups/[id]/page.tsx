@@ -3,10 +3,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useAuth, useDocumentTitle } from "@/shared/hooks";
+import { useAuth, useDocumentTitle, useGolfCourseId } from "@/shared/hooks";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GroupCreateModal, GroupTypeToggle } from "@/modules/group";
+import { TemporaryCaddieCreateModal } from "@/modules/group/components/temporary-caddie-create-modal";
 import { GolfCourseInfo } from "@/modules/group/components/golf-course-info";
 import { GroupSummary } from "@/modules/group/components/group-summary";
 import { CaddieStatusPanel } from "@/modules/group/components/caddie-status-panel";
@@ -30,6 +31,7 @@ import {
   reorderGroupMember,
   updateGroup,
 } from "@/modules/group/api/group-api";
+import { deleteTemporaryCaddie } from "@/modules/user/api/user-api";
 
 interface GroupManagementPageProps {
   params: Promise<{
@@ -50,6 +52,7 @@ const transformGroupToGroupSection = (group: Group) => ({
     badge: member.is_team_leader ? "팀장" : "캐디",
     status: "active",
     specialBadge: member.is_team_leader ? "팀장" : undefined,
+    isTemporary: member.is_temporary, // 임시 캐디 여부 추가
     order: member.group_order, // group_order 필드 사용
     groupName: group.name,
   })),
@@ -68,6 +71,7 @@ const transformUnassignedCaddieToCaddieData = (
     badge: "일반",
     status: "active",
     specialBadge: undefined,
+    isTemporary: caddie.is_temporary, // 임시 캐디 여부 추가
     order: 1,
     groupName: undefined,
     currentIndex: index, // 미배정 캐디 목록에서의 인덱스
@@ -78,7 +82,9 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
   params,
 }) => {
   const { id } = React.use(params);
-  const { user, isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading } = useAuth();
+  const { golfCourseId: cookieGolfCourseId, isLoading: golfCourseIdLoading } =
+    useGolfCourseId();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -112,6 +118,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
   // 모달 상태
   const [isGroupCreateModalOpen, setIsGroupCreateModalOpen] = useState(false);
+  const [isTemporaryCaddieModalOpen, setIsTemporaryCaddieModalOpen] =
+    useState(false);
 
   // URL 파라미터에서 그룹 타입 읽기 (기본값: PRIMARY)
   const urlGroupType = searchParams.get("type");
@@ -136,10 +144,10 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
 
     try {
       if (isOwnGolfCourse) {
-        // 현재 사용자의 골프장 ID를 사용
-        if (user?.golfCourseId) {
-          console.log("현재 사용자의 골프장 정보 로드:", user.golfCourseId);
-          const response = await fetchGolfCourseGroupDetail(user.golfCourseId);
+        // 쿠키에서 golf_course_id를 가져와서 사용
+        if (cookieGolfCourseId) {
+          console.log("쿠키에서 골프장 정보 로드:", cookieGolfCourseId);
+          const response = await fetchGolfCourseGroupDetail(cookieGolfCourseId);
           setData(response);
         } else {
           setError("현재 사용자에게 할당된 골프장이 없습니다.");
@@ -155,7 +163,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [id, isOwnGolfCourse, user?.golfCourseId]);
+  }, [id, isOwnGolfCourse, cookieGolfCourseId]);
 
   // 캐디 배정 데이터 로드 함수
   const loadCaddieAssignments = useCallback(async () => {
@@ -166,8 +174,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       let golfCourseId: string | undefined;
 
       if (isOwnGolfCourse) {
-        // 현재 사용자의 골프장 ID를 사용
-        golfCourseId = user?.golfCourseId;
+        // 쿠키에서 golf_course_id를 가져와서 사용
+        golfCourseId = cookieGolfCourseId || undefined;
 
         // golfCourseId가 없으면 에러 처리
         if (!golfCourseId) {
@@ -177,7 +185,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             success: false,
             message: "골프장 정보 없음",
             data: {
-              id: user?.golfCourseId || "unknown",
+              id: cookieGolfCourseId || "unknown",
               name: "데이터 로딩 중...",
               contract_status: "",
               primary_group_count: 0,
@@ -222,16 +230,16 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     } finally {
       setCaddieLoading(false);
     }
-  }, [id, isOwnGolfCourse, user?.golfCourseId, selectedGroupType]);
+  }, [id, isOwnGolfCourse, cookieGolfCourseId, selectedGroupType]);
 
   // 초기 데이터 로드
   useEffect(() => {
-    // 인증 로딩 중이면 대기
-    if (authLoading) return;
+    // 인증 로딩 중이거나 golf_course_id 로딩 중이면 대기
+    if (authLoading || golfCourseIdLoading) return;
 
-    // me 파라미터일 때는 사용자 정보가 로드된 후에 데이터 로드
+    // me 파라미터일 때는 golf_course_id가 로드된 후에 데이터 로드
     if (isOwnGolfCourse) {
-      if (user) {
+      if (cookieGolfCourseId) {
         loadData();
         loadCaddieAssignments();
       }
@@ -240,16 +248,47 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       loadData();
       loadCaddieAssignments();
     }
-  }, [id, loadData, loadCaddieAssignments, isOwnGolfCourse, user, authLoading]);
+  }, [
+    id,
+    loadData,
+    loadCaddieAssignments,
+    isOwnGolfCourse,
+    cookieGolfCourseId,
+    authLoading,
+    golfCourseIdLoading,
+  ]);
 
   // 모달 제어 함수들
   const openGroupCreateModal = () => setIsGroupCreateModalOpen(true);
   const closeGroupCreateModal = () => setIsGroupCreateModalOpen(false);
+  const openTemporaryCaddieModal = () => setIsTemporaryCaddieModalOpen(true);
+  const closeTemporaryCaddieModal = () => setIsTemporaryCaddieModalOpen(false);
 
   const handleGroupCreateSuccess = async () => {
     // 그룹 생성 완료 후 데이터 다시 로드
     await loadData();
     await loadCaddieAssignments();
+  };
+
+  const handleTemporaryCaddieCreateSuccess = async () => {
+    // 임시 캐디 생성 완료 후 데이터 다시 로드
+    await loadData();
+    await loadCaddieAssignments();
+  };
+
+  // 임시 캐디 삭제 핸들러
+  const handleTemporaryCaddieDelete = async (caddieId: string) => {
+    try {
+      console.log("임시 캐디 삭제 요청:", { caddieId });
+      await deleteTemporaryCaddie(caddieId);
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("임시 캐디 삭제 실패:", error);
+      alert("임시 캐디 삭제에 실패했습니다.");
+    }
   };
 
   // 그룹 타입 변경 핸들러
@@ -401,8 +440,40 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
     }
   };
 
+  // 캐디를 그룹에 추가하는 핸들러
+  const handleAddCaddieToGroup = async (groupId: string, caddieId: string) => {
+    try {
+      console.log("캐디 그룹 추가 요청:", { groupId, caddieId });
+
+      // 현재 그룹의 멤버 수를 기반으로 order 계산 (마지막 위치에 추가)
+      const currentGroups =
+        selectedGroupType === "SPECIAL"
+          ? assignmentData?.data?.special_groups || []
+          : assignmentData?.data?.primary_groups || [];
+
+      const targetGroup = currentGroups.find(
+        (g) => g.id.toString() === groupId
+      );
+      const newOrder = (targetGroup?.member_count || 0) + 1;
+
+      await addGroupMember(groupId, {
+        user_id: caddieId,
+        order: newOrder,
+        membership_type: selectedGroupType,
+      });
+
+      // 데이터 새로고침
+      await loadData();
+      await loadCaddieAssignments();
+    } catch (error) {
+      console.error("캐디 그룹 추가 실패:", error);
+      alert("캐디 추가에 실패했습니다.");
+      throw error; // 에러를 다시 throw하여 UI에서 처리할 수 있도록 함
+    }
+  };
+
   // 로딩 상태
-  if (authLoading || loading) {
+  if (authLoading || golfCourseIdLoading || loading) {
     return (
       <div className="bg-white rounded-xl p-8 space-y-6">
         <AdminPageHeader title={pageTitle} />
@@ -410,6 +481,8 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           <div className="text-gray-500">
             {authLoading
               ? "사용자 정보를 불러오는 중..."
+              : golfCourseIdLoading
+              ? "골프장 정보를 불러오는 중..."
               : "데이터를 불러오는 중..."}
           </div>
         </div>
@@ -446,6 +519,13 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
       <div className="flex items-center justify-between">
         <AdminPageHeader title={pageTitle} />
         <div className="flex items-center gap-2">
+          <Button
+            className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1"
+            onClick={openTemporaryCaddieModal}
+          >
+            <Plus className="w-4 h-4" />
+            임시 캐디 생성
+          </Button>
           <Button
             className="bg-yellow-400 hover:bg-yellow-500 text-white flex items-center gap-1"
             onClick={openGroupCreateModal}
@@ -499,6 +579,9 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
             transformGroupToGroupSection={transformGroupToGroupSection}
             onEditGroup={handleEditGroup}
             onDeleteGroup={handleDeleteGroup}
+            unassignedCaddies={assignmentData?.data?.ungrouped_caddies || []}
+            onAddCaddieToGroup={handleAddCaddieToGroup}
+            onTemporaryCaddieDelete={handleTemporaryCaddieDelete}
           />
         </div>
 
@@ -548,6 +631,7 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
               transformUnassignedCaddieToCaddieData={(caddie, index) =>
                 transformUnassignedCaddieToCaddieData(caddie, index)
               }
+              onTemporaryCaddieDelete={handleTemporaryCaddieDelete}
             />
           </div>
         </div>
@@ -564,6 +648,16 @@ const GroupManagementPage: React.FC<GroupManagementPageProps> = ({
           contractStatus: assignmentData?.data?.contract_status,
         }}
         defaultGroupType={selectedGroupType} // 현재 선택된 그룹 타입을 모달에 전달
+      />
+
+      {/* 임시 캐디 생성 모달 */}
+      <TemporaryCaddieCreateModal
+        isOpen={isTemporaryCaddieModalOpen}
+        onClose={closeTemporaryCaddieModal}
+        onSuccess={handleTemporaryCaddieCreateSuccess}
+        golfCourseId={isOwnGolfCourse ? cookieGolfCourseId || "" : id}
+        golfCourseName={assignmentData?.data?.name || "골프장 정보 없음"}
+        groupType={selectedGroupType}
       />
     </div>
   );

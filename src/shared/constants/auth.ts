@@ -15,6 +15,7 @@ export const AUTH_CONSTANTS = {
     AUTH_TOKEN: "caddie_auth_token",
     REFRESH_TOKEN: "caddie_refresh_token",
     USER_DATA: "caddie_user_data",
+    GOLF_COURSE_ID: "caddie_golf_course_id",
     REMEMBER_ME: "caddie_remember_me",
   },
 

@@ -1,128 +1,77 @@
-import { useMemo } from "react";
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
-import { Cart, CartFilters, CartStatus } from "../types";
-import { mapApiCartsToCartList, mapCartStatusToApiStatus } from "../utils";
-import { fetchCartList } from "../api";
-import { CART_ITEMS_PER_PAGE } from "../constants";
+import { fetchCartList } from "../api/cart-api";
 import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
 import { useQueryError } from "@/shared/hooks/use-query-error";
-import { addNumberToItems } from "@/shared/utils/pagination-utils";
+import { ApiCartData, ApiCartListResponse } from "../types/api";
+import { Cart } from "../types/domain";
 
-interface UseCartDataProps {
+// API 응답을 도메인 타입으로 변환하는 함수
+const transformApiCartToDomain = (
+  apiCart: ApiCartData,
+  index: number
+): Cart => {
+  return {
+    id: apiCart.id,
+    no: index + 1,
+    name: apiCart.name,
+    status: apiCart.status_display,
+    location: "", // API에서 location 정보가 없으므로 빈 문자열
+    golfCourseName: apiCart.golf_course.name,
+    managerName: apiCart.current_caddie?.name || "미배정",
+    batteryLevel: apiCart.battery_level,
+    batteryStatus: apiCart.battery_status,
+    isAvailable: apiCart.is_available,
+    createdAt: apiCart.created_at || new Date().toISOString(),
+    updatedAt: apiCart.updated_at || new Date().toISOString(),
+    isEmpty: false,
+  };
+};
+
+export const useCartData = (params?: {
   selectedGolfCourseId?: string;
-  isMaster: boolean;
-}
-
-/**
- * 카트 데이터 로딩 및 관리 훅
- */
-export const useCartData = ({
-  selectedGolfCourseId,
-  isMaster,
-}: UseCartDataProps) => {
-  // URL에서 현재 페이지 및 필터 파라미터 읽기
-  const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get("page") || 1);
-  const urlSearchTerm = searchParams.get("search") || "";
-  const urlStatus = searchParams.get("status") as CartStatus | undefined;
-
-  // 필터 상태 (URL과 동기화)
-  const filters = useMemo(
-    (): CartFilters => ({
-      searchTerm: urlSearchTerm,
-      status: urlStatus,
-      golfCourseId: undefined,
-      fieldId: undefined,
-    }),
-    [urlSearchTerm, urlStatus]
-  );
-
-  // React Query를 사용한 데이터 페칭
+  isMaster?: boolean;
+  page?: number;
+  search?: string;
+  golf_course?: string;
+}) => {
   const {
-    data: apiResponse,
+    data,
     isLoading,
     error: queryError,
     refetch,
-  } = useQuery({
-    queryKey: [
-      CACHE_KEYS.CARTS,
-      currentPage,
-      urlSearchTerm,
-      urlStatus,
-      isMaster ? selectedGolfCourseId : undefined,
-    ],
-    queryFn: async () => {
-      const apiStatus = urlStatus
-        ? mapCartStatusToApiStatus(urlStatus)
-        : undefined;
-      const golfCourseId = isMaster ? selectedGolfCourseId : undefined;
-
-      const response = await fetchCartList(
-        currentPage,
-        CART_ITEMS_PER_PAGE,
-        urlSearchTerm || undefined,
-        apiStatus,
-        golfCourseId
-      );
-
-      // API 응답 구조 검증
-      if (!response.data?.results || !Array.isArray(response.data.results)) {
-        console.warn("⚠️ 예상과 다른 API 응답 구조:", response);
-        return {
-          results: [],
-          count: 0,
-          total_pages: 1,
-        };
-      }
-
-      return response.data;
-    },
-    ...QUERY_CONFIG.REALTIME_OPTIONS,
+  } = useQuery<ApiCartListResponse>({
+    queryKey: [CACHE_KEYS.CARTS, params],
+    queryFn: () =>
+      fetchCartList(
+        params?.page || 1,
+        20,
+        params?.search,
+        undefined,
+        params?.selectedGolfCourseId || params?.golf_course
+      ),
+    ...QUERY_CONFIG.DEFAULT_OPTIONS,
   });
 
-  // 데이터 변환
-  const carts = useMemo(() => {
-    if (!apiResponse?.results) return [];
-    return mapApiCartsToCartList(apiResponse.results);
-  }, [apiResponse?.results]);
-
-  const totalCount = apiResponse?.count || 0;
-  const totalPages = apiResponse?.total_pages || 1;
-
-  // 표준화된 에러 처리
   const error = useQueryError(
     queryError,
     "카트 목록 조회 중 오류가 발생했습니다."
   );
 
-  // 페이지네이션된 데이터에 번호 추가
-  const paginatedData = useMemo(() => {
-    return addNumberToItems(carts, currentPage, CART_ITEMS_PER_PAGE);
-  }, [carts, currentPage]);
-
-  // 기존 인터페이스 호환성을 위한 함수들
-  const loadCarts = () => refetch();
-
-  // React Query 구조에서는 필터가 URL에서 직접 관리되므로 빈 함수로 유지
-  const setFilters = () => {
-    // URL 파라미터는 외부에서 직접 관리됨
-  };
+  // API 응답을 도메인 타입으로 변환
+  const transformedData: Cart[] =
+    data?.data?.results?.map((apiCart, index) =>
+      transformApiCartToDomain(apiCart, index)
+    ) || [];
 
   return {
-    // 데이터
-    data: paginatedData,
-    totalCount,
-    totalPages,
-    currentPage,
-    filters,
-
-    // 상태
+    data: transformedData,
+    totalCount: data?.data?.count || 0,
+    totalPages: data?.data?.total_pages || 0,
+    currentPage: data?.data?.page || 1,
     isLoading,
     error,
-
-    // 함수
-    loadCarts,
-    setFilters,
+    refetch,
   };
 };

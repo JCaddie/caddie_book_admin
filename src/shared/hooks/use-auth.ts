@@ -1,10 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { User, UserRole } from "@/shared/types";
 import { cookieUtils } from "@/shared/lib/utils";
 import { AUTH_CONSTANTS } from "@/shared/constants/auth";
-import { apiClient } from "@/shared/lib/api-client";
+
+// 로그인 API 응답 타입
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    name: string;
+    role: string;
+    golf_course: string;
+    golf_course_id: string;
+  };
+}
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -15,10 +29,9 @@ interface AuthState {
 interface UseAuthReturn extends AuthState {
   login: (token: string, refreshToken: string, user: User) => void;
   logout: () => void;
-  switchRole: (targetRole: UserRole) => void;
+  switchRole: (targetRole: UserRole) => Promise<boolean>;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
-  refreshToken: () => Promise<boolean>;
 }
 
 // 토큰에서 사용자 정보 추출 (실제 구현에서는 JWT 디코딩)
@@ -56,64 +69,12 @@ const parseTokenToUser = (token: string): User | null => {
   }
 };
 
-// 토큰 갱신 응답 타입
-interface TokenRefreshResponse {
-  access: string;
-  refresh?: string;
-}
-
 export const useAuth = (): UseAuthReturn => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     isLoading: true,
     user: null,
   });
-
-  // 리프레시 토큰을 사용하여 새로운 액세스 토큰 발급
-  const refreshToken = useCallback(async (): Promise<boolean> => {
-    try {
-      const refreshTokenValue = cookieUtils.get(
-        AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN
-      );
-
-      if (!refreshTokenValue) {
-        console.warn("리프레시 토큰이 없습니다.");
-        return false;
-      }
-
-      const response = await apiClient.post<TokenRefreshResponse>(
-        AUTH_CONSTANTS.API_ENDPOINTS.REFRESH_TOKEN,
-        { refresh: refreshTokenValue },
-        { skipAuth: true } // 인증 토큰 없이 요청
-      );
-
-      if (response.access) {
-        // 새로운 액세스 토큰 저장
-        cookieUtils.set(
-          AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
-          response.access,
-          AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
-        );
-
-        // 리프레시 토큰도 새로 발급받았다면 저장
-        if (response.refresh) {
-          cookieUtils.set(
-            AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
-            response.refresh,
-            AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
-          );
-        }
-
-        console.log("토큰 갱신 성공");
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error("토큰 갱신 실패:", error);
-      return false;
-    }
-  }, []);
 
   useEffect(() => {
     // 컴포넌트 마운트 시 쿠키에서 토큰 확인
@@ -167,6 +128,15 @@ export const useAuth = (): UseAuthReturn => {
       AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
     );
 
+    // golf_course_id를 별도 쿠키로 저장
+    if (user.golfCourseId) {
+      cookieUtils.set(
+        AUTH_CONSTANTS.COOKIES.GOLF_COURSE_ID,
+        user.golfCourseId,
+        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
+      );
+    }
+
     // 상태 업데이트를 더 확실하게 하기 위해 약간의 지연 추가
     setTimeout(() => {
       setAuthState({
@@ -182,6 +152,7 @@ export const useAuth = (): UseAuthReturn => {
       AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
       AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
       AUTH_CONSTANTS.COOKIES.USER_DATA,
+      AUTH_CONSTANTS.COOKIES.GOLF_COURSE_ID,
     ]);
 
     setAuthState({
@@ -199,57 +170,92 @@ export const useAuth = (): UseAuthReturn => {
     return authState.user ? roles.includes(authState.user.role) : false;
   };
 
-  const switchRole = (targetRole: UserRole) => {
-    if (!authState.user) return;
+  const switchRole = async (targetRole: UserRole): Promise<boolean> => {
+    if (!authState.user) {
+      console.error("❌ 사용자 정보가 없어서 권한 전환할 수 없습니다");
+      return false;
+    }
 
-    // 테스트 사용자 정보 (실제로는 서버에서 가져오거나 JWT에서 디코딩)
-    const testUsers: Record<UserRole, User> = {
-      MASTER: {
-        id: "1",
-        name: "마스터 관리자",
-        email: "dev@example.com",
-        role: "MASTER",
-        created_at: new Date().toISOString(),
-      },
-      ADMIN: {
-        id: "2",
-        name: "골프장 관리자",
-        email: "golf@example.com",
-        role: "ADMIN",
-        golfCourseId: "golf-course-1",
-        created_at: new Date().toISOString(),
-      },
-    };
+    try {
+      console.log("🔄 권한 전환 시작:", authState.user.role, "→", targetRole);
+      console.log("🔄 자동 로그인으로 권한 전환");
 
-    const targetUser = testUsers[targetRole];
-    if (targetUser) {
-      // 새로운 토큰 생성
-      const newToken = `mock-token-${targetUser.id}-${Date.now()}`;
-      const newRefreshToken = `mock-refresh-${targetUser.id}-${Date.now()}`;
+      // 테스트 계정 정보 (실제 환경에서는 API에서 가져와야 함)
+      const testAccounts = {
+        MASTER: {
+          email: "master@caddiebook.com",
+          password: "master123!",
+        },
+        ADMIN: {
+          email: "admin@caddiebook.com",
+          password: "admin123!",
+        },
+      };
 
-      // 쿠키 업데이트
-      cookieUtils.set(
-        AUTH_CONSTANTS.COOKIES.AUTH_TOKEN,
-        newToken,
-        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
-      );
-      cookieUtils.set(
-        AUTH_CONSTANTS.COOKIES.REFRESH_TOKEN,
-        newRefreshToken,
-        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
-      );
-      cookieUtils.set(
-        AUTH_CONSTANTS.COOKIES.USER_DATA,
-        encodeURIComponent(JSON.stringify(targetUser)),
-        AUTH_CONSTANTS.TOKEN.EXPIRES_DAYS
-      );
+      const targetAccount = testAccounts[targetRole];
+      if (!targetAccount) {
+        console.error("❌ 해당 권한의 계정 정보가 없습니다:", targetRole);
+        return false;
+      }
 
-      // 상태 업데이트
-      setAuthState({
-        isAuthenticated: true,
-        isLoading: false,
-        user: targetUser,
-      });
+      // 현재 사용자 로그아웃
+      logout();
+
+      // 잠시 대기 후 자동 로그인
+      setTimeout(async () => {
+        try {
+          console.log("🔄 자동 로그인 시작:", targetAccount.email);
+
+          // API 클라이언트 import (동적 import 사용)
+          const { apiClient } = await import("@/shared/lib/api-client");
+
+          // 로그인 API 호출
+          const response = await apiClient.post<LoginResponse>(
+            "/api/v1/users/auth/login/",
+            {
+              username: targetAccount.email,
+              password: targetAccount.password,
+            },
+            { skipAuth: true }
+          );
+
+          console.log("✅ 자동 로그인 성공:", response);
+
+          // 새로운 사용자 정보 생성
+          const newUser: User = {
+            id: response.user.id,
+            name: response.user.name || response.user.username,
+            email: response.user.email,
+            role: response.user.role as "MASTER" | "ADMIN",
+            golfCourseId: response.user.golf_course_id || undefined,
+            golfCourse: response.user.golf_course || undefined,
+            created_at: new Date().toISOString(),
+          };
+
+          // 자동 로그인 처리
+          login(response.access_token, response.refresh_token, newUser);
+
+          console.log("✅ 권한 전환 완료 - 자동 로그인 성공");
+
+          // 페이지 새로고침으로 UI 업데이트
+          setTimeout(() => {
+            if (typeof window !== "undefined") {
+              window.location.reload();
+            }
+          }, 100);
+        } catch (error) {
+          console.error("❌ 자동 로그인 실패:", error);
+          // 자동 로그인 실패 시 로그인 페이지로 이동
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+        }
+      }, 500); // 500ms 대기
+
+      return true;
+    } catch (error) {
+      console.error("❌ 권한 전환 실패:", error);
+      return false;
     }
   };
 
@@ -260,6 +266,5 @@ export const useAuth = (): UseAuthReturn => {
     switchRole,
     hasRole,
     hasAnyRole,
-    refreshToken,
   };
 };

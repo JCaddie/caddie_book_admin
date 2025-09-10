@@ -1,20 +1,13 @@
 "use client";
 
-import React, { use, useState } from "react";
-import { useRouter } from "next/navigation";
+import { use, useMemo, useState } from "react";
 import { AdminPageHeader } from "@/shared/components/layout";
+import { Button, ConfirmationModal } from "@/shared/components/ui";
+import { useDayOffDetail } from "@/modules/day-off/hooks";
 import {
-  Button,
-  ConfirmationModal,
-  RejectionReasonModal,
-} from "@/shared/components/ui";
-import { useDocumentTitle } from "@/shared/hooks";
-import { useDayOffActions, useDayOffDetail } from "@/modules/day-off/hooks";
-import {
-  formatProcessResult,
-  getProcessResultColor,
-} from "@/modules/day-off/utils";
-import { DAY_OFF_UI_TEXT } from "@/modules/day-off/constants";
+  approveDayOffRequests,
+  rejectDayOffRequests,
+} from "@/modules/day-off/api";
 
 interface DayOffDetailPageProps {
   params: Promise<{
@@ -23,450 +16,378 @@ interface DayOffDetailPageProps {
 }
 
 const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
-  const router = useRouter();
-  const resolvedParams = use(params);
+  const { id: dayOffId } = use(params);
 
-  // 모달 상태 관리
-  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
-  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-
-  // 페이지 타이틀 설정
-  useDocumentTitle({ title: DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE });
-
-  // 휴무 신청 데이터 조회
+  // 휴무 상세 데이터 관리
   const {
-    data: dayOffRequest,
-    loading,
+    data: dayOffData,
+    loading: isLoading,
     error,
     refreshData,
-    clearError,
-  } = useDayOffDetail(resolvedParams.id);
+  } = useDayOffDetail(dayOffId);
 
-  // 액션 처리
-  const { isApproving, isRejecting, approveRequests, rejectRequests } =
-    useDayOffActions();
+  // 선택 상태 관리
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isIndividualApprovalModalOpen, setIsIndividualApprovalModalOpen] =
+    useState(false);
+  const [isIndividualRejectModalOpen, setIsIndividualRejectModalOpen] =
+    useState(false);
+  const [selectedDayOffName, setSelectedDayOffName] = useState<string>("");
 
-  // 데이터가 없는 경우 처리
+  // 휴무 요청 목록 데이터
+  const dayOffRequests = useMemo(() => {
+    return dayOffData?.requests || [];
+  }, [dayOffData?.requests]);
+
+  // 로딩 중인 경우
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader title="휴무 상세" />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">데이터를 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러가 있는 경우
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50" style={{ minWidth: "1600px" }}>
-        <div className="bg-white rounded-xl p-8">
-          <AdminPageHeader title={DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE} />
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <p className="text-lg text-red-600 mb-4">오류가 발생했습니다</p>
-              <p className="text-sm text-gray-600 mb-4">{error}</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="secondary" onClick={clearError}>
-                  확인
-                </Button>
-                <Button variant="primary" onClick={refreshData}>
-                  다시 시도
-                </Button>
-              </div>
-            </div>
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader title="휴무 상세" />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-red-500">
+            <p>데이터 로딩에 실패했습니다.</p>
+            <p className="text-sm mt-2">{error}</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // 로딩 중 처리
-  if (loading || !dayOffRequest) {
+  // 휴무 데이터가 없는 경우
+  if (!dayOffData) {
     return (
-      <div className="min-h-screen bg-gray-50" style={{ minWidth: "1600px" }}>
-        <div className="bg-white rounded-xl p-8">
-          <AdminPageHeader title={DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE} />
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-600">데이터를 불러오는 중...</p>
-            </div>
-          </div>
+      <div className="bg-white rounded-xl p-8 space-y-6">
+        <AdminPageHeader title="휴무 상세" />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">휴무 정보를 찾을 수 없습니다.</div>
         </div>
       </div>
     );
   }
 
-  // 승인 모달 열기
-  const handleApproveClick = () => {
-    setIsApproveModalOpen(true);
+  // 행 클릭 핸들러
+  const handleRowClick = (record: Record<string, unknown>) => {
+    if ((record as { isEmpty?: boolean }).isEmpty) return;
+    // 상세 페이지로 이동하는 로직 추가 가능
   };
 
-  // 반려 모달 열기
-  const handleRejectClick = () => {
+  // 대량 승인 핸들러
+  const handleBulkApprove = async () => {
+    if (selectedRowKeys.length === 0) return;
+
+    try {
+      await approveDayOffRequests(selectedRowKeys);
+      setIsApprovalModalOpen(false);
+      setSelectedRowKeys([]);
+      refreshData();
+    } catch (error) {
+      console.error("대량 승인 중 오류 발생:", error);
+    }
+  };
+
+  // 대량 거절 핸들러
+  const handleBulkReject = async () => {
+    if (selectedRowKeys.length === 0) return;
+
+    try {
+      await rejectDayOffRequests(selectedRowKeys, "거절 처리");
+      setIsRejectModalOpen(false);
+      setSelectedRowKeys([]);
+      refreshData();
+    } catch (error) {
+      console.error("대량 거절 중 오류 발생:", error);
+    }
+  };
+
+  // 개별 승인 핸들러
+  const handleIndividualApprove = async () => {
+    if (selectedRowKeys.length !== 1) return;
+
+    try {
+      await approveDayOffRequests(selectedRowKeys);
+      setIsIndividualApprovalModalOpen(false);
+      setSelectedRowKeys([]);
+      refreshData();
+    } catch (error) {
+      console.error("개별 승인 중 오류 발생:", error);
+    }
+  };
+
+  // 개별 거절 핸들러
+  const handleIndividualReject = async () => {
+    if (selectedRowKeys.length !== 1) return;
+
+    try {
+      await rejectDayOffRequests(selectedRowKeys, "개별 거절 처리");
+      setIsIndividualRejectModalOpen(false);
+      setSelectedRowKeys([]);
+      refreshData();
+    } catch (error) {
+      console.error("개별 거절 중 오류 발생:", error);
+    }
+  };
+
+  // 승인 모달 열기
+  const openApprovalModal = () => {
+    if (selectedRowKeys.length === 0) return;
+    setIsApprovalModalOpen(true);
+  };
+
+  // 거절 모달 열기
+  const openRejectModal = () => {
+    if (selectedRowKeys.length === 0) return;
     setIsRejectModalOpen(true);
   };
 
-  // 승인 처리
-  const handleApproveConfirm = async () => {
-    try {
-      await approveRequests([dayOffRequest.id]);
-      setIsApproveModalOpen(false);
-      // 처리 후 목록으로 이동
-      router.push("/works/day-off");
-    } catch (error) {
-      console.error("승인 처리 중 오류:", error);
-      // 실제 환경에서는 에러 토스트 표시
-    }
+  // 개별 승인 모달 열기
+  const openIndividualApprovalModal = (dayOffName: string) => {
+    setSelectedDayOffName(dayOffName);
+    setIsIndividualApprovalModalOpen(true);
   };
 
-  // 반려 처리
-  const handleRejectConfirm = async (reason: string) => {
-    try {
-      await rejectRequests([dayOffRequest.id], reason);
-      setIsRejectModalOpen(false);
-      // 처리 후 목록으로 이동
-      router.push("/works/day-off");
-    } catch (error) {
-      console.error("반려 처리 중 오류:", error);
-      // 실제 환경에서는 에러 토스트 표시
-    }
-  };
-
-  // 날짜 포맷팅 (ISO → 한국 형식)
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-
-    // ISO 형식인 경우 변환
-    if (dateString.includes("T")) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        weekday: "short",
-      });
-    }
-
-    // 이미 한국 형식인 경우 그대로 반환
-    return dateString;
+  // 개별 거절 모달 열기
+  const openIndividualRejectModal = (dayOffName: string) => {
+    setSelectedDayOffName(dayOffName);
+    setIsIndividualRejectModalOpen(true);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ minWidth: "1600px" }}>
-      <div className="bg-white rounded-xl flex-1 flex flex-col">
-        {/* 메인 콘텐츠 */}
-        <div className="flex-1 p-8 space-y-10">
-          {/* 페이지 헤더 */}
-          <AdminPageHeader title={DAY_OFF_UI_TEXT.DETAIL_PAGE_TITLE} />
+    <div className="bg-white rounded-xl p-8 space-y-6">
+      <AdminPageHeader title="휴무 상세" />
 
-          {/* 기본 정보 섹션 */}
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-gray-600">기본 정보</h2>
-            <div className="flex gap-4">
-              {/* 캐디 사진 */}
-              <div className="w-[180px] h-[240px] bg-gray-300 rounded-md flex-shrink-0"></div>
-
-              {/* 정보 테이블 */}
-              <div className="flex-1 border border-gray-200 rounded-md">
-                <div className="grid grid-cols-2 gap-0">
-                  {/* 첫 번째 행 */}
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">이름</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {dayOffRequest.caddie_name}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">계약 형태</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="bg-green-400 text-white px-2 py-1 rounded text-sm font-medium">
-                        {dayOffRequest.caddie_employment_type_display ||
-                          "정규직"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 두 번째 행 */}
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">역할</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">캐디</span>
-                    </div>
-                  </div>
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">신청일</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {formatDate(dayOffRequest.date)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 세 번째 행 */}
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">그룹</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {dayOffRequest.caddie_primary_group || "-"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">특수반</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {dayOffRequest.caddie_special_group || "-"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 네 번째 행 */}
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">연락처</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {dayOffRequest.caddie_phone || "-"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">이메일</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {dayOffRequest.caddie_email || "-"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 다섯 번째 행 */}
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">주소</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-black">
-                        {dayOffRequest.caddie_address || "-"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">팀장 여부</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span
-                        className={`px-2 py-1 rounded text-sm font-medium ${
-                          dayOffRequest.caddie_is_team_leader
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {dayOffRequest.caddie_is_team_leader ? "팀장" : "일반"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 휴무 신청 정보 섹션 */}
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-gray-600">휴무 신청 정보</h2>
-            <div className="border border-gray-200 rounded-md">
-              <div className="grid grid-cols-2 gap-0">
-                {/* 첫 번째 행 */}
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">신청구분</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {dayOffRequest.display_status}
-                    </span>
-                  </div>
-                </div>
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">처리결과</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded text-sm font-medium ${
-                        dayOffRequest.process_result === "APPROVED"
-                          ? "bg-green-100 text-green-800"
-                          : dayOffRequest.process_result === "REJECTED"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {formatProcessResult(dayOffRequest.process_result)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 두 번째 행 */}
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">신청 날짜</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {formatDate(dayOffRequest.created_at)}
-                    </span>
-                  </div>
-                </div>
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">요청 날짜</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {dayOffRequest.requested_at
-                        ? formatDate(dayOffRequest.requested_at)
-                        : "-"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 세 번째 행 */}
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">수정 날짜</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {formatDate(dayOffRequest.updated_at)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 네 번째 행 */}
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">처리자</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {dayOffRequest.processed_by_name || "-"}
-                    </span>
-                  </div>
-                </div>
-                <div className="border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">처리 날짜</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {dayOffRequest.processed_at
-                        ? formatDate(dayOffRequest.processed_at)
-                        : "-"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 사유 행 (전체 너비) */}
-                <div className="col-span-2 border-b border-gray-200 flex">
-                  <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                    <span className="text-sm font-bold">신청 사유</span>
-                  </div>
-                  <div className="flex-1 flex items-center px-4 py-3">
-                    <span className="text-sm text-black">
-                      {dayOffRequest.request_reason}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 메모 행 (전체 너비) */}
-                {dayOffRequest.notes && (
-                  <div className="col-span-2 border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">메모</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span className="text-sm text-gray-600">
-                        {dayOffRequest.notes}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* 처리내용 행 (처리된 경우에만 표시) */}
-                {dayOffRequest.process_notes && (
-                  <div className="col-span-2 border-b border-gray-200 flex">
-                    <div className="w-[120px] bg-gray-50 flex items-center justify-center py-3 px-4 border-r border-gray-200">
-                      <span className="text-sm font-bold">처리내용</span>
-                    </div>
-                    <div className="flex-1 flex items-center px-4 py-3">
-                      <span
-                        className={`text-sm ${
-                          dayOffRequest.process_result === "REJECTED"
-                            ? "text-red-600"
-                            : "text-black"
-                        }`}
-                      >
-                        {dayOffRequest.process_notes}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 액션 버튼들 */}
-          <div className="flex gap-4 justify-end">
-            <Button
-              variant="primary"
-              onClick={handleApproveClick}
-              disabled={isApproving}
-            >
-              승인
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleRejectClick}
-              disabled={isRejecting}
-            >
-              반려
-            </Button>
+      {/* 휴무 정보 섹션 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="p-4 border border-gray-200 rounded-lg">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            골프장
+          </label>
+          <div className="text-sm text-gray-900">
+            {dayOffData.golf_course_name || "-"}
           </div>
         </div>
+
+        <div className="p-4 border border-gray-200 rounded-lg">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            요청자
+          </label>
+          <div className="text-sm text-gray-900">
+            {dayOffData.requester_name || "-"}
+          </div>
+        </div>
+
+        <div className="p-4 border border-gray-200 rounded-lg">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            요청 날짜
+          </label>
+          <div className="text-sm text-gray-900">
+            {dayOffData.request_date || "-"}
+          </div>
+        </div>
+
+        <div className="p-4 border border-gray-200 rounded-lg">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            휴무 시작일
+          </label>
+          <div className="text-sm text-gray-900">
+            {dayOffData.start_date || "-"}
+          </div>
+        </div>
+
+        <div className="p-4 border border-gray-200 rounded-lg">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            휴무 종료일
+          </label>
+          <div className="text-sm text-gray-900">
+            {dayOffData.end_date || "-"}
+          </div>
+        </div>
+
+        <div className="p-4 border border-gray-200 rounded-lg">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            상태
+          </label>
+          <div className="text-sm text-gray-900">
+            {dayOffData.status || "-"}
+          </div>
+        </div>
+      </div>
+
+      {/* 액션 버튼들 */}
+      <div className="flex items-center justify-between">
+        <div className="text-base font-bold text-gray-900">
+          총 {dayOffRequests.length}건
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={openApprovalModal}
+            disabled={selectedRowKeys.length === 0}
+            className="w-24"
+          >
+            승인
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={openRejectModal}
+            disabled={selectedRowKeys.length === 0}
+            className="w-24"
+          >
+            거절
+          </Button>
+        </div>
+      </div>
+
+      {/* 휴무 요청 목록 테이블 */}
+      <div className="space-y-4">
+        {/* 테이블 헤더 */}
+        <div className="bg-gray-50 rounded-t-md border border-gray-200 p-4">
+          <div className="flex items-center gap-8">
+            <div className="w-12 text-center">
+              <span className="text-sm font-bold text-gray-600">No.</span>
+            </div>
+            <div className="w-32">
+              <span className="text-sm font-bold text-gray-600">캐디명</span>
+            </div>
+            <div className="flex-1 text-center">
+              <span className="text-sm font-bold text-gray-600">
+                휴무 시작일
+              </span>
+            </div>
+            <div className="flex-1 text-center">
+              <span className="text-sm font-bold text-gray-600">
+                휴무 종료일
+              </span>
+            </div>
+            <div className="w-24 text-center">
+              <span className="text-sm font-bold text-gray-600">상태</span>
+            </div>
+            <div className="w-32 text-center">
+              <span className="text-sm font-bold text-gray-600">액션</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 휴무 요청 목록 */}
+        {dayOffRequests.map(
+          (request: Record<string, unknown>, index: number) => (
+            <div
+              key={request.id as string}
+              className="flex items-center gap-8 p-4 border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
+              onClick={() => handleRowClick(request)}
+            >
+              <div className="w-12 text-center">
+                <span className="text-sm text-gray-600">{index + 1}</span>
+              </div>
+              <div className="w-32">
+                <span className="text-sm font-medium text-gray-900">
+                  {request.caddie_name as string}
+                </span>
+              </div>
+              <div className="flex-1 text-center">
+                <span className="text-sm text-gray-600">
+                  {request.start_date as string}
+                </span>
+              </div>
+              <div className="flex-1 text-center">
+                <span className="text-sm text-gray-600">
+                  {request.end_date as string}
+                </span>
+              </div>
+              <div className="w-24 text-center">
+                <span className="text-sm text-gray-600">
+                  {request.status as string}
+                </span>
+              </div>
+              <div className="w-32 flex items-center justify-center gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openIndividualApprovalModal(request.caddie_name as string);
+                  }}
+                  className="w-16"
+                >
+                  승인
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openIndividualRejectModal(request.caddie_name as string);
+                  }}
+                  className="w-16"
+                >
+                  거절
+                </Button>
+              </div>
+            </div>
+          )
+        )}
       </div>
 
       {/* 승인 확인 모달 */}
       <ConfirmationModal
-        isOpen={isApproveModalOpen}
-        onClose={() => setIsApproveModalOpen(false)}
-        onConfirm={handleApproveConfirm}
-        title="휴무 신청 승인"
-        message="이 휴무 신청을 승인하시겠습니까?"
+        isOpen={isApprovalModalOpen}
+        onClose={() => setIsApprovalModalOpen(false)}
+        onConfirm={handleBulkApprove}
+        title="휴무 승인"
+        message={`선택한 ${selectedRowKeys.length}개의 휴무 요청을 승인하시겠습니까?`}
         confirmText="승인"
         cancelText="취소"
-        isLoading={isApproving}
       />
 
-      {/* 반려 사유 입력 모달 */}
-      <RejectionReasonModal
+      {/* 거절 확인 모달 */}
+      <ConfirmationModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
-        onConfirm={handleRejectConfirm}
-        title="휴무 신청 반려"
-        message="이 휴무 신청을 반려하시겠습니까?"
-        confirmText="반려"
+        onConfirm={handleBulkReject}
+        title="휴무 거절"
+        message={`선택한 ${selectedRowKeys.length}개의 휴무 요청을 거절하시겠습니까?`}
+        confirmText="거절"
         cancelText="취소"
-        isLoading={isRejecting}
-        placeholder="반려 사유를 입력하세요..."
+      />
+
+      {/* 개별 승인 확인 모달 */}
+      <ConfirmationModal
+        isOpen={isIndividualApprovalModalOpen}
+        onClose={() => setIsIndividualApprovalModalOpen(false)}
+        onConfirm={handleIndividualApprove}
+        title="휴무 승인"
+        message={`${selectedDayOffName}의 휴무 요청을 승인하시겠습니까?`}
+        confirmText="승인"
+        cancelText="취소"
+      />
+
+      {/* 개별 거절 확인 모달 */}
+      <ConfirmationModal
+        isOpen={isIndividualRejectModalOpen}
+        onClose={() => setIsIndividualRejectModalOpen(false)}
+        onConfirm={handleIndividualReject}
+        title="휴무 거절"
+        message={`${selectedDayOffName}의 휴무 요청을 거절하시겠습니까?`}
+        confirmText="거절"
+        cancelText="취소"
       />
     </div>
   );

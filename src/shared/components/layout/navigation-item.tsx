@@ -48,7 +48,13 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
               : "hover:bg-gray-50"
           }
         `}
-        onClick={hasSubItems ? handleToggleExpand : undefined}
+        onClick={(e) => {
+          if (hasSubItems) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleToggleExpand();
+          }
+        }}
       >
         {/* 아이콘 */}
         <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
@@ -58,19 +64,37 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
         {/* 메뉴 링크 또는 텍스트 */}
         {hasSubItems ? (
           <div className="flex-1 flex items-center justify-between">
-            <span
-              className={`
-                text-lg font-medium
-                ${isActive ? "text-primary-600 font-bold" : "text-gray-900"}
-              `}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleToggleExpand();
+              }}
+              className="flex-1 text-left"
             >
-              {item.label}
-            </span>
-            {isExpanded ? (
-              <ChevronDown size={20} className="text-gray-500" />
-            ) : (
-              <ChevronRight size={20} className="text-gray-500" />
-            )}
+              <span
+                className={`
+                  text-lg font-medium
+                  ${isActive ? "text-primary-600 font-bold" : "text-gray-900"}
+                `}
+              >
+                {item.label}
+              </span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleToggleExpand();
+              }}
+              className="p-1 hover:bg-gray-200 rounded"
+            >
+              {isExpanded ? (
+                <ChevronDown size={20} className="text-gray-500" />
+              ) : (
+                <ChevronRight size={20} className="text-gray-500" />
+              )}
+            </button>
           </div>
         ) : (
           <Link href={item.href} className="flex-1">

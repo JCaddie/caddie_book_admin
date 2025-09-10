@@ -14,6 +14,7 @@ interface UnassignedCaddieListProps {
     caddie: UnassignedCaddie,
     index?: number
   ) => CaddieData;
+  onTemporaryCaddieDelete?: (caddieId: string) => void;
 }
 
 export const UnassignedCaddieList: React.FC<UnassignedCaddieListProps> = ({
@@ -25,6 +26,7 @@ export const UnassignedCaddieList: React.FC<UnassignedCaddieListProps> = ({
   onDrop,
   draggedCaddie,
   transformUnassignedCaddieToCaddieData,
+  onTemporaryCaddieDelete,
 }) => {
   if (isLoading) {
     return (
@@ -84,7 +86,17 @@ export const UnassignedCaddieList: React.FC<UnassignedCaddieListProps> = ({
               draggedCaddie?.id === caddieData.id ? "opacity-50" : ""
             }`}
           >
-            <CaddieCard caddie={caddieData} />
+            <CaddieCard
+              caddie={caddieData}
+              onTemporaryCaddieDelete={
+                caddieData.isTemporary && onTemporaryCaddieDelete
+                  ? () =>
+                      onTemporaryCaddieDelete(
+                        caddieData.originalId || caddieData.id.toString()
+                      )
+                  : undefined
+              }
+            />
           </div>
         ))}
     </div>

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { MoreVertical, Settings, UserMinus } from "lucide-react";
+import {
+  MoreVertical,
+  Settings,
+  Shield,
+  UserMinus,
+  Trash2,
+  Clock,
+} from "lucide-react";
 import { CaddieCardProps, CaddieData } from "../types";
 import {
   getCaddieCardStyle,
@@ -19,7 +26,10 @@ export default function CaddieCard({
   onClick,
   onStatusToggle,
   onCaddieRemove,
+  onSpareToggle,
+  onTemporaryCaddieDelete,
   onDoubleClick,
+  isSpare = false,
 }: CaddieCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -69,7 +79,7 @@ export default function CaddieCard({
 
   if (!caddie) return null;
 
-  const cardStyle = getCaddieCardStyle(caddie.status);
+  const cardStyle = getCaddieCardStyle(caddie);
   const specialBadgeStyle = getSpecialBadgeStyle(caddie.specialBadge);
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -97,9 +107,13 @@ export default function CaddieCard({
 
   return (
     <div
-      className={`w-[218px] flex items-center justify-between px-2 py-1.5 bg-white rounded-md border border-[#DDDDDD] ${cardStyle} ${
-        isDragging ? "opacity-50" : ""
-      } ${draggable ? "cursor-move" : ""}`}
+      className={`w-[218px] flex items-center justify-between px-2 py-1.5 rounded-md border ${
+        caddie.isTemporary
+          ? "bg-orange-50 border-orange-200"
+          : "bg-white border-[#DDDDDD]"
+      } ${cardStyle} ${isDragging ? "opacity-50" : ""} ${
+        draggable ? "cursor-move" : ""
+      }`}
       draggable={draggable}
       onDragStart={draggable ? handleDragStart : undefined}
       onDragEnd={draggable ? handleDragEnd : undefined}
@@ -117,6 +131,14 @@ export default function CaddieCard({
           {caddie.name}
         </span>
 
+        {/* 임시 캐디 배지 */}
+        {caddie.isTemporary && (
+          <div className="w-12 h-5 bg-orange-100 text-orange-600 text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0 gap-1">
+            <Clock className="w-3 h-3" />
+            임시
+          </div>
+        )}
+
         {/* 특수반 배지 - 있을 때만 표시 */}
         {caddie.badge && (
           <div className="w-12 h-5 bg-[#FFF5E6] text-black/30 text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
@@ -125,12 +147,20 @@ export default function CaddieCard({
         )}
 
         {/* 상태 구분선 및 배지 */}
-        {(caddie.status === "휴무" || caddie.specialBadge) && (
+        {(caddie.status === "휴무" ||
+          caddie.specialBadge ||
+          caddie.isSpare ||
+          isSpare) && (
           <>
             <div className="w-0.5 h-4 bg-[#E3E3E3] flex-shrink-0"></div>
             {caddie.status === "휴무" && (
               <div className="w-10 h-5 bg-[#FFF5E6] text-[#FEB912] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
                 휴무
+              </div>
+            )}
+            {(caddie.isSpare || isSpare) && (
+              <div className="w-10 h-5 bg-[#E8F5E8] text-[#22C55E] text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
+                스페어
               </div>
             )}
             {specialBadgeStyle && (
@@ -185,6 +215,23 @@ export default function CaddieCard({
                   상태 변경 불가
                 </div>
               )}
+              {onSpareToggle ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSpareToggle();
+                    setShowMenu(false);
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  {caddie?.isSpare || isSpare ? "스페어 해제" : "스페어 설정"}
+                </button>
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-400">
+                  스페어 설정 불가
+                </div>
+              )}
               {onCaddieRemove ? (
                 <button
                   onClick={(e) => {
@@ -202,6 +249,19 @@ export default function CaddieCard({
                   캐디 제거 불가
                 </div>
               )}
+              {caddie?.isTemporary && onTemporaryCaddieDelete ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTemporaryCaddieDelete();
+                    setShowMenu(false);
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  임시 캐디 삭제
+                </button>
+              ) : null}
             </div>
           </div>
         )}
