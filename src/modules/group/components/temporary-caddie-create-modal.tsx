@@ -72,13 +72,14 @@ export const TemporaryCaddieCreateModal: React.FC<
 
       const response = await createTemporaryCaddie(requestData);
 
-      if (response.success) {
+      // 201 상태 코드로 응답이 오면 성공으로 처리
+      if (response && response.user_id && response.caddie_profile_id) {
         // 성공 시 폼 초기화 및 모달 닫기
         setFormData({ name: "" });
         onSuccess();
         onClose();
       } else {
-        setError(response.message || "임시 캐디 생성에 실패했습니다.");
+        setError("임시 캐디 생성에 실패했습니다.");
       }
     } catch (err) {
       console.error("임시 캐디 생성 실패:", err);

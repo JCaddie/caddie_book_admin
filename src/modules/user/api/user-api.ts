@@ -7,7 +7,7 @@ import {
   CreateAdminRequest,
   CreateAdminResponse,
   CreateTemporaryCaddieRequest,
-  CreateTemporaryCaddieResponse,
+  CreateTemporaryCaddieSuccessResponse,
   DeleteTemporaryCaddieResponse,
   UpdateAdminRequest,
   UpdateAdminResponse,
@@ -124,7 +124,7 @@ export const getUserAssignments = async (
 // 임시 캐디 생성
 export const createTemporaryCaddie = async (
   data: CreateTemporaryCaddieRequest
-): Promise<CreateTemporaryCaddieResponse> => {
+): Promise<CreateTemporaryCaddieSuccessResponse> => {
   return apiClient.post("/api/v1/users/temporary-caddies/", data);
 };
 

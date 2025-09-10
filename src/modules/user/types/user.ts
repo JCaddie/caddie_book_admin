@@ -302,29 +302,10 @@ export interface CreateTemporaryCaddieRequest {
   temporary_notes: string;
 }
 
-// 임시 캐디 생성 성공 응답 타입
+// 임시 캐디 생성 성공 응답 타입 (실제 API 응답 형식)
 export interface CreateTemporaryCaddieSuccessResponse {
-  success: true;
-  message: string;
-  data: {
-    id: string;
-    name: string;
-    golf_course: {
-      id: string;
-      name: string;
-    };
-    is_temporary: true;
-    temporary_created_by: string;
-    temporary_notes: string;
-    primary_group?: {
-      id: string;
-      name: string;
-    };
-    special_group?: {
-      id: string;
-      name: string;
-    };
-  };
+  user_id: string;
+  caddie_profile_id: string;
 }
 
 // 임시 캐디 생성 실패 응답 타입
