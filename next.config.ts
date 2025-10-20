@@ -4,8 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   env: {
     // EC2 서버 API 설정 (프록시 사용)
-    NEXT_PUBLIC_API_BASE_URL:
-      process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
   },
   // Vercel 프록시 설정 - HTTPS에서 HTTP로 안전하게 요청
   async rewrites() {
