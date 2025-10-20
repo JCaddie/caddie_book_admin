@@ -1,6 +1,5 @@
 // 서버 컴포넌트로 전환 - "use client" 제거
 import GolfCourseListClient from "./golf-course-list-client";
-import GolfCourseListSkeleton from "./golf-course-list-skeleton";
 
 export default function GolfCoursesPage() {
   return (

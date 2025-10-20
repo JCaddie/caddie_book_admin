@@ -2,6 +2,14 @@ import { useMemo } from "react";
 import { QUERY_ERROR_MESSAGES } from "../lib/query-config";
 
 /**
+ * HTTP 에러 응답 타입
+ */
+interface HttpError {
+  status?: number;
+  message?: string;
+}
+
+/**
  * React Query 에러를 표준화된 메시지로 변환하는 훅
  */
 export const useQueryError = (error: unknown, fallbackMessage?: string) => {
@@ -44,7 +52,7 @@ export const useQueryError = (error: unknown, fallbackMessage?: string) => {
 
     // HTTP 상태 코드 기반 에러 처리
     if (typeof error === "object" && error !== null) {
-      const err = error as any;
+      const err = error as HttpError;
 
       if (err.status === 401) {
         return "인증이 만료되었습니다. 다시 로그인해주세요.";
@@ -54,11 +62,11 @@ export const useQueryError = (error: unknown, fallbackMessage?: string) => {
         return QUERY_ERROR_MESSAGES.PERMISSION_ERROR;
       }
 
-      if (err.status >= 500) {
+      if (err.status && err.status >= 500) {
         return "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
       }
 
-      if (err.status >= 400) {
+      if (err.status && err.status >= 400) {
         return err.message || "요청 처리 중 오류가 발생했습니다.";
       }
     }

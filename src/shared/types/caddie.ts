@@ -2,14 +2,22 @@
 // Legacy 캐디 타입 (호환성 유지용)
 // ================================
 
+// 성별 타입
+export type Gender = "M" | "F";
+
+// 고용 형태 타입
+export type EmploymentType =
+  | "FULL_TIME"
+  | "PART_TIME"
+  | "CONTRACT"
+  | "TEMPORARY";
+
 // 새로운 타입들은 modules에서 사용
 export type {
   Caddie as ModernCaddie,
   CaddieDetail as ModernCaddieDetail,
   CaddieFilters as ModernCaddieFilters,
   CaddieSelection as ModernCaddieSelection,
-  Gender,
-  EmploymentType,
 } from "@/modules/caddie/types";
 
 // Legacy 타입들 (기존 코드 호환성 유지)

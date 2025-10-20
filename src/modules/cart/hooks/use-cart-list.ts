@@ -40,7 +40,9 @@ export const useCartList = () => {
     deleteSelectedCarts,
     createNewCart,
   } = useCartActions({
-    onCartListUpdate: loadCarts,
+    onCartListUpdate: async () => {
+      await loadCarts();
+    },
     onSelectionClear: clearSelection,
   });
 
@@ -81,7 +83,8 @@ export const useCartList = () => {
   );
 
   const updateGolfCourseFilter = useCallback(
-    (golfCourseId: string | undefined) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_golfCourseId: string | undefined) => {
       // 골프장 필터 업데이트 로직 (필요시 구현)
       goToFirstPage();
     },
@@ -89,7 +92,8 @@ export const useCartList = () => {
   );
 
   const updateFieldFilter = useCallback(
-    (fieldId: string | undefined) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_fieldId: string | undefined) => {
       // 필드 필터 업데이트 로직 (필요시 구현)
       goToFirstPage();
     },

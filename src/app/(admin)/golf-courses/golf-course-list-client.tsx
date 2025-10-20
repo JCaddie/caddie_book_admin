@@ -24,7 +24,7 @@ import type {
 } from "@/modules/golf-course/types/golf-course";
 
 interface GolfCourseListClientProps {
-  initialData: GolfCourseListResponse;
+  initialData: GolfCourseListResponse | null;
   initialConstants: Record<string, Array<{ id: string; name: string }>>;
   searchParams: {
     page?: string;

@@ -16,4 +16,4 @@ export { default as EmptyGroupsState } from "./empty-groups-state";
 export { default as GroupSection } from "./group-section";
 export { default as GroupCreateModal } from "./group-create-modal";
 export { default as GroupTypeToggle } from "./group-type-toggle";
-export { default as TemporaryCaddieCreateModal } from "./temporary-caddie-create-modal";
+export { TemporaryCaddieCreateModal } from "./temporary-caddie-create-modal";

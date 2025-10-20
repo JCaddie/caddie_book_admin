@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Search, X, UserPlus } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Search, UserPlus, X } from "lucide-react";
 import { UnassignedCaddie } from "@/modules/user/types/user";
 
 interface CaddieSearchDropdownProps {

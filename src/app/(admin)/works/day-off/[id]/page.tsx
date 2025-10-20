@@ -38,8 +38,11 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
 
   // 휴무 요청 목록 데이터
   const dayOffRequests = useMemo(() => {
-    return dayOffData?.requests || [];
-  }, [dayOffData?.requests]);
+    return (
+      (dayOffData as unknown as { requests?: Array<Record<string, unknown>> })
+        ?.requests || []
+    );
+  }, [dayOffData]);
 
   // 로딩 중인 경우
   if (isLoading) {
@@ -186,7 +189,7 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
             요청자
           </label>
           <div className="text-sm text-gray-900">
-            {dayOffData.requester_name || "-"}
+            {dayOffData.caddie_name || "-"}
           </div>
         </div>
 
@@ -195,26 +198,15 @@ const DayOffDetailPage: React.FC<DayOffDetailPageProps> = ({ params }) => {
             요청 날짜
           </label>
           <div className="text-sm text-gray-900">
-            {dayOffData.request_date || "-"}
+            {dayOffData.requested_at || "-"}
           </div>
         </div>
 
         <div className="p-4 border border-gray-200 rounded-lg">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            휴무 시작일
+            휴무 날짜
           </label>
-          <div className="text-sm text-gray-900">
-            {dayOffData.start_date || "-"}
-          </div>
-        </div>
-
-        <div className="p-4 border border-gray-200 rounded-lg">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            휴무 종료일
-          </label>
-          <div className="text-sm text-gray-900">
-            {dayOffData.end_date || "-"}
-          </div>
+          <div className="text-sm text-gray-900">{dayOffData.date || "-"}</div>
         </div>
 
         <div className="p-4 border border-gray-200 rounded-lg">

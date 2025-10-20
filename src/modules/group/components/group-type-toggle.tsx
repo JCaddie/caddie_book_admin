@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-
-export type GroupType = "PRIMARY" | "SPECIAL";
+import type { GroupType } from "@/shared/types";
 
 interface GroupTypeToggleProps {
   value: GroupType;

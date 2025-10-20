@@ -10,7 +10,7 @@ import {
   SelectableDataTable,
 } from "@/shared/components/ui";
 import { AdminPageHeader } from "@/shared/components/layout";
-import { useDocumentTitle, useAuth, useGolfCourseId } from "@/shared/hooks";
+import { useAuth, useDocumentTitle, useGolfCourseId } from "@/shared/hooks";
 import { getGroupAssignmentOverview } from "@/modules/group/api/group-api";
 import { GolfCourseGroupStatus } from "@/modules/golf-course/types/api";
 

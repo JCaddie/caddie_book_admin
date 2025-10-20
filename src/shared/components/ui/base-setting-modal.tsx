@@ -134,7 +134,7 @@ function BaseSettingModal<T extends BaseSettingItem>({
                   {config.renderItem(
                     item,
                     selectedItemId === item.id,
-                    (newName) => handleItemNameChange(item.id, newName),
+                    (newName: string) => handleItemNameChange(item.id, newName),
                     () => handleDeleteItem(item.id)
                   )}
                 </div>

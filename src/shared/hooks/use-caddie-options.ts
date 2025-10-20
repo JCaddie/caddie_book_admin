@@ -52,9 +52,9 @@ export const useCaddieOptions = ({
       // 캐디 목록을 드롭다운 옵션으로 변환
       const options: CaddieOption[] = [
         { value: "", label: "캐디 선택" },
-        ...response.results.map((caddie: Caddie) => ({
+        ...(response?.data?.results || []).map((caddie: Caddie) => ({
           value: caddie.id,
-          label: caddie.name,
+          label: caddie.name || "이름 없음",
         })),
       ];
 

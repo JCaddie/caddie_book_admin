@@ -9,6 +9,7 @@ import type {
   CaddieGroupListResponse,
   CaddieListParams,
   CaddieListResponse,
+  CaddieSimpleResponse,
   CreateCaddieRequest,
   UpdateCaddieRequest,
 } from "../types/api";

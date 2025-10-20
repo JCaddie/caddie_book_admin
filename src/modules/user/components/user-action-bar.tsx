@@ -14,7 +14,6 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
     selectedCount,
     roleFilter,
     onRoleFilterChange,
-    onSearch,
     onDeleteSelected,
     onCreateClick,
     isDeleting = false,
@@ -62,10 +61,7 @@ export const UserActionBar: React.FC<UserActionBarProps> = memo(
             </select>
 
             {/* 검색창 */}
-            <SearchWithButton 
-              placeholder="검색어 입력" 
-              onSearch={onSearch}
-            />
+            <SearchWithButton placeholder="검색어 입력" />
 
             {/* 버튼 그룹 */}
             <div className="flex items-center gap-4">

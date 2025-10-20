@@ -65,6 +65,7 @@ export default function UserDetailPage() {
   };
 
   const handleToggleActive = async () => {
+    if (!user) return;
     await updateUserMutation.mutateAsync({
       userId,
       data: { is_active: !user.is_active },
@@ -134,7 +135,6 @@ export default function UserDetailPage() {
               <div className="w-full">
                 <PasswordChangeField
                   onSave={handleSavePassword}
-                  isLoading={updateUserMutation.isPending}
                   hideLabel={true}
                 />
               </div>
@@ -159,7 +159,6 @@ export default function UserDetailPage() {
                   onSave={handleSaveName}
                   placeholder="이름을 입력하세요"
                   hideLabel={true}
-                  isLoading={updateUserMutation.isPending}
                 />
               </div>
             )}
@@ -179,7 +178,6 @@ export default function UserDetailPage() {
                   onSave={handleSaveEmail}
                   placeholder="이메일을 입력하세요"
                   hideLabel={true}
-                  isLoading={updateUserMutation.isPending}
                 />
               </div>
             )}
@@ -195,7 +193,6 @@ export default function UserDetailPage() {
                   placeholder="골프장을 선택하세요"
                   optionsLoading={golfCoursesLoading}
                   hideLabel={true}
-                  isLoading={updateUserMutation.isPending}
                 />
               </div>
             )}

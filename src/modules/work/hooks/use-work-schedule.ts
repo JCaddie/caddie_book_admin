@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CaddieData, WorkSchedule, WorkSlot, WorkTimeSlot } from "../types";
+import { useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { CaddieData, WorkSlot } from "../types";
 import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
 import { useQueryError } from "@/shared/hooks/use-query-error";
 import {
@@ -21,8 +21,6 @@ export const useWorkSchedule = ({
   golfCourseId,
   date,
 }: UseWorkScheduleProps) => {
-  const queryClient = useQueryClient();
-
   // React Query를 사용한 스케줄 데이터 페칭
   const {
     data: scheduleData,
@@ -82,8 +80,14 @@ export const useWorkSchedule = ({
 
   // 데이터 추출
   const schedule = scheduleData?.schedule || null;
-  const timeSlots = scheduleData?.timeSlots || [];
-  const workSlots = scheduleData?.workSlots || [];
+  const timeSlots = useMemo(
+    () => scheduleData?.timeSlots || [],
+    [scheduleData?.timeSlots]
+  );
+  const workSlots = useMemo(
+    () => scheduleData?.workSlots || [],
+    [scheduleData?.workSlots]
+  );
 
   // 표준화된 에러 처리
   const error = useQueryError(
@@ -100,27 +104,21 @@ export const useWorkSchedule = ({
   // 근무표 생성
   const createSchedule = useCallback(async () => {
     try {
-      setIsLoading(true);
-      setError(null);
-
       const data = await createWorkSchedule(
         golfCourseId,
         date,
         0, // TODO: 실제 timeInterval 값으로 교체
         [] // TODO: 실제 parts 배열로 교체
       );
-      setSchedule(null);
+
+      // 데이터 다시 로드
+      await refetch();
 
       return data;
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "근무표 생성에 실패했습니다.";
-      setError(errorMessage);
       throw err;
-    } finally {
-      setIsLoading(false);
     }
-  }, [golfCourseId, date]);
+  }, [golfCourseId, date, refetch]);
 
   // 캐디 배정
   const assignCaddie = useCallback(
@@ -132,90 +130,33 @@ export const useWorkSchedule = ({
           assignedBy
         );
 
-        // 로컬 상태 업데이트
-        setWorkSlots((prev) =>
-          prev.map((slot) => {
-            if (slot.id === slotId) {
-              const slotData =
-                updatedSlot as import("../api/work-api").WorkSlotResponse;
-              return {
-                id: slotData.id,
-                timeSlotId: slotData.time_slot,
-                timeSlotStartTime: slotData.time_slot_start_time,
-                timeSlotEndTime: slotData.time_slot_end_time,
-                partNumber: slotData.part_number,
-                fieldId: slotData.field,
-                fieldName: slotData.field_name,
-                caddieId: slotData.caddie,
-                caddieName: slotData.caddie_name,
-                specialGroupId: slotData.special_group,
-                specialGroupName: slotData.special_group_name,
-                assignedById: slotData.assigned_by,
-                assignedByName: slotData.assigned_by_name,
-                assignedAt: slotData.assigned_at,
-                notes: slotData.notes ?? "",
-                createdAt: slotData.created_at,
-                updatedAt: slotData.updated_at,
-              };
-            }
-            return slot;
-          })
-        );
+        // 데이터 다시 로드
+        await refetch();
 
         return updatedSlot;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "캐디 배정에 실패했습니다.";
-        setError(errorMessage);
         throw err;
       }
     },
-    []
+    [refetch]
   );
 
   // 캐디 배정 해제
-  const unassignCaddie = useCallback(async (slotId: string) => {
-    try {
-      const updatedSlot = await unassignCaddieFromSlot(slotId);
+  const unassignCaddie = useCallback(
+    async (slotId: string) => {
+      try {
+        const updatedSlot = await unassignCaddieFromSlot(slotId);
 
-      // 로컬 상태 업데이트
-      setWorkSlots((prev) =>
-        prev.map((slot) => {
-          if (slot.id === slotId) {
-            const slotData =
-              updatedSlot as import("../api/work-api").WorkSlotResponse;
-            return {
-              id: slotData.id,
-              timeSlotId: slotData.time_slot,
-              timeSlotStartTime: slotData.time_slot_start_time,
-              timeSlotEndTime: slotData.time_slot_end_time,
-              partNumber: slotData.part_number,
-              fieldId: slotData.field,
-              fieldName: slotData.field_name,
-              caddieId: slotData.caddie,
-              caddieName: slotData.caddie_name,
-              specialGroupId: slotData.special_group,
-              specialGroupName: slotData.special_group_name,
-              assignedById: slotData.assigned_by,
-              assignedByName: slotData.assigned_by_name,
-              assignedAt: slotData.assigned_at,
-              notes: slotData.notes ?? "",
-              createdAt: slotData.created_at,
-              updatedAt: slotData.updated_at,
-            };
-          }
-          return slot;
-        })
-      );
+        // 데이터 다시 로드
+        await refetch();
 
-      return updatedSlot;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "캐디 배정 해제에 실패했습니다.";
-      setError(errorMessage);
-      throw err;
-    }
-  }, []);
+        return updatedSlot;
+      } catch (err) {
+        throw err;
+      }
+    },
+    [refetch]
+  );
 
   // 특정 필드와 시간의 슬롯 찾기
   const getSlotAtPosition = useCallback(

@@ -112,6 +112,7 @@ export interface CaddieApiResponse {
   remaining_days_off: number;
   created_at: string;
   updated_at: string;
+  [key: string]: unknown; // 인덱스 시그니처 추가 (DataTable 호환성)
 }
 
 // API에서 받는 캐디 상세 정보 (snake_case)

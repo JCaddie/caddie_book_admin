@@ -2,12 +2,12 @@
 
 import React, { useRef, useState } from "react";
 import {
+  Clock,
   MoreVertical,
   Settings,
   Shield,
-  UserMinus,
   Trash2,
-  Clock,
+  UserMinus,
 } from "lucide-react";
 import { CaddieCardProps, CaddieData } from "../types";
 import {

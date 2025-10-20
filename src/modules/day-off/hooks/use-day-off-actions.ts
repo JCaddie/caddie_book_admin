@@ -14,6 +14,10 @@ interface UseDayOffActionsReturn {
   isApproving: boolean;
   isRejecting: boolean;
 
+  // 에러
+  approveError: string | null;
+  rejectError: string | null;
+
   // 액션 함수
   approveRequests: (requestIds: string[]) => Promise<void>;
   rejectRequests: (
