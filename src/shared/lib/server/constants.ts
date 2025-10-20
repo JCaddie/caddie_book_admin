@@ -13,7 +13,7 @@ export async function getConstantOptions(constantKeys: string[]) {
   try {
     // 기존 API는 모든 상수를 한 번에 가져옴
     const response = await serverApiClient.get<ConstantsApiResponse>(
-      "/v1/constants/"
+      "/api/v1/constants/"
     );
 
     // 요청된 키들만 필터링

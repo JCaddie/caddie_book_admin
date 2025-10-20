@@ -1,6 +1,6 @@
 // 골프장 관련 API 엔드포인트 상수 정의
 
-const BASE_URL = "/v1/golf-courses";
+const BASE_URL = "/api/v1/golf-courses";
 
 export const GOLF_COURSE_ENDPOINTS = {
   // 기본 CRUD

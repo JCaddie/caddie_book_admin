@@ -45,7 +45,7 @@ export const getAdmins = async (params?: {
   }
 
   const queryString = searchParams.toString();
-  const url = `/v1/users/admins/${queryString ? `?${queryString}` : ""}`;
+  const url = `/api/v1/users/admins/${queryString ? `?${queryString}` : ""}`;
 
   return apiClient.get(url);
 };
@@ -57,7 +57,7 @@ export const getUserDetail = async (
   userId: string
 ): Promise<UserDetailApiResponse> => {
   return apiClient.get<UserDetailApiResponse>(
-    `/v1/users/admins/${userId}/`
+    `/api/v1/users/admins/${userId}/`
   );
 };
 
@@ -78,7 +78,7 @@ export const getCaddieAssignmentOverview = async (
   }
 
   const queryString = searchParams.toString();
-  const endpoint = `/v1/caddie-groups/assignment-overview/overview/${
+  const endpoint = `/api/v1/caddie-groups/assignment-overview/overview/${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -89,14 +89,14 @@ export const getCaddieAssignmentOverview = async (
 export const createAdmin = async (
   data: CreateAdminRequest
 ): Promise<CreateAdminResponse> => {
-  return apiClient.post("/v1/users/admins/", data);
+  return apiClient.post("/api/v1/users/admins/", data);
 };
 
 // 어드민 벌크 삭제
 export const bulkDeleteAdmins = async (
   data: BulkDeleteAdminsRequest
 ): Promise<BulkDeleteAdminsResponse> => {
-  return apiClient.delete("/v1/users/admins/bulk-delete/", {
+  return apiClient.delete("/api/v1/users/admins/bulk-delete/", {
     body: JSON.stringify(data),
   });
 };
@@ -106,7 +106,7 @@ export const updateAdmin = async (
   userId: string,
   data: UpdateAdminRequest
 ): Promise<UpdateAdminResponse> => {
-  return apiClient.patch(`/v1/users/admins/${userId}/`, data);
+  return apiClient.patch(`/api/v1/users/admins/${userId}/`, data);
 };
 
 /**
@@ -125,7 +125,7 @@ export const getUserAssignments = async (
 export const createTemporaryCaddie = async (
   data: CreateTemporaryCaddieRequest
 ): Promise<CreateTemporaryCaddieSuccessResponse> => {
-  return apiClient.post("/v1/users/temporary-caddies/", data);
+  return apiClient.post("/api/v1/users/temporary-caddies/", data);
 };
 
 // 임시 캐디 삭제
@@ -133,6 +133,6 @@ export const deleteTemporaryCaddie = async (
   caddieId: string
 ): Promise<DeleteTemporaryCaddieResponse> => {
   return apiClient.delete(
-    `/v1/users/temporary-caddies/${caddieId}/delete/`
+    `/api/v1/users/temporary-caddies/${caddieId}/delete/`
   );
 };

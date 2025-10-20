@@ -28,13 +28,13 @@ export function useGolfCourseOptions() {
     setLoading(true);
     Promise.all([
       apiClient.get<OptionApiResponse[]>(
-        "/v1/golf-courses/constants/contract_status/"
+        "/api/v1/golf-courses/constants/contract_status/"
       ),
       apiClient.get<OptionApiResponse[]>(
-        "/v1/golf-courses/constants/membership_type/"
+        "/api/v1/golf-courses/constants/membership_type/"
       ),
       apiClient.get<OptionApiResponse[]>(
-        "/v1/golf-courses/constants/is_active/"
+        "/api/v1/golf-courses/constants/is_active/"
       ),
     ])
       .then(
