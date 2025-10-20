@@ -34,7 +34,7 @@ export const fetchCartList = async (
     }
 
     const response = await apiClient.get<ApiCartListResponse>(
-      `/api/v1/carts/?${params}`
+      `/v1/carts/?${params}`
     );
     return response;
   } catch (error) {
@@ -51,7 +51,7 @@ export const fetchCartDetail = async (
 ): Promise<ApiCartDetailResponse> => {
   try {
     const response = await apiClient.get<ApiCartDetailResponse>(
-      `/api/v1/carts/${id}/`
+      `/v1/carts/${id}/`
     );
     return response;
   } catch (error) {
@@ -75,7 +75,7 @@ export const fetchCartHistories = async (
     });
 
     const response = await apiClient.get<ApiCartHistoryResponse>(
-      `/api/v1/carts/${cartId}/histories/?${params}`
+      `/v1/carts/${cartId}/histories/?${params}`
     );
     return response;
   } catch (error) {
@@ -92,7 +92,7 @@ export const createCart = async (
 ): Promise<ApiCartDetailResponse> => {
   try {
     const response = await apiClient.post<ApiCartDetailResponse>(
-      "/api/v1/carts/",
+      "/v1/carts/",
       data
     );
     return response;
@@ -111,7 +111,7 @@ export const updateCart = async (
 ): Promise<ApiCartDetailResponse> => {
   try {
     const response = await apiClient.put<ApiCartDetailResponse>(
-      `/api/v1/carts/${id}/`,
+      `/v1/carts/${id}/`,
       data
     );
     return response;
@@ -126,7 +126,7 @@ export const updateCart = async (
  */
 export const deleteCart = async (id: string): Promise<void> => {
   try {
-    await apiClient.delete(`/api/v1/carts/${id}/`);
+    await apiClient.delete(`/v1/carts/${id}/`);
   } catch (error) {
     console.error("카트 삭제 실패:", error);
     throw error;
@@ -138,7 +138,7 @@ export const deleteCart = async (id: string): Promise<void> => {
  */
 export const deleteCartsBulk = async (ids: string[]): Promise<void> => {
   try {
-    await apiClient.delete(`/api/v1/carts/bulk_delete/`, {
+    await apiClient.delete(`/v1/carts/bulk_delete/`, {
       body: JSON.stringify({ ids }),
     });
   } catch (error) {
@@ -159,7 +159,7 @@ export const updateCartField = async (
     const updateData: Record<string, string | number> = { [field]: value };
 
     const response = await apiClient.patch<ApiCartDetailResponse>(
-      `/api/v1/carts/${id}/`,
+      `/v1/carts/${id}/`,
       updateData
     );
     return response;

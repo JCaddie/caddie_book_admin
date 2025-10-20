@@ -243,12 +243,12 @@ interface WorkScheduleByDateResponse {
 // ================================
 
 export const WORK_API_ENDPOINTS = {
-  ROUNDING_SETTINGS: "/api/v1/work/rounding-settings/",
-  SCHEDULES: "/api/v1/work/schedules/",
-  DAILY_SCHEDULES: "/api/v1/work/daily-schedules/",
-  TIME_SLOTS: "/api/v1/work/time-slots/",
-  SLOTS: "/api/v1/work/slots/",
-  SLOT_BULK_UPDATE: "/api/v1/work/slots/bulk_update_status/",
+  ROUNDING_SETTINGS: "/v1/work/rounding-settings/",
+  SCHEDULES: "/v1/work/schedules/",
+  DAILY_SCHEDULES: "/v1/work/daily-schedules/",
+  TIME_SLOTS: "/v1/work/time-slots/",
+  SLOTS: "/v1/work/slots/",
+  SLOT_BULK_UPDATE: "/v1/work/slots/bulk_update_status/",
 } as const;
 
 // ================================
@@ -695,7 +695,7 @@ export const fetchSpecialGroupsStatus = async (): Promise<
 > => {
   try {
     const response = await apiClient.get<SpecialGroupsStatusResponse>(
-      "/api/v1/golf-courses/special-groups-status/"
+      "/v1/golf-courses/special-groups-status/"
     );
 
     if (response.success) {
@@ -724,7 +724,7 @@ export const createSpecialGroup = async (
       success: boolean;
       message: string;
       data?: unknown;
-    }>(`/api/v1/golf-courses/${golfCourseId}/groups/`, data);
+    }>(`/v1/golf-courses/${golfCourseId}/groups/`, data);
 
     if (response.success) {
       return response;
@@ -748,7 +748,7 @@ export const deleteSpecialGroup = async (
     const response = await apiClient.delete<{
       success: boolean;
       message: string;
-    }>(`/api/v1/golf-courses/groups/${groupId}/`);
+    }>(`/v1/golf-courses/groups/${groupId}/`);
 
     if (response.success) {
       return response;
@@ -803,7 +803,7 @@ export const removeSpecialGroupFromSlot = async (
     const response = await apiClient.delete<{
       success: boolean;
       message: string;
-    }>(`/api/v1/work/slots/${slotId}/`);
+    }>(`/v1/work/slots/${slotId}/`);
 
     if (response.success) {
       return response;
@@ -923,7 +923,7 @@ export const toggleSpareStatus = async (slotId: string): Promise<void> => {
     const response = await apiClient.post<{
       success: boolean;
       message: string;
-    }>("/api/v1/work/slots/toggle_spare_status/", {
+    }>("/v1/work/slots/toggle_spare_status/", {
       slot_id: slotId,
     });
 

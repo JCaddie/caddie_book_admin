@@ -101,7 +101,7 @@ class SpecialGroupAPI implements GroupManagementAPI<SpecialGroupResponse> {
         success: boolean;
         message: string;
         data: SpecialGroupResponse;
-      }>(`/api/v1/golf-courses/${data.golf_course_id}/groups/`, {
+      }>(`/v1/golf-courses/${data.golf_course_id}/groups/`, {
         name: data.name,
         group_type: "SPECIAL",
         is_active: data.is_active ?? true,
@@ -131,7 +131,7 @@ class SpecialGroupAPI implements GroupManagementAPI<SpecialGroupResponse> {
         success: boolean;
         message: string;
         data: SpecialGroupResponse;
-      }>(`/api/v1/golf-courses/groups/${id}/`, data);
+      }>(`/v1/golf-courses/groups/${id}/`, data);
 
       if (response.success) {
         return response.data;
@@ -152,7 +152,7 @@ class SpecialGroupAPI implements GroupManagementAPI<SpecialGroupResponse> {
       const response = await apiClient.delete<{
         success: boolean;
         message: string;
-      }>(`/api/v1/golf-courses/groups/${id}/`);
+      }>(`/v1/golf-courses/groups/${id}/`);
 
       if (!response.success) {
         throw new Error(response.message || "특수반 삭제 실패");
@@ -186,7 +186,7 @@ class SpecialGroupAPI implements GroupManagementAPI<SpecialGroupResponse> {
       }
 
       const queryString = searchParams.toString();
-      const endpoint = `/api/v1/caddie-groups/groups/${
+      const endpoint = `/v1/caddie-groups/groups/${
         queryString ? `?${queryString}` : ""
       }`;
 
@@ -242,7 +242,7 @@ export const fetchSpecialGroupsStatus = async (): Promise<
 > => {
   try {
     const response = await apiClient.get<SpecialGroupsStatusResponse>(
-      "/api/v1/golf-courses/special-groups-status/"
+      "/v1/golf-courses/special-groups-status/"
     );
 
     if (response.success) {
@@ -297,7 +297,7 @@ export const removeSpecialGroupFromSlot = async (
     const response = await apiClient.delete<{
       success: boolean;
       message: string;
-    }>(`/api/v1/work/slots/${slotId}/`);
+    }>(`/v1/work/slots/${slotId}/`);
 
     if (response.success) {
       return response;

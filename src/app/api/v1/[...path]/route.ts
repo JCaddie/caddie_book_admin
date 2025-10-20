@@ -49,7 +49,7 @@ async function handleRequest(
 ) {
   try {
     const path = pathSegments.join("/");
-    const url = new URL(`${EC2_BASE_URL}/api/v1/${path}`);
+    const url = new URL(`${EC2_BASE_URL}/v1/${path}`);
 
     // 쿼리 파라미터 복사
     request.nextUrl.searchParams.forEach((value, key) => {
