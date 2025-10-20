@@ -37,7 +37,7 @@ export const getGroups = async (params?: {
   }
 
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/caddie-groups/groups/${
+  const endpoint = `/v1/caddie-groups/groups/${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -51,7 +51,7 @@ export const createGroup = async (
   data: CreateGroupRequest
 ): Promise<CreateGroupResponse> => {
   return apiClient.post<CreateGroupResponse>(
-    "/api/v1/golf-courses/groups/",
+    "/v1/golf-courses/groups/",
     data
   );
 };
@@ -64,7 +64,7 @@ export const updateGroup = async (
   data: Partial<CreateGroupRequest>
 ): Promise<CreateGroupResponse> => {
   return apiClient.patch<CreateGroupResponse>(
-    `/api/v1/golf-courses/groups/${groupId}/`,
+    `/v1/golf-courses/groups/${groupId}/`,
     data
   );
 };
@@ -73,7 +73,7 @@ export const updateGroup = async (
  * 그룹 삭제
  */
 export const deleteGroup = async (groupId: number): Promise<void> => {
-  return apiClient.delete(`/api/v1/golf-courses/groups/${groupId}/`);
+  return apiClient.delete(`/v1/golf-courses/groups/${groupId}/`);
 };
 
 /**
@@ -84,7 +84,7 @@ export const addGroupMember = async (
   data: AddGroupMemberRequest
 ): Promise<AddGroupMemberResponse> => {
   return apiClient.post<AddGroupMemberResponse>(
-    `/api/v1/golf-courses/groups/${groupId}/members/`,
+    `/v1/golf-courses/groups/${groupId}/members/`,
     data
   );
 };
@@ -98,7 +98,7 @@ export const assignPrimaryGroup = async (
   data: AssignPrimaryRequest
 ): Promise<AssignPrimaryResponse> => {
   return apiClient.put<AssignPrimaryResponse>(
-    `/api/v1/caddie-groups/assignments/${groupId}/assign_primary/`,
+    `/v1/caddie-groups/assignments/${groupId}/assign_primary/`,
     data
   );
 };
@@ -111,7 +111,7 @@ export const reorderGroupMember = async (
   data: ReorderGroupMemberRequest
 ): Promise<ReorderGroupMemberResponse> => {
   return apiClient.put<ReorderGroupMemberResponse>(
-    `/api/v1/golf-courses/groups/${groupId}/members/`,
+    `/v1/golf-courses/groups/${groupId}/members/`,
     data
   );
 };
@@ -125,7 +125,7 @@ export const reorderPrimaryGroup = async (
   data: ReorderRequest
 ): Promise<ReorderResponse> => {
   return apiClient.patch<ReorderResponse>(
-    `/api/v1/caddie-groups/assignments/${groupId}/reorder_primary/`,
+    `/v1/caddie-groups/assignments/${groupId}/reorder_primary/`,
     data
   );
 };
@@ -138,7 +138,7 @@ export const removeGroupMember = async (
   data: RemoveGroupMemberRequest
 ): Promise<RemoveGroupMemberResponse> => {
   return apiClient.deleteWithBody<RemoveGroupMemberResponse>(
-    `/api/v1/golf-courses/groups/${groupId}/members/`,
+    `/v1/golf-courses/groups/${groupId}/members/`,
     data
   );
 };
@@ -152,7 +152,7 @@ export const removePrimaryGroup = async (
   data: RemovePrimaryRequest
 ): Promise<RemovePrimaryResponse> => {
   return apiClient.deleteWithBody<RemovePrimaryResponse>(
-    `/api/v1/caddie-groups/assignments/${groupId}/remove_primary/`,
+    `/v1/caddie-groups/assignments/${groupId}/remove_primary/`,
     data
   );
 };
@@ -176,7 +176,7 @@ export const getGroupAssignmentOverview = async ({
   }
 
   const queryString = params.toString();
-  const endpoint = `/api/v1/golf-courses/group-overview/${
+  const endpoint = `/v1/golf-courses/group-overview/${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -197,7 +197,7 @@ export const getGolfCourseGroupStatus = async (
   }
 
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/golf-courses/${golfCourseId}/group-status/${
+  const endpoint = `/v1/golf-courses/${golfCourseId}/group-status/${
     queryString ? `?${queryString}` : ""
   }`;
 
