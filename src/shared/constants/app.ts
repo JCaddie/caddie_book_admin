@@ -150,13 +150,14 @@ export const BUSINESS_CONSTANTS = {
 
 export const API_CONSTANTS = {
   // API Base URL (HTTPS 직접 연결)
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "https://3.35.21.201:8000/api",
+  BASE_URL:
+    process.env.NEXT_PUBLIC_API_BASE_URL || "https://3.35.21.201/api",
 
   // EC2 서버 정보
   EC2_SERVER: {
     IP: "3.35.21.201",
     DNS: "ec2-3-35-21-201.ap-northeast-2.compute.amazonaws.com",
-    PORT: "8000",
+    PORT: "443",
     PROTOCOL: "https",
   },
 
