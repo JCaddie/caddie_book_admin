@@ -26,7 +26,7 @@ import {
 
 /**
  * 캐디 목록 조회
- * GET /v1/caddies/
+ * GET /api/v1/caddies/
  */
 export const fetchCaddieList = async (
   params: CaddieListParams = {}
@@ -37,7 +37,7 @@ export const fetchCaddieList = async (
 
 /**
  * 캐디 간소 목록 조회 (드롭다운용)
- * GET /v1/caddies/simple/
+ * GET /api/v1/caddies/simple/
  */
 export const fetchCaddiesSimple = async (
   golfCourseId?: string
@@ -62,7 +62,7 @@ export const fetchCaddiesSimple = async (
 
 /**
  * 캐디 상세정보 조회
- * GET /v1/caddies/{id}/
+ * GET /api/v1/caddies/{id}/
  */
 export const fetchCaddieDetail = async (
   id: string
@@ -73,7 +73,7 @@ export const fetchCaddieDetail = async (
 
 /**
  * 캐디 정보 업데이트
- * PATCH /v1/caddies/{id}/
+ * PATCH /api/v1/caddies/{id}/
  */
 export const updateCaddie = async (
   id: string,
@@ -85,7 +85,7 @@ export const updateCaddie = async (
 
 /**
  * 캐디 삭제
- * DELETE /v1/caddies/{id}/
+ * DELETE /api/v1/caddies/{id}/
  */
 export const deleteCaddie = async (id: string): Promise<void> => {
   const url = CADDIE_ENDPOINTS.DELETE(id);
@@ -94,7 +94,7 @@ export const deleteCaddie = async (id: string): Promise<void> => {
 
 /**
  * 캐디 생성
- * POST /v1/caddies/
+ * POST /api/v1/caddies/
  */
 export const createCaddie = async (
   data: CreateCaddieRequest
@@ -104,7 +104,7 @@ export const createCaddie = async (
 
 /**
  * 복수 캐디 삭제
- * POST /v1/caddies/bulk-delete/
+ * POST /api/v1/caddies/bulk-delete/
  */
 export const bulkDeleteCaddies = async (
   data: BulkDeleteCaddiesRequest
@@ -118,7 +118,7 @@ export const bulkDeleteCaddies = async (
 
 /**
  * 캐디 그룹 목록 조회
- * GET /v1/golf-courses/{golfCourseId}/groups/
+ * GET /api/v1/golf-courses/{golfCourseId}/groups/
  */
 export const fetchCaddieGroups = async (
   golfCourseId: string,
@@ -134,7 +134,7 @@ export const fetchCaddieGroups = async (
 
 /**
  * 캐디 고용형태 업데이트
- * PATCH /v1/caddies/{id}/employment-type/
+ * PATCH /api/v1/caddies/{id}/employment-type/
  */
 export const updateCaddieEmploymentType = async (
   id: string,
@@ -146,7 +146,7 @@ export const updateCaddieEmploymentType = async (
 
 /**
  * 캐디 근무점수 업데이트
- * PATCH /v1/caddies/{id}/work-score/
+ * PATCH /api/v1/caddies/{id}/work-score/
  */
 export const updateCaddieWorkScore = async (
   id: string,
@@ -158,7 +158,7 @@ export const updateCaddieWorkScore = async (
 
 /**
  * 캐디 팀장여부 업데이트
- * PATCH /v1/caddies/{id}/team-leader/
+ * PATCH /api/v1/caddies/{id}/team-leader/
  */
 export const updateCaddieTeamLeader = async (
   id: string,
@@ -170,7 +170,7 @@ export const updateCaddieTeamLeader = async (
 
 /**
  * 캐디 주 그룹 업데이트
- * PATCH /v1/caddies/{id}/primary-group/
+ * PATCH /api/v1/caddies/{id}/primary-group/
  */
 export const updateCaddiePrimaryGroup = async (
   id: string,
@@ -182,7 +182,7 @@ export const updateCaddiePrimaryGroup = async (
 
 /**
  * 캐디 특수 그룹 업데이트
- * PATCH /v1/caddies/{id}/special-groups/
+ * PATCH /api/v1/caddies/{id}/special-groups/
  */
 export const updateCaddieSpecialGroups = async (
   id: string,
@@ -194,7 +194,7 @@ export const updateCaddieSpecialGroups = async (
 
 /**
  * 캐디 연락처 정보 업데이트
- * PATCH /v1/caddies/{id}/contact/
+ * PATCH /api/v1/caddies/{id}/contact/
  */
 export const updateCaddieContact = async (
   id: string,
@@ -209,7 +209,7 @@ export const updateCaddieContact = async (
 
 /**
  * 캐디 주소 정보 업데이트
- * PATCH /v1/caddies/{id}/address/
+ * PATCH /api/v1/caddies/{id}/address/
  */
 export const updateCaddieAddress = async (
   id: string,

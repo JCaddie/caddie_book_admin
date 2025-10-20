@@ -5,14 +5,14 @@
 // API 관련 상수
 export const API_CONSTANTS = {
   ENDPOINTS: {
-    ANNOUNCEMENTS: "/v1/announcements/",
-    ANNOUNCEMENT_DETAIL: (id: string) => `/v1/announcements/${id}/`,
+    ANNOUNCEMENTS: "/api/v1/announcements/",
+    ANNOUNCEMENT_DETAIL: (id: string) => `/api/v1/announcements/${id}/`,
     ANNOUNCEMENT_PUBLISH: (id: string) =>
-      `/v1/announcements/${id}/publish/`,
+      `/api/v1/announcements/${id}/publish/`,
     ANNOUNCEMENT_UNPUBLISH: (id: string) =>
-      `/v1/announcements/${id}/unpublish/`,
-    FILE_UPLOAD: "/v1/files/upload/",
-    FILE_DELETE: (id: string) => `/v1/files/${id}/`,
+      `/api/v1/announcements/${id}/unpublish/`,
+    FILE_UPLOAD: "/api/v1/files/upload/",
+    FILE_DELETE: (id: string) => `/api/v1/files/${id}/`,
   },
   CACHE_KEYS: {
     ANNOUNCEMENTS: "announcements",

@@ -211,7 +211,7 @@ export const useAuth = (): UseAuthReturn => {
 
           // 로그인 API 호출
           const response = await apiClient.post<LoginResponse>(
-            "/v1/users/auth/login/",
+            "/api/v1/users/auth/login/",
             {
               username: targetAccount.email,
               password: targetAccount.password,

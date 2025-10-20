@@ -150,7 +150,7 @@ export const BUSINESS_CONSTANTS = {
 
 export const API_CONSTANTS = {
   // API Base URL (프록시 사용)
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "",
   
   // EC2 서버 정보
   EC2_SERVER: {
