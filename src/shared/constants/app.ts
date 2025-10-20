@@ -149,8 +149,8 @@ export const BUSINESS_CONSTANTS = {
 // ================================
 
 export const API_CONSTANTS = {
-  // API Base URL (API Routes 사용)
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
+  // API Base URL (EC2 서버 직접 연결)
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://3.35.21.201:8000/api",
 
   // EC2 서버 정보
   EC2_SERVER: {

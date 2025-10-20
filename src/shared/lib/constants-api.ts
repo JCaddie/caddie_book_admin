@@ -9,6 +9,6 @@ export const constantsApi = {
    * 모든 상수값 조회
    */
   getConstants: async (): Promise<ConstantsApiResponse> => {
-    return await apiClient.get<ConstantsApiResponse>("/v1/constants/");
+    return await apiClient.get<ConstantsApiResponse>("/api/v1/constants/");
   },
 };

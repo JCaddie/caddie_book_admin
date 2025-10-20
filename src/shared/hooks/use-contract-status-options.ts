@@ -22,7 +22,7 @@ export function useContractStatusOptions() {
     setLoading(true);
     apiClient
       .get<ContractStatusApiResponse[]>(
-        "/v1/golf-courses/constants/contract_status/"
+        "/api/v1/golf-courses/constants/contract_status/"
       )
       .then((data: ContractStatusApiResponse[]) => {
         setOptions([

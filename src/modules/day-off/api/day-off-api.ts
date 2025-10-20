@@ -13,7 +13,7 @@ export const getDayOffRequestDetail = async (
   id: string
 ): Promise<DayOffRequest> => {
   const response = await apiClient.get<DayOffRequestDetailResponse>(
-    `/v1/caddies/daily-statuses/${id}/`
+    `/api/v1/caddies/daily-statuses/${id}/`
   );
   return response.data;
 };
@@ -47,7 +47,7 @@ export const getDayOffRequests = async (
   }
 
   const queryString = searchParams.toString();
-  const url = `/v1/caddies/daily-statuses/pending_requests/${
+  const url = `/api/v1/caddies/daily-statuses/pending_requests/${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -60,7 +60,7 @@ export const getDayOffRequests = async (
 export const approveDayOffRequests = async (
   requestIds: string[]
 ): Promise<void> => {
-  await apiClient.post("/v1/caddies/daily-statuses/bulk-approve/", {
+  await apiClient.post("/api/v1/caddies/daily-statuses/bulk-approve/", {
     request_ids: requestIds,
   });
 };
@@ -72,7 +72,7 @@ export const rejectDayOffRequests = async (
   requestIds: string[],
   rejectionReason?: string
 ): Promise<void> => {
-  await apiClient.post("/v1/caddies/daily-statuses/bulk-reject/", {
+  await apiClient.post("/api/v1/caddies/daily-statuses/bulk-reject/", {
     request_ids: requestIds,
     rejection_reason: rejectionReason || "",
   });
