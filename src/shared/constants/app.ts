@@ -149,6 +149,17 @@ export const BUSINESS_CONSTANTS = {
 // ================================
 
 export const API_CONSTANTS = {
+  // API Base URL (프록시 사용)
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "/api/proxy",
+  
+  // EC2 서버 정보
+  EC2_SERVER: {
+    IP: "3.35.21.201",
+    DNS: "ec2-3-35-21-201.ap-northeast-2.compute.amazonaws.com",
+    PORT: "8000",
+    PROTOCOL: "http",
+  },
+
   // 캐시 시간
   CACHE_TIME: {
     STALE_TIME: 5 * 60 * 1000, // 5분

@@ -1,4 +1,5 @@
 import { AUTH_CONSTANTS } from "@/shared/constants/auth";
+import { API_CONSTANTS } from "@/shared/constants/app";
 import { cookieUtils, tokenUtils } from "./utils";
 
 /**
@@ -18,7 +19,7 @@ class ApiClient {
   private refreshPromise: Promise<boolean> | null = null;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    this.baseURL = API_CONSTANTS.BASE_URL;
   }
 
   /**

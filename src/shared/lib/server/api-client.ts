@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { AUTH_CONSTANTS } from "@/shared/constants/auth";
+import { API_CONSTANTS } from "@/shared/constants/app";
 
 /**
  * 서버 컴포넌트용 API 클라이언트
@@ -9,7 +10,7 @@ class ServerApiClient {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    this.baseURL = API_CONSTANTS.BASE_URL;
   }
 
   /**
