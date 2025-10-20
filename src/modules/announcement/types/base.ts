@@ -41,6 +41,7 @@ export interface Announcement
   targetGroup: string | null;
   announcementType: string;
   announcementTypeDisplay: string;
+  [key: string]: unknown; // 인덱스 시그니처 추가 (DataTable 호환성)
 }
 
 /**

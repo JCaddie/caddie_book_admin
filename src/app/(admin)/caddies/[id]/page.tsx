@@ -213,7 +213,7 @@ const CaddieDetailPage: React.FC<CaddieDetailPageProps> = ({ params }) => {
       },
       careers: [],
     };
-  }, [caddie, resolvedParams.id, isLoading, error]);
+  }, [caddie, resolvedParams.id, isLoading, error, golfCourseId]);
 
   // 배정근무 데이터 (나중에 API에서 가져올 예정)
   // 현재는 빈 상태로 페이지네이션만 기본값 제공

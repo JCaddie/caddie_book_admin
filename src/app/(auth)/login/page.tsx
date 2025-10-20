@@ -9,16 +9,23 @@ import { apiClient } from "@/shared/lib/api-client";
 
 // 로그인 API 응답 타입
 interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    name: string;
-    role: string;
-    golf_course: string;
-    golf_course_id: string;
+  success: boolean;
+  message: string;
+  data: {
+    access_token: string;
+    refresh_token: string;
+    user: {
+      id: string;
+      username: string;
+      email: string;
+      name: string;
+      role: string;
+      is_active: boolean;
+      date_joined: string;
+      golf_course: string | null;
+      golf_course_name: string | null;
+      golf_course_id: string | null;
+    };
   };
 }
 
@@ -98,18 +105,18 @@ export default function LoginPage() {
       );
 
       // API 응답에서 토큰과 사용자 정보 추출
-      const accessToken = data.access_token;
-      const refreshToken = data.refresh_token;
+      const accessToken = data.data.access_token;
+      const refreshToken = data.data.refresh_token;
 
       // 실제 API 응답 구조에 맞게 사용자 정보 생성
       const user: User = {
-        id: data.user.id,
-        name: data.user.name || data.user.username,
-        email: data.user.email,
-        role: data.user.role as "MASTER" | "ADMIN",
-        golfCourseId: data.user.golf_course_id || undefined,
-        golfCourse: data.user.golf_course || undefined,
-        created_at: new Date().toISOString(),
+        id: data.data.user.id,
+        name: data.data.user.name || data.data.user.username,
+        email: data.data.user.email,
+        role: data.data.user.role as "MASTER" | "ADMIN",
+        golfCourseId: data.data.user.golf_course_id || undefined,
+        golf_course_name: data.data.user.golf_course_name || undefined,
+        created_at: data.data.user.date_joined,
       };
 
       // 로그인 함수 호출
@@ -148,18 +155,18 @@ export default function LoginPage() {
       );
 
       // API 응답에서 토큰과 사용자 정보 추출
-      const accessToken = data.access_token;
-      const refreshToken = data.refresh_token;
+      const accessToken = data.data.access_token;
+      const refreshToken = data.data.refresh_token;
 
       // 실제 API 응답 구조에 맞게 사용자 정보 생성
       const user: User = {
-        id: data.user.id,
-        name: data.user.name || data.user.username,
-        email: data.user.email,
-        role: data.user.role as "MASTER" | "ADMIN",
-        golfCourseId: data.user.golf_course_id || undefined,
-        golfCourse: data.user.golf_course || undefined,
-        created_at: new Date().toISOString(),
+        id: data.data.user.id,
+        name: data.data.user.name || data.data.user.username,
+        email: data.data.user.email,
+        role: data.data.user.role as "MASTER" | "ADMIN",
+        golfCourseId: data.data.user.golf_course_id || undefined,
+        golf_course_name: data.data.user.golf_course_name || undefined,
+        created_at: data.data.user.date_joined,
       };
 
       // 로그인 함수 호출

@@ -210,7 +210,9 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                   caddie={caddie}
                   draggable={true}
                   onTemporaryCaddieDelete={
-                    caddie.isTemporary && onTemporaryCaddieDelete
+                    "isTemporary" in caddie &&
+                    caddie.isTemporary &&
+                    onTemporaryCaddieDelete
                       ? () =>
                           onTemporaryCaddieDelete(
                             caddie.originalId || caddie.id.toString()

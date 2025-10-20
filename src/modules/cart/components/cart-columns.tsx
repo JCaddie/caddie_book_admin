@@ -31,7 +31,7 @@ export const useCartColumns = (): Column<Cart>[] => {
       {
         key: "location",
         title: "필드명",
-        width: CART_COLUMN_WIDTHS.location || CART_COLUMN_WIDTHS.fieldName,
+        width: CART_COLUMN_WIDTHS.fieldName,
         render: basicRenderers.text,
       },
       {

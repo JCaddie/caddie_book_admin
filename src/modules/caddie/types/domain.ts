@@ -17,14 +17,11 @@ export type EmploymentType =
 // 등록 상태 타입
 export type RegistrationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
-// 그룹 타입
-export type GroupType = "PRIMARY" | "SPECIAL";
-
 // 캐디 그룹 도메인 모델
 export interface CaddieGroup {
   id: string;
   name: string;
-  group_type: GroupType;
+  group_type: "PRIMARY" | "SPECIAL";
   order: number;
   is_active: boolean;
   description: string;

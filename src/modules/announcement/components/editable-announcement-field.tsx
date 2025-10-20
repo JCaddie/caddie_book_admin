@@ -15,7 +15,9 @@ interface EditableAnnouncementFieldProps {
   placeholder?: string;
 }
 
-export const EditableAnnouncementField: React.FC<EditableAnnouncementFieldProps> = ({
+export const EditableAnnouncementField: React.FC<
+  EditableAnnouncementFieldProps
+> = ({
   label,
   value,
   onSave,
@@ -74,8 +76,11 @@ export const EditableAnnouncementField: React.FC<EditableAnnouncementFieldProps>
       case "select":
         return (
           <Dropdown
-            options={options}
-            value={editValue as string}
+            options={options.map((opt) => ({
+              value: String(opt.value),
+              label: opt.label,
+            }))}
+            value={String(editValue)}
             onChange={(value) => setEditValue(value)}
             placeholder={placeholder}
             disabled={isLoading}
@@ -114,9 +119,7 @@ export const EditableAnnouncementField: React.FC<EditableAnnouncementFieldProps>
       <div className="flex-1 flex items-center px-4 py-3 group">
         {isEditing ? (
           <div className="flex items-center gap-2 w-full">
-            <div className="flex-1">
-              {renderEditField()}
-            </div>
+            <div className="flex-1">{renderEditField()}</div>
             <div className="flex items-center gap-1">
               <button
                 onClick={handleSave}
@@ -153,4 +156,4 @@ export const EditableAnnouncementField: React.FC<EditableAnnouncementFieldProps>
       </div>
     </div>
   );
-}; 
+};

@@ -1,8 +1,8 @@
 import { serverApiClient } from "@/shared/lib/server/api-client";
 import { buildUrl, GOLF_COURSE_ENDPOINTS } from "./endpoints";
 import type {
-  GolfCourseListResponse,
   GolfCourseDetailResponse,
+  GolfCourseListResponse,
 } from "../types/api";
 
 interface GetGolfCourseListParams {

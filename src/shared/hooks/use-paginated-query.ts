@@ -69,7 +69,10 @@ export interface UsePaginatedQueryReturn<TData> {
 /**
  * 페이지네이션된 데이터를 가져오는 공통 훅
  */
-export function usePaginatedQuery<TData, TParams = Record<string, unknown>>(
+export function usePaginatedQuery<
+  TData extends Record<string, unknown>,
+  TParams = Record<string, unknown>
+>(
   config: UsePaginatedQueryConfig<TData, TParams>
 ): UsePaginatedQueryReturn<TData> {
   const {
@@ -108,7 +111,10 @@ export function usePaginatedQuery<TData, TParams = Record<string, unknown>>(
   });
 
   // 데이터 추출
-  const rawData = apiResponse?.results || [];
+  const rawData = useMemo(
+    () => apiResponse?.results || [],
+    [apiResponse?.results]
+  );
   const totalCount = apiResponse?.count || 0;
   const totalPages = apiResponse?.total_pages || 1;
 

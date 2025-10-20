@@ -50,10 +50,10 @@ const AnnouncementsPage: React.FC = () => {
   ) => {
     try {
       await createAnnouncement({
-        title: data.title,
-        content: data.content,
-        announcementType: data.announcementType,
-        isPublished: data.isPublished,
+        title: data.title as string,
+        content: data.content as string,
+        announcementType: data.announcementType as string,
+        isPublished: data.isPublished as boolean,
       });
       // 생성 후 목록 새로고침
       await refetch();

@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  UseMutationOptions,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMutationError } from "./use-query-error";
 
 /**

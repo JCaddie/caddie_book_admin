@@ -228,7 +228,7 @@ export const useAuth = (): UseAuthReturn => {
             email: response.user.email,
             role: response.user.role as "MASTER" | "ADMIN",
             golfCourseId: response.user.golf_course_id || undefined,
-            golfCourse: response.user.golf_course || undefined,
+            golf_course_name: response.user.golf_course || undefined,
             created_at: new Date().toISOString(),
           };
 

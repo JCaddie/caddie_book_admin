@@ -73,9 +73,6 @@ export type ContractStatus = "active" | "expired" | "pending" | "terminated";
 // 회원제 타입
 export type MembershipType = "MEMBERSHIP" | "PUBLIC";
 
-// 그룹 타입
-export type GroupType = "PRIMARY" | "SPECIAL";
-
 // 근무표 타입
 export type WorkScheduleType = "daily" | "special";
 

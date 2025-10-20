@@ -122,6 +122,7 @@ export const specialGroupSettingModalConfig: SettingModalConfig<SpecialGroupSett
         </Button>
       </>
     ),
+    emptyMessage: "등록된 특수반이 없습니다.",
   };
 
 // 향상된 생성 함수 (기존 특수반들을 고려)

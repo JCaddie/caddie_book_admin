@@ -69,4 +69,5 @@ export {
 } from "./caddie-api";
 
 // 타입들도 export
+export type { CaddieSimpleResponse } from "../types/api";
 export * from "./new-caddie-api";

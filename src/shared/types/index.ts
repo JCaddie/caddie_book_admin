@@ -2,9 +2,6 @@
 // 통합된 도메인 타입들
 // ================================
 
-// 골프장 관련 타입
-export type { GolfCourse } from "./domain";
-
 // 필드 관련 타입
 export type { Field } from "./domain";
 
@@ -21,16 +18,18 @@ export type {
   GroupListParams,
 } from "./domain";
 
-// 캐디 관련 타입
+// 캐디 관련 타입 (caddie.ts에서 통합)
 export type {
   Caddie,
-  CaddieDetail,
   Gender,
   EmploymentType,
   RoleDisplay,
   Career,
   AssignedWork,
-} from "./domain";
+  GolfCourse,
+} from "./caddie";
+
+export type { CaddieDetail } from "./domain";
 
 // 근무 관련 타입
 export type { Work } from "./domain";
@@ -64,7 +63,6 @@ export type {
   DayOffRequestStatus,
   ContractStatus,
   MembershipType,
-  GroupType,
   WorkScheduleType,
   WorkScheduleStatus,
   WorkSlotStatus,
@@ -131,26 +129,22 @@ export interface BaseSettingItem {
   name: string;
 }
 
+export interface SettingModalConfig<T extends BaseSettingItem> {
+  title: string;
+  createNewItem: () => T;
+  validateItem: (item: T) => string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderItem: (...args: any[]) => React.ReactNode;
+  emptyMessage?: string;
+  createButtonText?: string;
+  [key: string]: unknown; // 추가 필드 허용
+}
+
 export interface BaseSettingModalProps<T extends BaseSettingItem> {
   isOpen: boolean;
   onClose: () => void;
   onSave: (items: T[]) => void;
   initialItems?: T[];
   isLoading?: boolean;
-  config: {
-    createNewItem: () => T;
-    validateItem: (item: T) => string | null;
-  };
-}
-
-export interface SettingModalConfig<T extends BaseSettingItem> {
-  title: string;
-  createNewItem: () => T;
-  validateItem: (item: T) => string | null;
-  renderItem: (
-    item: T,
-    index: number,
-    onUpdate: (item: T) => void,
-    onDelete: (index: number) => void
-  ) => React.ReactNode;
+  config: SettingModalConfig<T>;
 }

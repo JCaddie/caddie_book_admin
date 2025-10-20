@@ -121,7 +121,7 @@ const CartCreateModal: React.FC<CartCreateModalProps> = ({
     }
 
     // ADMIN 권한이거나 데이터가 없으면 기본값
-    return user.golfCourseName || "알 수 없음";
+    return user.golf_course_name || "알 수 없음";
   };
 
   return (

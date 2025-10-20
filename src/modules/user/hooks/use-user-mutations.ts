@@ -17,19 +17,21 @@ export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-        mutationFn: async (data: CreateAdminRequest) => {
+    mutationFn: async (data: CreateAdminRequest) => {
       const response = await createAdmin(data);
-      
+
       // API 응답이 실패인 경우 에러 던지기
       if (!response.success) {
         // non_field_errors가 있으면 우선적으로 사용
         if (response.non_field_errors && response.non_field_errors.length > 0) {
-          throw new Error(JSON.stringify({ non_field_errors: response.non_field_errors }));
+          throw new Error(
+            JSON.stringify({ non_field_errors: response.non_field_errors })
+          );
         } else {
           throw new Error(response.message);
         }
       }
-      
+
       return response;
     },
     onSuccess: () => {
@@ -54,7 +56,7 @@ export const useDeleteUser = () => {
     },
     onSuccess: () => {
       // 관리자 목록 쿼리 무효화하여 재페치
-      queryClient.invalidateQueries({ queryKey: ADMIN_LIST_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
       console.error("사용자 삭제 중 오류 발생:", error);
@@ -109,7 +111,9 @@ export const useUpdateUser = () => {
       if (!response.success) {
         // non_field_errors가 있으면 우선적으로 사용
         if (response.non_field_errors && response.non_field_errors.length > 0) {
-          throw new Error(JSON.stringify({ non_field_errors: response.non_field_errors }));
+          throw new Error(
+            JSON.stringify({ non_field_errors: response.non_field_errors })
+          );
         } else {
           throw new Error(response.message);
         }

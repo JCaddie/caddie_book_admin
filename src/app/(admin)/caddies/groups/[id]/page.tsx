@@ -13,7 +13,7 @@ import { GroupSummary } from "@/modules/group/components/group-summary";
 import { CaddieStatusPanel } from "@/modules/group/components/caddie-status-panel";
 import { UnassignedCaddieList } from "@/modules/group/components/unassigned-caddie-list";
 import { GroupManagementArea } from "@/modules/group/components/group-management-area";
-import type { GroupType } from "@/modules/group/components/group-type-toggle";
+import type { GroupType } from "@/shared/types";
 import { fetchGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
 import { GolfCourseGroupDetailResponse } from "@/modules/golf-course/types/golf-course";
 import {

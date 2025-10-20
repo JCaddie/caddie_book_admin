@@ -18,6 +18,7 @@ export interface Cart {
   createdAt: string;
   updatedAt: string;
   isEmpty?: boolean; // 빈 행 여부
+  [key: string]: unknown; // 인덱스 시그니처 추가 (DataTable 호환성)
 }
 
 // 카트 상세 정보
@@ -50,4 +51,5 @@ export interface CartHistoryItem {
   isOngoing: boolean;
   notes: string;
   createdAt: string;
+  [key: string]: unknown; // 인덱스 시그니처 추가 (DataTable 호환성)
 }

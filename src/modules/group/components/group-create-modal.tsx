@@ -7,7 +7,8 @@ import { useAuth } from "@/shared/hooks";
 import { createGroup } from "../api/group-api";
 import { CreateGroupRequest } from "../types";
 import { fetchGolfCourseGroupDetail } from "@/modules/golf-course/api/golf-course-api";
-import GroupTypeToggle, { GroupType } from "./group-type-toggle";
+import GroupTypeToggle from "./group-type-toggle";
+import type { GroupType } from "@/shared/types/domain";
 
 export interface GroupCreateModalProps {
   isOpen: boolean;

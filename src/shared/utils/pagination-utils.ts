@@ -1,11 +1,11 @@
 /**
  * 페이지네이션된 데이터에 번호를 추가하는 유틸리티
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const addNumberToItems = <T extends Record<string, any>>(
   items: T[],
   currentPage: number,
-  itemsPerPage: number,
-  totalCount?: number
+  itemsPerPage: number
 ): (T & { no: number })[] => {
   const startIndex = (currentPage - 1) * itemsPerPage;
 
@@ -18,6 +18,7 @@ export const addNumberToItems = <T extends Record<string, any>>(
 /**
  * 역순 번호 매기기 (최신 순)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const addReverseNumberToItems = <T extends Record<string, any>>(
   items: T[],
   currentPage: number,

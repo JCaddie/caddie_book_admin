@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSpecialScheduleDetail } from "../api/work-api";
 import { CACHE_KEYS, QUERY_CONFIG } from "@/shared/lib/query-config";
