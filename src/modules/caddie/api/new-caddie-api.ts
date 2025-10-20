@@ -40,7 +40,7 @@ export interface ApiResponse {
 
 /**
  * 신규 캐디 목록 조회
- * GET /api/v1/caddies/pending-registrations/
+ * GET /v1/caddies/pending-registrations/
  */
 export const getNewCaddieList = async (
   params?: NewCaddieListParams
@@ -61,7 +61,7 @@ export const getNewCaddieList = async (
   }
 
   const queryString = searchParams.toString();
-  const endpoint = `/api/v1/caddies/pending-registrations/${
+  const endpoint = `/v1/caddies/pending-registrations/${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -70,22 +70,22 @@ export const getNewCaddieList = async (
 
 /**
  * 신규 캐디 일괄 승인
- * POST /api/v1/caddies/pending-registrations/bulk-approve/
+ * POST /v1/caddies/pending-registrations/bulk-approve/
  */
 export const bulkApproveNewCaddies = async (
   request: BulkApproveRequest
 ): Promise<ApiResponse> => {
-  const endpoint = `/api/v1/caddies/pending-registrations/bulk-approve/`;
+  const endpoint = `/v1/caddies/pending-registrations/bulk-approve/`;
   return apiClient.post<ApiResponse>(endpoint, request);
 };
 
 /**
  * 신규 캐디 일괄 거절
- * POST /api/v1/caddies/pending-registrations/bulk-reject/
+ * POST /v1/caddies/pending-registrations/bulk-reject/
  */
 export const bulkRejectNewCaddies = async (
   request: BulkRejectRequest
 ): Promise<ApiResponse> => {
-  const endpoint = `/api/v1/caddies/pending-registrations/bulk-reject/`;
+  const endpoint = `/v1/caddies/pending-registrations/bulk-reject/`;
   return apiClient.post<ApiResponse>(endpoint, request);
 };

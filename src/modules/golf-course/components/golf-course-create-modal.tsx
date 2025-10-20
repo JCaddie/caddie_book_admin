@@ -118,7 +118,7 @@ const GolfCourseCreateModal: React.FC<GolfCourseCreateModalProps> = ({
         manager: { name: "", contact: "", email: "" },
       };
 
-      await apiClient.post("/api/v1/golf-courses/", apiData);
+      await apiClient.post("/v1/golf-courses/", apiData);
 
       // 성공 시 폼 리셋 및 콜백 호출
       setFormData({

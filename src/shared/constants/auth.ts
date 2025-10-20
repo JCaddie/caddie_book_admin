@@ -48,7 +48,7 @@ export const AUTH_CONSTANTS = {
 
   // API 엔드포인트
   API_ENDPOINTS: {
-    REFRESH_TOKEN: "/api/v1/users/auth/token/refresh/",
+    REFRESH_TOKEN: "/v1/users/auth/token/refresh/",
   },
 } as const;
 
